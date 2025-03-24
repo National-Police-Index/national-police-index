@@ -16,7 +16,7 @@ export default function Header() {
         <div className="flex justify-end items-center gap-8">
           <button
             onClick={() => setIsStatesOpen(!isStatesOpen)}
-            className="flex justify-start items-center gap-4"
+            className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-black text-lg font-normal font-inter leading-relaxed">
               State Data
@@ -27,7 +27,7 @@ export default function Header() {
               viewBox="0 0 12 7"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}
+              className={`transform transition-transform ${!isStatesOpen ? 'rotate-180' : ''}`}
             >
               <path
                 d="M1 5.74037L5.11616 1.62421C5.60227 1.1381 6.39773 1.1381 6.88384 1.62421L11 5.74037"

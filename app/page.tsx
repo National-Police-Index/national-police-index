@@ -1,38 +1,52 @@
+'use client';
+
 import USMap from '@/components/map/USMap';
 
+import PostCard from '../components/PostCard';
+import { usePosts } from '@/hooks/usePosts';
+
 export default function Home() {
+  const { posts, loading, error } = usePosts({ limit: 6 });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
-          National Police Index
-        </h1>
-        <p className="text-xl text-gray-500 max-w-3xl mx-auto">
-          Search and explore police officer employment records, certification status, and disciplinary actions across the United States.
-        </p>
+
+      <div className="max-w-3xl mx-auto flex flex-col justify-center items-center gap-14">
+        <div className="text-center justify-start text-black text-5xl font-bold font-['Inter'] leading-[57.60px] tracking-wide">
+          Is Police Employment History Data Public?
+
+        </div>
+        <div className="text-center justify-start text-black text-lg font-normal font-['Inter'] leading-relaxed">
+          The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. In total, 27 states have released centralized employment history data, 23 of which are currently represented on the data tool.
+
+        </div>
       </div>
 
-      <USMap />
+      <div className="text-center mb-12">
+        <USMap />
+      </div>
 
-      <div className="mt-16 max-w-3xl mx-auto text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-4">
-          Transparency in Law Enforcement
-        </h2>
-        <p className="text-lg text-gray-500 mb-8">
-          Our mission is to promote accountability and transparency in law enforcement by providing public access to comprehensive police officer employment records.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Comprehensive Data</h3>
-            <p className="text-gray-500">Access detailed employment histories, certifications, and status updates.</p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">State Coverage</h3>
-            <p className="text-gray-500">Growing database covering multiple states with regular updates.</p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Access</h3>
-            <p className="text-gray-500">Simple search interface to find and explore officer records.</p>
+      <div className="bg-white py-16">
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-start items-start gap-8 overflow-hidden">
+
+          <div className="justify-start text-black text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Recent Reporting</div>
+          <div className="flex flex-col gap-6">
+            {loading && <div className="text-center">Loading posts...</div>}
+            {error && <div className="text-center text-red-600">Error loading posts: {error.message}</div>}
+            {!loading && !error && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    title={post.title}
+                    image={post.image}
+                    description={post.description}
+                    date={new Date(post.date).toLocaleDateString()}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
