@@ -1,38 +1,6 @@
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import USMap from '@/components/map/USMap';
-import { StateData } from '@/types';
 
-async function getStatesData() {
-  const officersRef = collection(db, 'db_launch');
-  const querySnapshot = await getDocs(officersRef);
-  
-  // Get unique states and count officers per state
-  const stateStats = querySnapshot.docs.reduce((acc, doc) => {
-    const state = doc.data().state;
-    if (!state) return acc;
-    
-    if (!acc[state]) {
-      acc[state] = { count: 0 };
-    }
-    acc[state].count++;
-    return acc;
-  }, {} as Record<string, { count: number }>);
-
-  // Convert to StateData array
-  const statesData: StateData[] = Object.entries(stateStats).map(([state, data]) => ({
-    name: state.charAt(0).toUpperCase() + state.slice(1),
-    abbreviation: state.toUpperCase(),
-    hasData: data.count > 0,
-    totalOfficers: data.count
-  }));
-
-  return statesData;
-}
-
-export default async function Home() {
-  const statesData = await getStatesData();
-
+export default function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
@@ -44,7 +12,7 @@ export default async function Home() {
         </p>
       </div>
 
-      <USMap statesData={statesData} />
+      <USMap />
 
       <div className="mt-16 max-w-3xl mx-auto text-center">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-4">

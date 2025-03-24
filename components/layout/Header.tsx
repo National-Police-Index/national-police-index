@@ -1,17 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-
-const states = [
-  ['Arizona', 'California', 'Florida', 'Florida Discipline'],
-  ['Georgia', 'Georgia Discipline', 'Illinois', 'Indiana'],
-  ['Kansas', 'Kentucky', 'Louisiana', 'Maryland'],
-  ['Minnesota', 'Mississippi', 'New Mexico', 'North Carolina'],
-  ['Ohio', 'Oregon', 'South Carolina', 'Tennessee'],
-  ['Texas', 'Utah', 'Vermont', 'Washington'],
-  ['West Virginia', 'Wyoming']
-];
+import { useState, useMemo } from 'react';
+import { US_STATES } from '@/constants/states';
 
 export default function Header() {
   const [isStatesOpen, setIsStatesOpen] = useState(false);
@@ -64,19 +55,29 @@ export default function Header() {
               <div className="w-full h-[1px] bg-black" />
             </div>
             <div className="w-full inline-flex justify-between items-start">
-              {states.map((column, columnIndex) => (
-                <div key={columnIndex} className="inline-flex flex-col justify-start items-start gap-4">
-                  {column.map((state) => (
-                    <Link
-                      key={state}
-                      href={`/states/${state.toLowerCase().replace(' ', '-')}`}
-                      className="text-black text-base font-normal font-inter leading-normal hover:underline"
-                    >
-                      {state}
-                    </Link>
-                  ))}
-                </div>
-              ))}
+              {useMemo(() => {
+                const statesWithData = US_STATES.filter(state => state.hasData);
+                const columns = [];
+                const itemsPerColumn = Math.ceil(statesWithData.length / 6);
+                
+                for (let i = 0; i < statesWithData.length; i += itemsPerColumn) {
+                  columns.push(statesWithData.slice(i, i + itemsPerColumn));
+                }
+                
+                return columns.map((column, columnIndex) => (
+                  <div key={columnIndex} className="inline-flex flex-col justify-start items-start gap-4">
+                    {column.map((state) => (
+                      <Link
+                        key={state.abbreviation}
+                        href={`/states/${state.abbreviation.toLowerCase()}`}
+                        className="text-black text-base font-normal font-inter leading-normal hover:underline"
+                      >
+                        {state.name}
+                      </Link>
+                    ))}
+                  </div>
+                ));
+              }, [])}
             </div>
             <Link
               href="#"

@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { collection, query, where, getDocs, limit, startAfter, orderBy, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import OfficerCard from '@/components/officers/OfficerCard';
 import SearchFilters from '@/components/search/SearchFilters';
 import { PoliceOfficer } from '@/types';
 import Pagination from '@/components/common/Pagination';
+import { US_STATES } from '@/constants/states';
 
 interface StatePageProps {
   params: {
@@ -13,11 +15,20 @@ interface StatePageProps {
 }
 
 export async function generateMetadata({ params }: StatePageProps): Promise<Metadata> {
-  const state = params.state;
-  const stateName = state.charAt(0).toUpperCase() + state.slice(1);
+  const stateData = US_STATES.find(
+    state => state.abbreviation.toLowerCase() === params.state.toLowerCase()
+  );
+
+  if (!stateData) {
+    return {
+      title: 'State Not Found | National Police Index',
+      description: 'The requested state page could not be found.',
+    };
+  }
+
   return {
-    title: `${stateName} Police Officers | National Police Index`,
-    description: `Search and explore police officer employment records and certification status in ${stateName}.`,
+    title: `${stateData.name} Police Officers | National Police Index`,
+    description: `Search and explore police officer employment records and certification status in ${stateData.name}.`,
   };
 }
 
@@ -124,14 +135,20 @@ async function getOfficers(
 }
 
 export default async function StatePage({ params, searchParams }: StatePageProps & { searchParams: SearchParams }) {
-  const state = params.state;
-  const stateName = state.charAt(0).toUpperCase() + state.slice(1);
+  const stateData = US_STATES.find(
+    state => state.abbreviation.toLowerCase() === params.state.toLowerCase()
+  );
+
+  if (!stateData || !stateData.hasData) {
+    notFound();
+  }
+
   const currentPage = Number(searchParams.page) || 1;
 
   // Get total count and current page data
   const [totalCount, { officers }] = await Promise.all([
-    getOfficersCount(state),
-    getOfficers(state, currentPage, searchParams)
+    getOfficersCount(params.state),
+    getOfficers(params.state, currentPage, searchParams)
   ]);
 
   const totalPages = Math.ceil(totalCount / OFFICERS_PER_PAGE);
@@ -140,10 +157,10 @@ export default async function StatePage({ params, searchParams }: StatePageProps
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-left mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          {stateName}
+          {stateData.name}
         </h1>
         <p className="mt-3 text-lg text-gray-500">
-          Search and explore police officer records in {stateName}
+          Search and explore police officer records in {stateData.name}
         </p>
       </div>
 
@@ -159,7 +176,7 @@ export default async function StatePage({ params, searchParams }: StatePageProps
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          baseUrl={`/states/${state.toLowerCase()}`}
+          baseUrl={`/states/${params.state.toLowerCase()}`}
         />
       </div>
 

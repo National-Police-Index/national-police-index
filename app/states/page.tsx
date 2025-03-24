@@ -2,13 +2,14 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { StateData } from '@/types';
+import { US_STATES } from '@/constants/states';
 
 export const metadata = {
   title: 'State Data | National Police Index',
   description: 'Browse police officer records by state. Access employment histories, certification status, and more.',
 };
 
-async function getStatesData() {
+async function _getStatesData() {
   const officersRef = collection(db, 'db_launch');
   const querySnapshot = await getDocs(officersRef);
   
@@ -28,6 +29,17 @@ async function getStatesData() {
     abbreviation: state.toUpperCase(),
     hasData: data.count > 0,
     totalOfficers: data.count
+  }));
+
+  return statesData.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function getStatesData() {
+  const statesData: StateData[] = US_STATES.map(({name, hasData, abbreviation}) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    abbreviation,
+    hasData,
+    totalOfficers: 0
   }));
 
   return statesData.sort((a, b) => a.name.localeCompare(b.name));
