@@ -138,9 +138,9 @@ export default async function StatePage({ params, searchParams }: StatePageProps
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
+      <div className="text-left mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          {stateName} Police Officers
+          {stateName}
         </h1>
         <p className="mt-3 text-lg text-gray-500">
           Search and explore police officer records in {stateName}

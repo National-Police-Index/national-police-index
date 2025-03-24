@@ -1,111 +1,111 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
-import { TeamMember } from '@/types';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About Us | National Police Index',
   description: 'Learn about our mission to promote transparency and accountability in law enforcement through comprehensive police officer records.',
 };
 
-const teamMembers: TeamMember[] = [
-  {
-    name: 'Sarah Johnson',
-    role: 'Executive Director',
-    image: '/team/sarah-johnson.jpg',
-    description: 'Former civil rights attorney with 15 years of experience in police accountability.',
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Data Director',
-    image: '/team/michael-chen.jpg',
-    description: 'Data scientist specializing in public records analysis and database management.',
-  },
-  {
-    name: 'Rachel Martinez',
-    role: 'Community Outreach',
-    image: '/team/rachel-martinez.jpg',
-    description: 'Community organizer focused on building partnerships with advocacy groups.',
-  },
-];
+interface TeamMember {
+  name: string;
+  pronouns: string;
+  description: string;
+}
+
+const teamMembers: TeamMember[] = Array(12).fill({
+  name: 'Sam Stecklow',
+  pronouns: 'he/him',
+  description: 'An investigative journalist and FOIA fellow with Invisible Institute. He works on Invisible Institute\'s Civic Police Data Project and investigations.',
+});
 
 export default function AboutPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Mission Section */}
-      <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
-          Our Mission
-        </h1>
-        <p className="mt-6 text-xl text-gray-500 max-w-3xl mx-auto">
-          The National Police Index is dedicated to promoting transparency and accountability
-          in law enforcement by providing comprehensive access to police officer employment records
-          and certification status across the United States.
-        </p>
-      </div>
+    <div className="w-full bg-white">
+      {/* About Section */}
+      <section className="w-full px-28 py-14">
+        <h1 className="text-4xl font-bold font-inter leading-[48px] tracking-tight mb-10">About us</h1>
+      </section>
 
-      {/* Values Section */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3 mb-16">
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Transparency</h3>
-          <p className="text-gray-500">
-            We believe in making law enforcement records easily accessible to the public,
-            fostering trust between communities and police departments.
+      {/* Main Content */}
+      <section className="w-full px-28 py-14 flex justify-start items-end gap-6">
+        <div className="w-[600px]">
+          <p className="text-lg font-normal font-inter leading-relaxed space-y-4">
+            The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.
+            <br/><br/>
+            The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Accountability</h3>
-          <p className="text-gray-500">
-            By providing accurate and up-to-date information, we help ensure that law
-            enforcement officers are held accountable for their actions.
-          </p>
+        <div className="w-[600px] h-[600px] relative">
+          <Image 
+            src="/about.png" 
+            alt="About illustration" 
+            fill 
+            className="object-cover"
+          />
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Public Service</h3>
-          <p className="text-gray-500">
-            Our work serves the public interest by enabling informed decision-making
-            and promoting better policing practices.
-          </p>
-        </div>
-      </div>
+      </section>
+
+      {/* Additional Information */}
+      <section className="w-full px-28 pt-4 pb-14 text-lg font-normal font-inter leading-relaxed">
+        <p className="w-full max-w-[1224px] mx-auto space-y-4">
+          The data tool was created by Ayyub Ibrahim with contributions from Tarak Shah, Olive Lavine and Maheen Khan.
+          <br/><br/>
+          The data files were collected over the course of over two years by a coalition of news and legal organizations. In addition to Invisible Institute, these included reporters, students, attorneys, and others with Big Local News at Stanford, CBS News, Hearst Newspapers, California Reporting Project, Howard Center for Investigative Journalism at the University of Maryland, ABC Owned & Operated Stations, American Public Media Research Lab, WPLN, Utah Investigative Journalism Project/Utah Freedom of Information Hotline, University of North Carolina at Chapel Hill, Oregon Public Broadcasting, Washington City Paper/George Washington University Public Justice Advocacy Clinic, Tony Webster, WyoFile, Dragline/ACLU of West Virginia, and Mirror Indy.
+          <br/><br/>
+          Efforts are being and were made to obtain data in states that have made it inaccessible by Invisible Institute and Colorado Springs Gazette/Reporters Committee for Freedom of the Press, Detroit Metro Times/University of Michigan Civil Rights Litigation Initiative, Delaware Call/ACLU of Delaware, Hearst Newspapers, MuckRock/University of Virginia First Amendment Clinic, The Badger Project/Wisconsin Transparency Project/University of Illinois First Amendment Clinic, Louisiana Law Enforcement Accountability Database/Innocence Project New Orleans, AL.com, Arkansas Advocate, The Frontier, SpotlightPA/Pennsylvania NewsMedia Association, and Sioux Falls Argus Leader.
+          <br/><br/>
+          Access the underlying data files for the National Police Index at this <Link href="#" className="underline">link</Link>.
+        </p>
+      </section>
 
       {/* Team Section */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Our Team</h2>
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-          {teamMembers.map((member) => (
-            <div key={member.name} className="text-center">
-              <div className="relative w-40 h-40 mx-auto mb-4">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="rounded-full object-cover"
-                />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
-              <p className="text-blue-600 mb-2">{member.role}</p>
-              <p className="text-gray-500">{member.description}</p>
+      <section className="w-full px-28 py-14">
+        <h2 className="text-4xl font-bold font-inter leading-[48px] tracking-tight mb-10">Team</h2>
+        <div className="w-full max-w-[1224px] space-y-6">
+          {[0, 1, 2].map((rowIndex) => (
+            <div key={rowIndex} className="flex justify-start items-center gap-6">
+              {teamMembers.slice(rowIndex * 4, (rowIndex + 1) * 4).map((member, index) => (
+                <div key={index} className="w-72 p-4 bg-gray-200 flex flex-col gap-2">
+                  <div className="pb-2 border-b border-black flex items-center gap-2">
+                    <span className="text-base font-normal font-inter">{member.name}</span>
+                    <span className="text-xs font-normal font-inter">({member.pronouns})</span>
+                  </div>
+                  <div className="text-sm font-normal font-inter leading-relaxed">
+                    {member.description.split('Invisible Institute').map((part, i, arr) => (
+                      <div key={i} className="flex items-center gap-2">
+                        {part}
+                        {i < arr.length - 1 && (
+                          <Link href="#" className="underline">Invisible Institute</Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Contact Section */}
-      <div className="bg-white rounded-lg shadow-sm p-8 border border-gray-100">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Contact Us</h2>
-        <div className="max-w-2xl mx-auto text-center">
-          <p className="text-lg text-gray-500 mb-6">
-            Have questions about our work or want to contribute to our mission?
-            We'd love to hear from you.
-          </p>
-          <a
-            href="mailto:contact@nationalpoliceindex.org"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors"
-          >
-            Get in Touch
-          </a>
+      {/* Footer */}
+      <footer className="w-full px-28 py-12 flex flex-col items-center gap-10">
+        <div className="flex flex-col items-start gap-10">
+          <div className="w-[1224px] flex justify-between items-start">
+            <h2 className="text-3xl font-medium font-inter leading-10 tracking-tight">National Police Index</h2>
+            <div className="flex items-center gap-6">
+              <Link href="#" className="text-lg font-normal font-inter">Contact</Link>
+              <Link href="#" className="text-lg font-normal font-inter">Github</Link>
+              <Link href="#" className="text-lg font-normal font-inter">About</Link>
+            </div>
+          </div>
+          <div className="flex justify-center items-center gap-6">
+            <Image src="/ipno.png" alt="IPNO Logo" width={238} height={50} />
+            <Image src="/invist.png" alt="Invist Logo" width={150} height={50} />
+            <Image src="/hrdag.png" alt="HRDAG Logo" width={76} height={50} />
+          </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
