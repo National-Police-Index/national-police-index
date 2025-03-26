@@ -21,22 +21,27 @@ const teamMembers: TeamMember[] = Array(12).fill({
 
 export default function AboutPage() {
   return (
-    <div className="w-full bg-white">
+    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* About Section */}
       <section className="w-full px-28 py-14">
         <h1 className="text-4xl font-bold font-inter leading-[48px] tracking-tight mb-10">About us</h1>
       </section>
 
+      <div data-layer="About" className="About w-[1440px] px-28 bg-white inline-flex justify-start items-end gap-6 overflow-hidden">
+  <div data-layer="The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system. The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group. Access to this data helps show potential 'wandering officers,' and is intended for use by residents, journalists, researchers, attorneys, and other stakeholders. Information about the age, source, and other specifics for each state is available on each page. Each state's database is closed to the others; names are common, and an officer's name appearing in two states does not necessarily mean they are the same person. Specific records should be sought from state training boards and individual police departments to confirm the identity of an individual whose name appears in multiple states. In total, 27 states have released centralized employment history data, 23 of which are currently represented on the data tool." className="TheNationalPoliceIndexIsAProjectAndDataToolShowingPoliceEmploymentHistoryDataObtainedFromStatePoliceTrainingAndCertificationBoardsAcrossTheUSAllButOneStateHasSuchASystemTheNationalPoliceIndexIsAPublicDataProjectLedByReporterSamStecklowOfInvisibleInstituteANonprofitPublicAccountabilityJournalismOrganizationBasedInChicagoCreatedInPartnershipWithAyyubIbrahimOfTheBerkeleyInstituteForDataScienceAndTarakShahOfTheHumanRightsDataAnalysisGroupAccessToThisDataHelpsShowPotentialWanderingOfficersAndIsIntendedForUseByResidentsJournalistsResearchersAttorneysAndOtherStakeholdersInformationAboutTheAgeSourceAndOtherSpecificsForEachStateIsAvailableOnEachPageEachStateSDatabaseIsClosedToTheOthersNamesAreCommonAndAnOfficerSNameAppearingInTwoStatesDoesNotNecessarilyMeanTheyAreTheSamePersonSpecificRecordsShouldBeSoughtFromStateTrainingBoardsAndIndividualPoliceDepartmentsToConfirmTheIdentityOfAnIndividualWhoseNameAppearsInMultipleStatesInTotal27StatesHaveReleasedCentralizedEmploymentHistoryData23OfWhichAreCurrentlyRepresentedOnTheDataTool w-[600px] justify-start text-black text-lg font-normal font-['Inter'] leading-relaxed">The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.<br/>The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.<br/>Access to this data helps show potential "wandering officers," and is intended for use by residents, journalists, researchers, attorneys, and other stakeholders. Information about the age, source, and other specifics for each state is available on each page.<br/>Each state's database is closed to the others; names are common, and an officer's name appearing in two states does not necessarily mean they are the same person. Specific records should be sought from state training boards and individual police departments to confirm the identity of an individual whose name appears in multiple states.<br/>In total, 27 states have released centralized employment history data, 23 of which are currently represented on the data tool.</div>
+  <img data-layer="Rectangle 3" className="Rectangle3 w-[600px] h-[600px]" src="https://placehold.co/600x600" />
+</div>
+
       {/* Main Content */}
-      <section className="w-full px-28 py-14 flex justify-start items-end gap-6">
-        <div className="w-[600px]">
+      <section className="w-full px-28 py-14 flex justify-start items-end gap-6 flex-row">
+        <div className="">
           <p className="text-lg font-normal font-inter leading-relaxed space-y-4">
             The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.
             <br/><br/>
             The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.
           </p>
         </div>
-        <div className="w-[600px] h-[600px] relative">
+        <div className="relative">
           <Image 
             src="/about.png" 
             alt="About illustration" 
@@ -61,10 +66,10 @@ export default function AboutPage() {
 
       {/* Team Section */}
       <section className="w-full px-28 py-14">
-        <h2 className="text-4xl font-bold font-inter leading-[48px] tracking-tight mb-10">Team</h2>
-        <div className="w-full max-w-[1224px] space-y-6">
+        <h2 className="text-4xl font-bold font-inter tracking-tight mb-10">Team</h2>
+        <div className="w-full mx-auto space-y-6">
           {[0, 1, 2].map((rowIndex) => (
-            <div key={rowIndex} className="flex justify-start items-center gap-6">
+            <div key={rowIndex} className="flex justify-center items-center gap-6">
               {teamMembers.slice(rowIndex * 4, (rowIndex + 1) * 4).map((member, index) => (
                 <div key={index} className="w-72 p-4 bg-gray-200 flex flex-col gap-2">
                   <div className="pb-2 border-b border-black flex items-center gap-2">
@@ -88,24 +93,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="w-full px-28 py-12 flex flex-col items-center gap-10">
-        <div className="flex flex-col items-start gap-10">
-          <div className="w-[1224px] flex justify-between items-start">
-            <h2 className="text-3xl font-medium font-inter leading-10 tracking-tight">National Police Index</h2>
-            <div className="flex items-center gap-6">
-              <Link href="#" className="text-lg font-normal font-inter">Contact</Link>
-              <Link href="#" className="text-lg font-normal font-inter">Github</Link>
-              <Link href="#" className="text-lg font-normal font-inter">About</Link>
-            </div>
-          </div>
-          <div className="flex justify-center items-center gap-6">
-            <Image src="/ipno.png" alt="IPNO Logo" width={238} height={50} />
-            <Image src="/invist.png" alt="Invist Logo" width={150} height={50} />
-            <Image src="/hrdag.png" alt="HRDAG Logo" width={76} height={50} />
-          </div>
-        </div>
-      </footer>
-    </div>
+   </div>
   );
 }

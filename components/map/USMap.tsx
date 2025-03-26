@@ -16,17 +16,17 @@ type StatesMap = {
 export default function USMap() {
   const router = useRouter();
 
-  const getStateColor = (stateAbbr: string) => {
-    const stateData = US_STATES.find(state => state.abbreviation.toLowerCase() === stateAbbr.toLowerCase());
+  const getStateColor = (stateReference: string) => {
+    const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
     if (!stateData) return '#E5E7EB'; // gray-200
     return stateData.hasData ? '#1D4ED8' : '#93C5FD'; // blue-700 : blue-300
   };
 
-  const handleStateClick = (stateAbbr: string) => {
-    const stateData = US_STATES.find(state => state.abbreviation.toLowerCase() === stateAbbr.toLowerCase());
-    console.log(stateAbbr, stateData);
+  const handleStateClick = (stateReference: string) => {
+    const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
+    console.log(stateReference, stateData);
     if (stateData?.hasData) {
-      router.push(`/states/${stateAbbr.toLowerCase()}`);
+      router.push(`/states/${stateReference.toLowerCase()}`);
     }
   };
 
@@ -35,8 +35,8 @@ export default function USMap() {
       <div className="aspect-[959/483] w-full relative">
           {US_STATES.map((state, index) => (
             <>
-              {(US_STATES_MAP as StatesMap)[state.key].svg(state, (abbreviation: string) => handleStateClick(abbreviation))}
-              {(US_STATES_MAP as StatesMap)[`_${state.key}`].svg(state, (abbreviation: string) => handleStateClick(abbreviation))}
+              {(US_STATES_MAP as StatesMap)[state.key].svg(state, (reference: string) => handleStateClick(reference))}
+              {(US_STATES_MAP as StatesMap)[`_${state.key}`].svg(state, (reference: string) => handleStateClick(reference))}
 
 </>
           ))}

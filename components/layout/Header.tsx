@@ -7,6 +7,18 @@ import { US_STATES } from '@/constants/states';
 export default function Header() {
   const [isStatesOpen, setIsStatesOpen] = useState(false);
 
+  const stateColumns = useMemo(() => {
+    const statesWithData = US_STATES.filter(state => state.hasData);
+    const columns = [];
+    const itemsPerColumn = Math.ceil(statesWithData.length / 6);
+    
+    for (let i = 0; i < statesWithData.length; i += itemsPerColumn) {
+      columns.push(statesWithData.slice(i, i + itemsPerColumn));
+    }
+    
+    return columns;
+  }, []);
+
   return (
     <header className="bg-white">
         <div className="w-full px-6 py-6 flex justify-between items-center">
@@ -55,29 +67,20 @@ export default function Header() {
               <div className="w-full h-[1px] bg-black" />
             </div>
             <div className="w-full inline-flex justify-between items-start">
-              {useMemo(() => {
-                const statesWithData = US_STATES.filter(state => state.hasData);
-                const columns = [];
-                const itemsPerColumn = Math.ceil(statesWithData.length / 6);
-                
-                for (let i = 0; i < statesWithData.length; i += itemsPerColumn) {
-                  columns.push(statesWithData.slice(i, i + itemsPerColumn));
-                }
-                
-                return columns.map((column, columnIndex) => (
+              {stateColumns.map((column, columnIndex) => (
                   <div key={columnIndex} className="inline-flex flex-col justify-start items-start gap-4">
                     {column.map((state) => (
                       <Link
-                        key={state.abbreviation}
-                        href={`/states/${state.abbreviation.toLowerCase()}`}
+                        key={state.reference}
+                        href={`/states/${state.reference.toLowerCase()}`}
                         className="text-black text-base font-normal font-inter leading-normal hover:underline"
                       >
                         {state.name}
                       </Link>
                     ))}
                   </div>
-                ));
-              }, [])}
+                ))
+              }
             </div>
             <Link
               href="#"

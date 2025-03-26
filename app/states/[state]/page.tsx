@@ -16,7 +16,7 @@ interface StatePageProps {
 
 export async function generateMetadata({ params }: StatePageProps): Promise<Metadata> {
   const stateData = US_STATES.find(
-    state => state.abbreviation.toLowerCase() === params.state.toLowerCase()
+    state => state.reference.toLowerCase() === params.state.toLowerCase()
   );
 
   if (!stateData) {
@@ -136,7 +136,7 @@ async function getOfficers(
 
 export default async function StatePage({ params, searchParams }: StatePageProps & { searchParams: SearchParams }) {
   const stateData = US_STATES.find(
-    state => state.abbreviation.toLowerCase() === params.state.toLowerCase()
+    state => state.reference.toLowerCase() === params.state.toLowerCase()
   );
 
   if (!stateData || !stateData.hasData) {
