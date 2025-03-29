@@ -31,30 +31,29 @@ export default function USMap() {
   };
 
   return (
-    <div className="w-full max-w-[1440px] mt-6 mx-auto px-4 sm:px-6 lg:px-8 relative flex flex-row gap-auto">
-      <div className="aspect-[959/483] w-full relative">
-          {US_STATES.map((state, index) => (
-            <>
-              {(US_STATES_MAP as StatesMap)[state.key].svg(state, (reference: string) => handleStateClick(reference))}
-              {(US_STATES_MAP as StatesMap)[`_${state.key}`].svg(state, (reference: string) => handleStateClick(reference))}
-
-</>
-          ))}
+    <div className="w-full mt-6 mx-auto px-4 sm:px-6 lg:px-8 flex flex-row">
+      <div className="flex min-w-[50%] max-w-[50%] relative">
+        {US_STATES.map((state, index) => (
+          <div key={index}>
+            {(US_STATES_MAP as unknown as StatesMap)[state.key].svg(state, (reference: string) => handleStateClick(reference))}
+            {(US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].svg(state, (reference: string) => handleStateClick(reference))}
+          </div>
+        ))}
       </div>
-        <div className="inline-flex flex-col justify-start items-start gap-6">
-          <div className="inline-flex justify-start items-center gap-4">
+        <div className="flex flex-col justify-start items-start gap-6">
+          <div className="flex justify-start items-center gap-4">
             <div className="w-6 h-6 bg-gray-200" />
             <div className="FullDataAvailable text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Full Data Available</div>
           </div>
-          <div className="inline-flex justify-start items-center gap-4">
+          <div className="flex justify-start items-center gap-4">
             <div className="w-6 h-6 bg-stone-300" />
             <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
           </div>
-          <div className="inline-flex justify-start items-center gap-4">
+          <div className="flex justify-start items-center gap-4">
             <div className="w-6 h-6 bg-neutral-400" />
             <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Some Data Available</div>
           </div>
-          <div className="inline-flex justify-start items-center gap-4">
+          <div className="flex justify-start items-center gap-4">
             <div className="w-6 h-6 bg-neutral-500" />
             <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
           </div>

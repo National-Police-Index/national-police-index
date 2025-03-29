@@ -9,7 +9,7 @@ count?: number;
 export const US_STATES_MAP = {
   'a0': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[67.38px] top-[134.75px] absolute">
+        <div className="left-[4.21rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.38347 67.125V1.75H66.7669V67.125H1.38347Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -20,7 +20,7 @@ export const US_STATES_MAP = {
   },
   '_a0': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[79.13px] top-[157.96px] absolute">
+        <div className="left-[4.95rem] top-[9.87rem] absolute">
             
             <svg width="44" height="22" viewBox="0 0 44 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.87188 21.9648L0.129242 0.964905H2.71328L7.10283 18.0685H7.30799L11.7788 0.964905H14.6504L19.1218 18.0685H19.3269L23.7159 0.964905H26.3005L20.5573 21.9648H17.9323L13.2967 5.23059H13.1325L8.49743 21.9648H5.87188ZM28.4062 21.9648H25.7398L33.4516 0.964905H36.0771L43.7889 21.9648H41.1225L34.8462 4.28734H34.6825L28.4062 21.9648ZM29.3905 13.7619H40.1382V16.0178H29.3905V13.7619Z" fill="black"/>
@@ -30,7 +30,7 @@ export const US_STATES_MAP = {
   },
   'a2': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[134.77px] top-[134.75px] absolute">
+        <div className="left-[8.42rem] top-[8.42rem] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.76694 67.125V1.75H67.1504V67.125H1.76694Z" fill="#BEBEBE" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -41,7 +41,7 @@ export const US_STATES_MAP = {
   },
   '_a2': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[156.86px] top-[157.96px] absolute">
+        <div className="left-[9.80rem] top-[9.87rem] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.40701 0.964905V21.9648H0.863281V0.964905H3.40701ZM14.6986 21.9648H8.21712V0.964905H14.9855C17.0233 0.964905 18.7662 1.38539 20.2162 2.22637C21.6655 3.06014 22.7762 4.25967 23.5487 5.82493C24.3212 7.38358 24.7074 9.25022 24.7074 11.4237C24.7074 13.6115 24.3181 15.4944 23.5384 17.0735C22.7593 18.646 21.624 19.8558 20.1338 20.7034C18.6435 21.5444 16.832 21.9648 14.6986 21.9648ZM10.7608 19.709H14.5343C16.2712 19.709 17.7104 19.3739 18.8523 18.7044C19.9936 18.0342 20.8449 17.0808 21.4056 15.8434C21.9663 14.6059 22.2467 13.1327 22.2467 11.4237C22.2467 9.72846 21.9694 8.26908 21.4158 7.0455C20.8617 5.8147 20.0345 4.87144 18.9341 4.21514C17.8331 3.55222 16.4626 3.22076 14.8219 3.22076H10.7608V19.709Z" fill="black" onClick={() => onClick(state.reference)}
@@ -52,7 +52,7 @@ export const US_STATES_MAP = {
   },
   'a4': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[202.15px] top-[134.75px] absolute">
+        <div className="left-[12.63rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.15039 67.125V1.75H66.5339V67.125H1.15039Z" fill="#484848" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -63,7 +63,7 @@ export const US_STATES_MAP = {
   },
   '_a4': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[216.12px] top-[157.96px] absolute">
+        <div className="left-[13.51rem] top-[9.87rem] absolute">
             
             <svg width="41" height="22" viewBox="0 0 41 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0.124634 0.964905H3.16051L10.2977 18.3964H10.5438L17.6816 0.964905H20.7175V21.9648H18.338V6.0096H18.1329L11.5696 21.9648H9.27255L2.70928 6.0096H2.50412V21.9648H0.124634V0.964905ZM24.3791 3.22076V0.964905H40.1312V3.22076H33.527V21.9648H30.9839V3.22076H24.3791Z" fill="black" onClick={() => onClick(state.reference)}
@@ -74,7 +74,7 @@ export const US_STATES_MAP = {
   },
   'a6': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[269.53px] top-[134.75px] absolute">
+        <div className="left-[16.85rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.53387 67.125V1.75H66.9173V67.125H1.53387Z" fill="#BEBEBE" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -107,7 +107,7 @@ export const US_STATES_MAP = {
   },
   '_a8': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[349.39px] top-[157.96px] absolute">
+        <div className="left-[21.84rem] top-[9.87rem] absolute">
             
             <svg width="43" height="22" viewBox="0 0 43 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0.387512 0.964905H3.42339L10.5606 18.3964H10.8067L17.9445 0.964905H20.9804V21.9648H18.6009V6.0096H18.3957L11.8325 21.9648H9.53543L2.97216 6.0096H2.767V21.9648H0.387512V0.964905ZM42.445 0.964905V21.9648H39.9837L28.5394 5.47662H28.3342V21.9648H25.7905V0.964905H28.2518L39.7377 17.494H39.9428V0.964905H42.445Z" fill="black" onClick={() => onClick(state.reference)}
@@ -118,7 +118,7 @@ export const US_STATES_MAP = {
   },
   'a10': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[404.30px] top-[134.75px] absolute">
+        <div className="left-[25.27rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.30078 67.125V1.75H66.6842V67.125H1.30078Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -129,7 +129,7 @@ export const US_STATES_MAP = {
   },
   '_a10': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[428.50px] top-[157.96px] absolute">
+        <div className="left-[26.78rem] top-[9.87rem] absolute">
             
             <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.04667 0.964905V21.9648H0.50293V0.964905H3.04667ZM7.85677 21.9648V0.964905H10.4005V19.709H20.1633V21.9648H7.85677Z" fill="black" onClick={() => onClick(state.reference)}
@@ -140,7 +140,7 @@ export const US_STATES_MAP = {
   },
   'a12': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[471.68px] top-[134.75px] absolute">
+        <div className="left-[29.48rem] top-[8.42rem] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.68433 67.125V1.75H67.0678V67.125H1.68433Z" fill="#484848" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -151,7 +151,7 @@ export const US_STATES_MAP = {
   },
   '_a12': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[491.37px] top-[157.96px] absolute">
+        <div className="left-[30.71rem] top-[9.87rem] absolute">
             
             <svg width="29" height="22" viewBox="0 0 29 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0.374146 0.964905H3.41002L10.5472 18.3964H10.7933L17.9312 0.964905H20.967V21.9648H18.5875V6.0096H18.3824L11.8191 21.9648H9.52206L2.9588 6.0096H2.75363V21.9648H0.374146V0.964905ZM28.3208 0.964905V21.9648H25.7771V0.964905H28.3208Z" fill="black" onClick={() => onClick(state.reference)}
@@ -162,7 +162,7 @@ export const US_STATES_MAP = {
   },
   'a14': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[67.38px] top-[202.12px] absolute">
+        <div className="left-[4.21rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.38347 66.5V1.125H66.7669V66.5H1.38347Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -173,7 +173,7 @@ export const US_STATES_MAP = {
   },
   '_a14': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[82.64px] top-[225.05px] absolute">
+        <div className="left-[5.17rem] top-[14.07rem] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19.1847 10.8396C19.1847 13.0545 18.7846 14.9687 17.985 16.5821C17.1849 18.1955 16.0875 19.4395 14.6929 20.3142C13.2983 21.1895 11.7051 21.6268 9.91406 21.6268C8.12238 21.6268 6.52985 21.1895 5.13525 20.3142C3.74005 19.4395 2.64326 18.1955 1.84309 16.5821C1.04291 14.9687 0.643417 13.0545 0.643417 10.8396C0.643417 8.62524 1.04291 6.71106 1.84309 5.09767C2.64326 3.48428 3.74005 2.24026 5.13525 1.36499C6.52985 0.490314 8.12238 0.0529785 9.91406 0.0529785C11.7051 0.0529785 13.2983 0.490314 14.6929 1.36499C16.0875 2.24026 17.1849 3.48428 17.985 5.09767C18.7846 6.71106 19.1847 8.62524 19.1847 10.8396ZM16.7234 10.8396C16.7234 9.02167 16.419 7.48708 15.8107 6.23583C15.2091 4.98458 14.3921 4.03833 13.3596 3.39526C12.3338 2.75279 11.1853 2.43154 9.91406 2.43154C8.64219 2.43154 7.49006 2.75279 6.45765 3.39526C5.43246 4.03833 4.61543 4.98458 4.00718 6.23583C3.40554 7.48708 3.10472 9.02167 3.10472 10.8396C3.10472 12.6581 3.40554 14.1927 4.00718 15.4439C4.61543 16.6946 5.43246 17.6415 6.45765 18.2839C7.49006 18.927 8.64219 19.2482 9.91406 19.2482C11.1853 19.2482 12.3338 18.927 13.3596 18.2839C14.3921 17.6415 15.2091 16.6946 15.8107 15.4439C16.419 14.1927 16.7234 12.6581 16.7234 10.8396ZM23.1724 21.3399V0.339918H30.2687C31.9099 0.339918 33.2564 0.620252 34.3093 1.18091C35.3621 1.73435 36.1419 2.49652 36.6478 3.46744C37.1532 4.43776 37.4065 5.54224 37.4065 6.77905C37.4065 8.01646 37.1532 9.1137 36.6478 10.0708C36.1419 11.0279 35.3658 11.7798 34.3195 12.3266C33.2739 12.8669 31.937 13.137 30.3096 13.137H24.567V10.8396H30.2278C31.3492 10.8396 32.2517 10.676 32.9351 10.3475C33.6258 10.0197 34.1246 9.55465 34.4326 8.95308C34.7467 8.34491 34.9043 7.62003 34.9043 6.77905C34.9043 5.93867 34.7467 5.20356 34.4326 4.57492C34.118 3.94569 33.6156 3.46022 32.9249 3.11853C32.2342 2.77022 31.3215 2.59578 30.1869 2.59578H25.7155V21.3399H23.1724ZM33.0585 11.9062L38.2271 21.3399H35.2731L30.1869 11.9062H33.0585Z" fill="black" onClick={() => onClick(state.reference)}
@@ -206,7 +206,7 @@ export const US_STATES_MAP = {
   },
   'a18': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[202.15px] top-[202.12px] absolute">
+        <div className="left-[12.63rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.15039 66.5V1.125H66.5339V66.5H1.15039Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -217,7 +217,7 @@ export const US_STATES_MAP = {
   },
   '_a18': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[212.99px] top-[225.34px] absolute">
+        <div className="left-[13.31rem] top-[14.08rem] absolute">
             
             <svg width="45" height="22" viewBox="0 0 45 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.73634 21.3398L-0.00628662 0.339905H2.57774L6.9673 17.4435H7.17245L11.6432 0.339905H14.5148L18.9862 17.4435H19.1914L23.5803 0.339905H26.165L20.4217 21.3398H17.7968L13.1612 4.60559H12.9969L8.3619 21.3398H5.73634ZM27.2401 0.339905H30.1526L35.9777 10.1424H36.2238L42.0482 0.339905H44.9607L37.3723 12.6858V21.3398H34.8286V12.6858L27.2401 0.339905Z" fill="black" onClick={() => onClick(state.reference)}
@@ -228,7 +228,7 @@ export const US_STATES_MAP = {
   },
   'a20': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[269.53px] top-[202.12px] absolute">
+        <div className="left-[16.85rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.53387 66.5V1.125H66.9173V66.5H1.53387Z" fill="#484848" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -239,7 +239,7 @@ export const US_STATES_MAP = {
   },
   '_a20': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[285.31px] top-[225.05px] absolute">
+        <div className="left-[17.83rem] top-[14.07rem] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12.7014 5.58975C12.5786 4.55085 12.0793 3.74417 11.2045 3.16967C10.3291 2.59578 9.2558 2.30884 7.98394 2.30884C7.0544 2.30884 6.241 2.45923 5.5431 2.76001C4.85302 3.06079 4.31274 3.47405 3.92288 4.00042C3.54024 4.52679 3.34893 5.12474 3.34893 5.79488C3.34893 6.35554 3.48188 6.8374 3.749 7.24045C4.02215 7.63748 4.3711 7.96893 4.79465 8.23543C5.21881 8.4953 5.66282 8.71066 6.12789 8.88151C6.59295 9.04513 7.02012 9.17867 7.40999 9.28153L9.54278 9.85543C10.0897 9.9992 10.6985 10.1971 11.3681 10.4504C12.045 10.703 12.6912 11.0483 13.3066 11.4857C13.9287 11.9164 14.4413 12.4704 14.845 13.1472C15.2481 13.8239 15.4497 14.6541 15.4497 15.6389C15.4497 16.7734 15.1525 17.7991 14.5574 18.7146C13.9696 19.6308 13.1081 20.3587 11.9734 20.8989C10.8453 21.4391 9.47481 21.7092 7.86121 21.7092C6.35712 21.7092 5.05457 21.4662 3.95358 20.9807C2.8598 20.4959 1.99824 19.8191 1.36953 18.9505C0.747439 18.0824 0.395474 17.0742 0.313049 15.9258H2.93861C3.00719 16.7187 3.27372 17.375 3.73819 17.8947C4.21048 18.4072 4.80488 18.7898 5.52263 19.0431C6.24761 19.2891 7.02674 19.4119 7.86121 19.4119C8.83166 19.4119 9.70342 19.2548 10.4759 18.9402C11.2484 18.619 11.8603 18.175 12.3115 17.6072C12.7628 17.0333 12.9884 16.3631 12.9884 15.5979C12.9884 14.9001 12.794 14.3329 12.4042 13.8955C12.0143 13.4582 11.5017 13.1027 10.8658 12.8289C10.2299 12.5558 9.54279 12.3164 8.80458 12.1113L6.21995 11.3732C4.57928 10.9016 3.28033 10.2278 2.32312 9.35313C1.36592 8.47786 0.887624 7.33309 0.887624 5.91821C0.887624 4.74216 1.20528 3.71709 1.84122 2.84181C2.48376 1.95992 3.34532 1.27655 4.42526 0.79109C5.51242 0.299011 6.72592 0.0529785 8.06637 0.0529785C9.42006 0.0529785 10.6233 0.295403 11.6762 0.780864C12.7291 1.25911 13.5629 1.9154 14.1784 2.74977C14.8005 3.58353 15.1284 4.5304 15.1627 5.58975H12.7014ZM25.8237 21.3399H19.3429V0.339918H26.1113C28.1484 0.339918 29.892 0.760401 31.3413 1.60139C32.7907 2.43515 33.9019 3.63468 34.6744 5.19995C35.4469 6.7586 35.8332 8.62523 35.8332 10.7987C35.8332 12.9866 35.4433 14.8694 34.6642 16.4485C33.8845 18.021 32.7498 19.2308 31.2589 20.0784C29.7687 20.9194 27.9571 21.3399 25.8237 21.3399ZM21.886 19.084H25.6601C27.3964 19.084 28.8355 18.7489 29.9774 18.0794C31.1193 17.4092 31.97 16.4558 32.5308 15.2184C33.0915 13.981 33.3719 12.5077 33.3719 10.7987C33.3719 9.10347 33.0951 7.64409 32.541 6.42051C31.9875 5.18972 31.1602 4.24646 30.0593 3.59015C28.9589 2.92723 27.5877 2.59578 25.947 2.59578H21.886V19.084Z" fill="black" onClick={() => onClick(state.reference)}
@@ -272,7 +272,7 @@ export const US_STATES_MAP = {
   },
   'a24': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[404.30px] top-[202.12px] absolute">
+        <div className="left-[25.27rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.30078 66.5V1.125H66.6842V66.5H1.30078Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -283,7 +283,7 @@ export const US_STATES_MAP = {
   },
   '_a24': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[425.80px] top-[225.34px] absolute">
+        <div className="left-[26.61rem] top-[14.08rem] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3.33927 0.339905V21.3398H0.795532V0.339905H3.33927ZM24.8039 0.339905V21.3398H22.3426L10.8982 4.85162H10.6931V21.3398H8.14937V0.339905H10.6107L22.0965 16.869H22.3017V0.339905H24.8039Z" fill="black" onClick={() => onClick(state.reference)}
@@ -294,7 +294,7 @@ export const US_STATES_MAP = {
   },
   'a26': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[471.68px] top-[202.12px] absolute">
+        <div className="left-[29.48rem] top-[12.63rem] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.68433 66.5V1.125H67.0678V66.5H1.68433Z" fill="#EAE9E9" stroke="white" strokeWidth="2" onClick={() => onClick(state.reference)}
@@ -305,7 +305,7 @@ export const US_STATES_MAP = {
   },
   '_a26': {
     svg: (state: State, onClick: (reference: string) => void) => (
-        <div className="left-[485.44px] top-[225.05px] absolute">
+        <div className="left-[30.34rem] top-[14.07rem] absolute">
             
             <svg width="40" height="22" viewBox="0 0 40 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.9815 10.8396C18.9815 13.0545 18.5814 14.9687 17.7818 16.5821C16.9816 18.1955 15.8842 19.4395 14.4896 20.3142C13.095 21.1895 11.5019 21.6268 9.71083 21.6268C7.91915 21.6268 6.32662 21.1895 4.93202 20.3142C3.53682 19.4395 2.44001 18.1955 1.63983 16.5821C0.839648 14.9687 0.440186 13.0545 0.440186 10.8396C0.440186 8.62524 0.839648 6.71106 1.63983 5.09767C2.44001 3.48428 3.53682 2.24026 4.93202 1.36499C6.32662 0.490314 7.91915 0.0529785 9.71083 0.0529785C11.5019 0.0529785 13.095 0.490314 14.4896 1.36499C15.8842 2.24026 16.9816 3.48428 17.7818 5.09767C18.5814 6.71106 18.9815 8.62524 18.9815 10.8396ZM16.5202 10.8396C16.5202 9.02167 16.2157 7.48708 15.6075 6.23583C15.0058 4.98458 14.1888 4.03833 13.1564 3.39526C12.1306 2.75279 10.9821 2.43154 9.71083 2.43154C8.43896 2.43154 7.28683 2.75279 6.25442 3.39526C5.22923 4.03833 4.4122 4.98458 3.80395 6.23583C3.20231 7.48708 2.90149 9.02167 2.90149 10.8396C2.90149 12.6581 3.20231 14.1927 3.80395 15.4439C4.4122 16.6946 5.22923 17.6415 6.25442 18.2839C7.28683 18.927 8.43896 19.2482 9.71083 19.2482C10.9821 19.2482 12.1306 18.927 13.1564 18.2839C14.1888 17.6415 15.0058 16.6946 15.6075 15.4439C16.2157 14.1927 16.5202 12.6581 16.5202 10.8396ZM22.9691 21.3399V0.339918H25.5122V9.6912H36.7111V0.339918H39.2543V21.3399H36.7111V11.9471H25.5122V21.3399H22.9691Z" fill="black" onClick={() => onClick(state.reference)}

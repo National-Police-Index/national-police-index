@@ -1,44 +1,17 @@
+'use client';
+
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { collection, query, where, getDocs, limit, startAfter, orderBy, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { use } from 'react';
+import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import OfficerCard from '@/components/officers/OfficerCard';
 import SearchFilters from '@/components/search/SearchFilters';
-import { PoliceOfficer } from '@/types';
-import Pagination from '@/components/common/Pagination';
 import { US_STATES } from '@/constants/states';
 
 interface StatePageProps {
-  params: {
+  params: Promise<{
     state: string;
-  };
-}
-
-export async function generateMetadata({ params }: StatePageProps): Promise<Metadata> {
-  const stateData = US_STATES.find(
-    state => state.reference.toLowerCase() === params.state.toLowerCase()
-  );
-
-  if (!stateData) {
-    return {
-      title: 'State Not Found | National Police Index',
-      description: 'The requested state page could not be found.',
-    };
-  }
-
-  return {
-    title: `${stateData.name} Police Officers | National Police Index`,
-    description: `Search and explore police officer employment records and certification status in ${stateData.name}.`,
-  };
-}
-
-const OFFICERS_PER_PAGE = 12;
-
-async function getOfficersCount(state: string): Promise<number> {
-  const officersRef = collection(db, 'db_launch');
-  const q = query(officersRef, where('state', '==', state.toLowerCase()));
-  const snapshot = await getDocs(q);
-  return snapshot.size;
+  }>;
 }
 
 interface SearchParams {
@@ -51,107 +24,21 @@ interface SearchParams {
   sortOrder?: string;
 }
 
-async function getOfficers(
-  state: string,
-  page: number,
-  searchParams: SearchParams
-): Promise<{ officers: PoliceOfficer[], lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
-  const officersRef = collection(db, 'db_launch');
-  const constraints: any[] = [
-    where('state', '==', state.toLowerCase())
-  ];
-
-  // Add search constraints
-  if (searchParams.query) {
-    constraints.push(where('full_name', '>=', searchParams.query));
-    constraints.push(where('full_name', '<=', searchParams.query + '\uf8ff'));
-  }
-
-  if (searchParams.agency) {
-    constraints.push(where('agency_name', '==', searchParams.agency));
-  }
-
-  if (searchParams.startDate) {
-    constraints.push(where('start_date', '>=', searchParams.startDate));
-  }
-
-  if (searchParams.endDate) {
-    constraints.push(where('end_date', '<=', searchParams.endDate));
-  }
-
-  // Add sorting
-  const sortField = searchParams.sortBy === 'date' ? 'start_date' :
-                   searchParams.sortBy === 'agency' ? 'agency_name' :
-                   'last_name';
-  
-  const sortDirection = searchParams.sortOrder === 'desc' ? 'desc' : 'asc';
-
-  let q = query(
-    officersRef,
-    ...constraints,
-    orderBy(sortField, sortDirection),
-    limit(OFFICERS_PER_PAGE)
-  );
-
-  // If it's not the first page, we need to use startAfter
-  if (page > 1) {
-    // Get the last document from the previous page
-    const prevPageQuery = query(
-      officersRef,
-      where('state', '==', state.toLowerCase()),
-      orderBy('last_name'),
-      limit((page - 1) * OFFICERS_PER_PAGE)
-    );
-    const prevPageDocs = await getDocs(prevPageQuery);
-    const lastVisible = prevPageDocs.docs[prevPageDocs.docs.length - 1];
-    q = query(
-      officersRef,
-      where('state', '==', state.toLowerCase()),
-      orderBy('last_name'),
-      startAfter(lastVisible),
-      limit(OFFICERS_PER_PAGE)
-    );
-  }
-
-  const querySnapshot = await getDocs(q);
-  
-  const officers: PoliceOfficer[] = querySnapshot.docs.map(doc => ({
-    agency_name: doc.data().agency_name || '',
-    current_certificate_status: doc.data().current_certificate_status || '',
-    document_id: doc.id,
-    end_date: doc.data().end_date || '',
-    first_name: doc.data().first_name || '',
-    full_name: doc.data().full_name || '',
-    last_name: doc.data().last_name || '',
-    middle_name: doc.data().middle_name || '',
-    person_nbr: doc.data().person_nbr || '',
-    rank: doc.data().rank || '',
-    start_date: doc.data().start_date || '',
-    state: doc.data().state || ''
-  }));
-
-  const lastDoc = querySnapshot.docs.length > 0 ? querySnapshot.docs[querySnapshot.docs.length - 1] : null;
-  return { officers, lastDoc };
-}
-
-export default async function StatePage({ params, searchParams }: StatePageProps & { searchParams: SearchParams }) {
+export default function StatePage({ params, searchParams }: StatePageProps & { searchParams: Promise<SearchParams> }) {
+  const { state } = use(params);
+  const resolvedSearchParams = use(searchParams);
   const stateData = US_STATES.find(
-    state => state.reference.toLowerCase() === params.state.toLowerCase()
+    s => s.reference.toLowerCase() === state.toLowerCase()
   );
 
-  if (!stateData || !stateData.hasData) {
+  if (!stateData?.hasData) {
     notFound();
   }
 
-  const currentPage = Number(searchParams.page) || 1;
-
-  // Get total count and current page data
-  const [totalCount, { officers }] = await Promise.all([
-    getOfficersCount(params.state),
-    getOfficers(params.state, currentPage, searchParams)
-  ]);
-
-  const totalPages = Math.ceil(totalCount / OFFICERS_PER_PAGE);
+  const { loading, error, officerGroups, totalOfficers } = useOfficersByUid({
+    state,
+    searchParams: resolvedSearchParams
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -166,22 +53,41 @@ export default async function StatePage({ params, searchParams }: StatePageProps
 
       <SearchFilters />
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {officers.map((officer) => (
-          <OfficerCard key={officer.document_id} officer={officer} />
-        ))}
-      </div>
-
       <div className="mt-8">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          baseUrl={`/states/${params.state.toLowerCase()}`}
-        />
-      </div>
-
-      <div className="mt-4 text-center text-sm text-gray-500">
-        Showing {Math.min(currentPage * OFFICERS_PER_PAGE, totalCount)} of {totalCount} officers
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+            <p className="mt-4 text-gray-600">Loading officers...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600">
+            Error loading officers: {error.message}
+          </div>
+        ) : officerGroups.length === 0 ? (
+          <div className="text-center py-12 text-gray-600">
+            No officers found matching your search criteria.
+          </div>
+        ) : (
+          <div className="space-y-8">
+            <p className="text-gray-600">Found {totalOfficers} officers</p>
+            {officerGroups.map((group) => (
+              <div key={group.person_nbr} className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="px-6 py-4 bg-gray-50 border-b">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {group.records[0].full_name}
+                  </h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  {group.records.map((record, index) => (
+                    <div key={`${record.document_id}-${index}`} className="border-b pb-6 last:border-b-0 last:pb-0">
+                      <OfficerCard officer={record} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

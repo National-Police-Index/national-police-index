@@ -15,7 +15,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string = 'none') => {
     const statusLower = status.toLowerCase();
     if (statusLower.includes('active')) return 'bg-green-100 text-green-800';
     if (statusLower.includes('lapsed')) return 'bg-yellow-100 text-yellow-800';

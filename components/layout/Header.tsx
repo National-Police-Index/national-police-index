@@ -1,11 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { US_STATES } from '@/constants/states';
 
 export default function Header() {
+  const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const stateColumns = useMemo(() => {
     const statesWithData = US_STATES.filter(state => state.hasData);
@@ -57,7 +62,7 @@ export default function Header() {
       </div>
 
       {/* States Dropdown */}
-      {isStatesOpen && (
+      {mounted && isStatesOpen && (
         <div className="w-full px-28 py-14 bg-white">
           <div className="w-[1224px] flex flex-col justify-start items-start gap-8">
             <div className="w-full flex flex-col justify-start items-start gap-2">
