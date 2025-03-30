@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collectionGroup, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PoliceOfficer } from '@/types';
+import Link from 'next/link';
 
 interface OfficerPageProps {
   params: {
@@ -92,7 +93,12 @@ export default function OfficerPage({ params }: OfficerPageProps) {
           {latestRecord.full_name}
         </h1>
         <p className="text-gray-600">
-          Latest Agency: {latestRecord.agency_name}
+          Latest Agency: <Link 
+            href={`/agencies/${latestRecord.agency_name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+            className="text-blue-600 hover:underline"
+          >
+            {latestRecord.agency_name}
+          </Link>
         </p>
       </div>
 
@@ -132,7 +138,14 @@ export default function OfficerPage({ params }: OfficerPageProps) {
             >
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-medium text-gray-900">{record.agency_name}</h3>
+                  <h3 className="font-medium text-gray-900">
+                    <Link 
+                      href={`/agencies/${record.agency_name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {record.agency_name}
+                    </Link>
+                  </h3>
                   <p className="text-sm text-gray-600 mt-1">{record.position || 'Position not specified'}</p>
                 </div>
                 <div className="text-sm text-gray-600">
