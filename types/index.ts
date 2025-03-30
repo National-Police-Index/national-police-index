@@ -11,6 +11,9 @@ export interface PoliceOfficer {
   rank: string;
   start_date: string;
   state: string;
+  position?: string;
+  status?: string;
+  notes?: string;
 }
 
 export interface SearchFilters {

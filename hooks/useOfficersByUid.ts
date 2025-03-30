@@ -35,7 +35,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
-    pageSize: searchParams.pageSize || 20,
+    pageSize: parseInt(searchParams.pageSize || '20', 10),
     page: parseInt(searchParams.page || '1', 10)
   }), [searchParams.query, searchParams.agency, searchParams.startDate, 
       searchParams.endDate, searchParams.sortBy, searchParams.sortOrder]);
@@ -87,27 +87,22 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         queryConstraints.push(orderBy(sortField, sortDirection));
         
         // Add pagination
-        const offset = (searchParameters.page - 1) * searchParameters.pageSize;
-        queryConstraints.push(limit(searchParameters.pageSize));
+        const pageSize = searchParameters.pageSize;
+        const offset = (searchParameters.page - 1) * pageSize;
         
-        // Skip documents for pagination
-        if (offset > 0) {
-          const skipQuery = query(officersRef, ...queryConstraints);
-          const skipSnapshot = await getDocs(skipQuery);
-          const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
-          if (lastDoc) {
-            queryConstraints.push(startAfter(lastDoc));
-          }
-        }
-
-        const q = query(officersRef, ...queryConstraints);
-
-        const snapshot = await getDocs(q);
+        // Get all documents up to the end of the current page
+        queryConstraints.push(limit((searchParameters.page) * pageSize));
+        
+        const snapshot = await getDocs(query(officersRef, ...queryConstraints));
+        const allDocs = snapshot.docs;
+        
+        // Get only the documents for the current page
+        const pageDocs = allDocs.slice(offset, offset + pageSize);
         
         // Group officers by person_nbr
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
         
-        snapshot.docs.forEach((doc) => {
+        pageDocs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
           const person_nbr = officer.person_nbr;
           

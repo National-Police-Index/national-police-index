@@ -3,6 +3,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { use } from 'react';
+import Link from 'next/link';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
 import OfficerCard from '@/components/officers/OfficerCard';
@@ -90,20 +91,39 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
         ) : (
           <div className="space-y-8">
             {officerGroups.map((group) => (
-              <div key={group.person_nbr} className="bg-white shadow rounded-lg overflow-hidden">
-                <div className="px-6 py-4 bg-gray-50 border-b">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {group.records[0].full_name}
-                  </h3>
-                </div>
-                <div className="p-6 space-y-6">
-                  {group.records.map((record, index) => (
-                    <div key={`${record.document_id}-${index}`} className="border-b pb-6 last:border-b-0 last:pb-0">
-                      <OfficerCard officer={record} />
+              <Link 
+                href={`/officers/${group.person_nbr}`} 
+                key={group.person_nbr} 
+                className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {group.records[0].full_name}
+                      </h3>
+                      <p className="mt-2 text-sm text-gray-600">
+                        Latest Agency: {group.records[0].agency_name}
+                      </p>
                     </div>
-                  ))}
+                    <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                      {group.records.length} record{group.records.length !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                  <div className="mt-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p>Latest Position: {group.records[0].position || 'N/A'}</p>
+                        <p className="mt-1">Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p>Status: {group.records[0].status || 'Active'}</p>
+                        <p className="mt-1">End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
             {totalPages > 1 && (
               <div className="mt-8">

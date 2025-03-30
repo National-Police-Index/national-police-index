@@ -1,55 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collectionGroup, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { PoliceOfficer } from '@/types';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
 
-interface OfficerPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function OfficerPage({ params }: OfficerPageProps) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [records, setRecords] = useState<PoliceOfficer[]>([]);
-
-  useEffect(() => {
-    async function fetchOfficerRecords() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Query all records for this officer using collection group
-        const officersRef = collectionGroup(db, 'db_launch');
-        const q = query(officersRef, where('person_nbr', '==', params.id));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-          throw new Error('Officer not found');
-        }
-
-        // Convert documents to PoliceOfficer objects and sort by date
-        const officerRecords = snapshot.docs
-          .map(doc => doc.data() as PoliceOfficer)
-          .sort((a, b) => {
-            const dateA = new Date(a.start_date).getTime();
-            const dateB = new Date(b.start_date).getTime();
-            return dateB - dateA; // Sort by most recent first
-          });
-
-        setRecords(officerRecords);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch officer'));
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchOfficerRecords();
-  }, [params.id]);
+export default function OfficerProfilePage() {
+  const { personNbr } = useParams();
+  const { loading, error, officerData } = useOfficerByPersonNbr(personNbr as string);
 
   if (loading) {
     return (
@@ -72,7 +29,7 @@ export default function OfficerPage({ params }: OfficerPageProps) {
     );
   }
 
-  if (records.length === 0) {
+  if (!officerData) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12 text-gray-600">
@@ -82,7 +39,7 @@ export default function OfficerPage({ params }: OfficerPageProps) {
     );
   }
 
-  const latestRecord = records[0];
+  const { latestRecord, records } = officerData;
 
   return (
     <div className="container mx-auto px-4 py-8">
