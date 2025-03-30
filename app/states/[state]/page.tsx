@@ -4,8 +4,10 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { use } from 'react';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
+import { useStateStats } from '@/hooks/useStateStats';
 import OfficerCard from '@/components/officers/OfficerCard';
 import SearchFilters from '@/components/search/SearchFilters';
+import Pagination from '@/components/common/Pagination';
 import { US_STATES } from '@/constants/states';
 
 interface StatePageProps {
@@ -22,6 +24,7 @@ interface SearchParams {
   endDate?: string;
   sortBy?: string;
   sortOrder?: string;
+  pageSize?: string;
 }
 
 export default function StatePage({ params, searchParams }: StatePageProps & { searchParams: Promise<SearchParams> }) {
@@ -35,10 +38,22 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
     notFound();
   }
 
-  const { loading, error, officerGroups, totalOfficers } = useOfficersByUid({
+  const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '20', 10);
+
+  const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
+  const { loading: officersLoading, error: officersError, officerGroups } = useOfficersByUid({
     state,
-    searchParams: resolvedSearchParams
+    searchParams: {
+      ...resolvedSearchParams,
+      pageSize,
+      pageToken: undefined // We're not using infinite scroll anymore
+    }
   });
+
+  const loading = statsLoading || officersLoading;
+  const error = statsError || officersError;
+  const totalPages = stats ? Math.ceil(stats.total_officers / pageSize) : 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,6 +64,11 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
         <p className="mt-3 text-lg text-gray-500">
           Search and explore police officer records in {stateData.name}
         </p>
+        {stats && (
+          <p className="mt-2 text-sm text-gray-500">
+            Total officers: {stats.total_officers.toLocaleString()}
+          </p>
+        )}
       </div>
 
       <SearchFilters />
@@ -69,7 +89,6 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
           </div>
         ) : (
           <div className="space-y-8">
-            <p className="text-gray-600">Found {totalOfficers} officers</p>
             {officerGroups.map((group) => (
               <div key={group.person_nbr} className="bg-white shadow rounded-lg overflow-hidden">
                 <div className="px-6 py-4 bg-gray-50 border-b">
@@ -86,6 +105,15 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
                 </div>
               </div>
             ))}
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  baseUrl={`/states/${state}`}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

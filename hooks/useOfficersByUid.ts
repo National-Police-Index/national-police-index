@@ -36,14 +36,13 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
     pageSize: searchParams.pageSize || 20,
-    pageToken: searchParams.pageToken
+    page: parseInt(searchParams.page || '1', 10)
   }), [searchParams.query, searchParams.agency, searchParams.startDate, 
       searchParams.endDate, searchParams.sortBy, searchParams.sortOrder]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+
 
   useEffect(() => {
     async function fetchOfficers() {
@@ -88,15 +87,16 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         queryConstraints.push(orderBy(sortField, sortDirection));
         
         // Add pagination
+        const offset = (searchParameters.page - 1) * searchParameters.pageSize;
         queryConstraints.push(limit(searchParameters.pageSize));
         
-        // If we have a page token, start after the last document
-        if (searchParameters.pageToken) {
-          try {
-            const lastDocData = JSON.parse(atob(searchParameters.pageToken));
-            queryConstraints.push(startAfter(lastDocData));
-          } catch (e) {
-            console.error('Invalid page token:', e);
+        // Skip documents for pagination
+        if (offset > 0) {
+          const skipQuery = query(officersRef, ...queryConstraints);
+          const skipSnapshot = await getDocs(skipQuery);
+          const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+          if (lastDoc) {
+            queryConstraints.push(startAfter(lastDoc));
           }
         }
 
@@ -129,16 +129,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         }));
         console.log('sorted groups', sortedGroups);
 
-        // Update state
-        setOfficerGroups(prevGroups => searchParameters.pageToken 
-          ? [...prevGroups, ...sortedGroups]
-          : sortedGroups
-        );
-        
-        // Update pagination state
-        const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-        setLastDoc(lastVisible);
-        setHasMore(snapshot.docs.length === searchParameters.pageSize);
+        setOfficerGroups(sortedGroups);
 
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch officers'));
@@ -150,22 +141,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     fetchOfficers();
   }, [state, searchParameters]);
 
-  const loadMore = useCallback(() => {
-    if (!hasMore || loading) return;
-    
-    // Create a base64 token from the last document
-    if (lastDoc) {
-      const token = btoa(JSON.stringify(lastDoc.data()));
-      // Call the hook again with the new page token
-      searchParams.pageToken = token;
-    }
-  }, [hasMore, loading, lastDoc, searchParams]);
-
   return {
     loading,
     error,
-    officerGroups,
-    hasMore,
-    loadMore
+    officerGroups
   };
 }
