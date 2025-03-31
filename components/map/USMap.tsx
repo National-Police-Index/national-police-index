@@ -3,11 +3,11 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { US_STATES } from '@/constants/states';
-import { US_STATES_MAP } from '@/constants/states-map';
+import { State, US_STATES_MAP } from '@/constants/states-map';
 import styles from './USMap.module.css';
 
 export interface StateMapEntry {
-  svg: React.ReactElement;
+  renderSvg: (state: State, onClick: (reference: string) => void) => React.ReactElement;
 }
 
 type StatesMap = {
@@ -38,8 +38,8 @@ export default function USMap() {
           <div className={styles.mapWrapper}>
         {US_STATES.map((state, index) => (
           <div key={index} className={styles.stateItem}>
-            {(US_STATES_MAP as unknown as StatesMap)[state.key].svg(state, (reference: string) => handleStateClick(reference))}
-            {(US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].svg(state, (reference: string) => handleStateClick(reference))}
+            {(US_STATES_MAP as unknown as StatesMap)[state.key].renderSvg(state, (reference: string) => handleStateClick(reference))}
+            {(US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
           </div>
         ))}
       </div>

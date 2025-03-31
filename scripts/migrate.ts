@@ -1,13 +1,16 @@
-const admin = require('firebase-admin');
-const { initialPosts } = require('./seedData');
-const { ServiceAccount } = require('firebase-admin');
+import * as admin from 'firebase-admin';
+import { initialPosts } from './seedData';
+import type { ServiceAccount } from 'firebase-admin';
 
 // You'll need to download this from Firebase Console -> Project Settings -> Service Accounts
-const serviceAccount = require('../firebase-service-account.json');
+import serviceAccount from '../firebase-service-account.json' assert { type: 'json' };
+
+// Cast the imported JSON to ServiceAccount type
+const typedServiceAccount = serviceAccount as ServiceAccount;
 
 // Initialize Firebase Admin
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(typedServiceAccount)
 });
 
 const db = admin.firestore();

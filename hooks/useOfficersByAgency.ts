@@ -23,7 +23,7 @@ interface UseOfficersByAgencyProps {
   };
 }
 
-export function useOfficersByAgency({ agencyName, searchParams = { pageSize: 20 } }: UseOfficersByAgencyProps) {
+export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20' } }: UseOfficersByAgencyProps) {
   console.log('Agency Name:', agencyName);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',

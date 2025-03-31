@@ -1,4 +1,4 @@
-const initialPosts = [
+export const initialPosts = [
   {
     id: 'post1',
     title: 'Police Reform Initiative in California',

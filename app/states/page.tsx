@@ -10,31 +10,6 @@ export const metadata = {
   description: 'Browse police officer records by state. Access employment histories, certification status, and more.',
 };
 
-async function _getStatesData() {
-  const officersRef = collection(db, 'db_launch');
-  const querySnapshot = await getDocs(officersRef);
-  
-  const stateStats = querySnapshot.docs.reduce((acc, doc) => {
-    const state = doc.data().state;
-    if (!state) return acc;
-    
-    if (!acc[state]) {
-      acc[state] = { count: 0 };
-    }
-    acc[state].count++;
-    return acc;
-  }, {} as Record<string, { count: number }>);
-
-  const statesData: StateData[] = Object.entries(stateStats).map(([state, data]) => ({
-    name: state.charAt(0).toUpperCase() + state.slice(1),
-    abbreviation: state.toUpperCase(),
-    hasData: data.count > 0,
-    totalOfficers: data.count
-  }));
-
-  return statesData.sort((a, b) => a.name.localeCompare(b.name));
-}
-
 function getStatesData() {
   const statesData: StateData[] = US_STATES.map(({name, hasData, abbreviation}) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
@@ -61,16 +36,16 @@ export default async function StatesPage() {
       </div>
 
       <div className="relative w-full aspect-[4/3] max-w-4xl mx-auto mb-12 bg-gray-50 rounded-lg overflow-hidden">
-        {Object.entries(US_STATES_MAP).map(([key, { svg }]) => {
+        {Object.entries(US_STATES_MAP).map(([key, { renderSvg }]) => {
           const state = statesData.find(s => s.abbreviation.toLowerCase() === key.toLowerCase());
           if (!state) return null;
-          return svg({
+          return renderSvg({
             name: state.name,
             reference: state.abbreviation.toLowerCase(),
             hasData: state.hasData,
             key: key,
             count: state.totalOfficers
-          }, (reference) => `/states/${reference}`);
+          }, (reference: string) => `/states/${reference}`);
         })}
       </div>
 

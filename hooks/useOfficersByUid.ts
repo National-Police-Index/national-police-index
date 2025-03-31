@@ -21,7 +21,8 @@ interface UseOfficersByUidProps {
     endDate?: string;
     sortBy?: string;
     sortOrder?: string;
-    pageSize?: number;
+    pageSize?: string | number;
+    page?: string | number;
     pageToken?: string; // Base64 encoded last document
   };
 }
@@ -35,8 +36,8 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
-    pageSize: parseInt(searchParams.pageSize || '20', 10),
-    page: parseInt(searchParams.page || '1', 10)
+    pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 20),
+    page: typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : (searchParams.page || 1)
   }), [searchParams.query, searchParams.agency, searchParams.startDate, 
       searchParams.endDate, searchParams.sortBy, searchParams.sortOrder]);
   const [loading, setLoading] = useState(true);
@@ -61,39 +62,39 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         const sortDirection = searchParameters.sortOrder === 'desc' ? 'desc' : 'asc';
 
         // Build query with mandatory state filter
-        let queryConstraints = [
-          where('state', '==', state.toLowerCase())
-        ];
+        let q = query(officersRef, where('state', '==', state.toLowerCase()));
 
         // Add optional filters if they exist
         if (searchParameters.query) {
-          queryConstraints.push(where('full_name_lower', '>=', searchParameters.query));
-          queryConstraints.push(where('full_name_lower', '<=', searchParameters.query + '\uf8ff'));
+          q = query(q,
+            where('full_name_lower', '>=', searchParameters.query),
+            where('full_name_lower', '<=', searchParameters.query + '\uf8ff')
+          );
         }
 
         if (searchParameters.agency) {
-          queryConstraints.push(where('agency_name_lower', '==', searchParameters.agency));
+          q = query(q, where('agency_name_lower', '==', searchParameters.agency));
         }
 
         if (searchParameters.startDate) {
-          queryConstraints.push(where('start_date', '>=', searchParameters.startDate));
+          q = query(q, where('start_date', '>=', searchParameters.startDate));
         }
 
         if (searchParameters.endDate) {
-          queryConstraints.push(where('end_date', '<=', searchParameters.endDate));
+          q = query(q, where('end_date', '<=', searchParameters.endDate));
         }
 
         // Add sorting
-        queryConstraints.push(orderBy(sortField, sortDirection));
+        q = query(q, orderBy(sortField, sortDirection));
         
         // Add pagination
         const pageSize = searchParameters.pageSize;
         const offset = (searchParameters.page - 1) * pageSize;
         
         // Get all documents up to the end of the current page
-        queryConstraints.push(limit((searchParameters.page) * pageSize));
+        q = query(q, limit((searchParameters.page) * pageSize));
         
-        const snapshot = await getDocs(query(officersRef, ...queryConstraints));
+        const snapshot = await getDocs(q);
         const allDocs = snapshot.docs;
         
         // Get only the documents for the current page

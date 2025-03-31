@@ -15,20 +15,19 @@ interface StatePageProps {
   params: Promise<{
     state: string;
   }>;
+  searchParams: Promise<{
+    page?: string;
+    query?: string;
+    agency?: string;
+    startDate?: string;
+    endDate?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    pageSize?: string;
+  }>;
 }
 
-interface SearchParams {
-  page?: string;
-  query?: string;
-  agency?: string;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sortOrder?: string;
-  pageSize?: string;
-}
-
-export default function StatePage({ params, searchParams }: StatePageProps & { searchParams: Promise<SearchParams> }) {
+export default function StatePage({ params, searchParams }: StatePageProps) {
   const { state } = use(params);
   const resolvedSearchParams = use(searchParams);
   const stateData = US_STATES.find(

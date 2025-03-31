@@ -8,7 +8,7 @@ count?: number;
 
 export const US_STATES_MAP = {
   'a0': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[4.21rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +19,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a0': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[4.95rem] top-[9.87rem] absolute">
             
             <svg width="44" height="22" viewBox="0 0 44 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -29,7 +29,7 @@ export const US_STATES_MAP = {
     )
   },
   'a2': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[8.42rem] top-[8.42rem] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +40,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a2': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[9.80rem] top-[9.87rem] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -51,7 +51,7 @@ export const US_STATES_MAP = {
     )
   },
   'a4': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[12.63rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +62,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a4': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[13.51rem] top-[9.87rem] absolute">
             
             <svg width="41" height="22" viewBox="0 0 41 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,7 +73,7 @@ export const US_STATES_MAP = {
     )
   },
   'a6': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[16.85rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +84,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a6': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[284.41px] top-[157.96px] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -95,7 +95,7 @@ export const US_STATES_MAP = {
     )
   },
   'a8': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[336.92px] top-[134.75px] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -106,7 +106,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a8': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[21.84rem] top-[9.87rem] absolute">
             
             <svg width="43" height="22" viewBox="0 0 43 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -117,7 +117,7 @@ export const US_STATES_MAP = {
     )
   },
   'a10': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[25.27rem] top-[8.42rem] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -128,7 +128,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a10': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[26.78rem] top-[9.87rem] absolute">
             
             <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -139,7 +139,7 @@ export const US_STATES_MAP = {
     )
   },
   'a12': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[29.48rem] top-[8.42rem] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +150,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a12': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[30.71rem] top-[9.87rem] absolute">
             
             <svg width="29" height="22" viewBox="0 0 29 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -161,7 +161,7 @@ export const US_STATES_MAP = {
     )
   },
   'a14': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[4.21rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -172,7 +172,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a14': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[5.17rem] top-[14.07rem] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -183,7 +183,7 @@ export const US_STATES_MAP = {
     )
   },
   'a16': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[134.77px] top-[202.12px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -194,7 +194,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a16': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[151.15px] top-[225.34px] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -205,7 +205,7 @@ export const US_STATES_MAP = {
     )
   },
   'a18': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[12.63rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -216,7 +216,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a18': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[13.31rem] top-[14.08rem] absolute">
             
             <svg width="45" height="22" viewBox="0 0 45 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -227,7 +227,7 @@ export const US_STATES_MAP = {
     )
   },
   'a20': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[16.85rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -238,7 +238,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a20': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[17.83rem] top-[14.07rem] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -249,7 +249,7 @@ export const US_STATES_MAP = {
     )
   },
   'a22': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[336.92px] top-[202.12px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -260,7 +260,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a22': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[359.62px] top-[225.34px] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -271,7 +271,7 @@ export const US_STATES_MAP = {
     )
   },
   'a24': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[25.27rem] top-[12.63rem] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -282,7 +282,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a24': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[26.61rem] top-[14.08rem] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -293,7 +293,7 @@ export const US_STATES_MAP = {
     )
   },
   'a26': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[29.48rem] top-[12.63rem] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -304,7 +304,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a26': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[30.34rem] top-[14.07rem] absolute">
             
             <svg width="40" height="22" viewBox="0 0 40 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -315,7 +315,7 @@ export const US_STATES_MAP = {
     )
   },
   'a28': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[539.07px] top-[202.12px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -326,7 +326,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a28': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[557.55px] top-[225.34px] absolute">
             
             <svg width="33" height="22" viewBox="0 0 33 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -337,7 +337,7 @@ export const US_STATES_MAP = {
     )
   },
   'a30': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[606.45px] top-[202.12px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -348,7 +348,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a30': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[624.04px] top-[225.34px] absolute">
             
             <svg width="33" height="22" viewBox="0 0 33 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -359,7 +359,7 @@ export const US_STATES_MAP = {
     )
   },
   'a32': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[673.83px] top-[202.12px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -370,7 +370,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a32': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[689.39px] top-[225.05px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -381,7 +381,7 @@ export const US_STATES_MAP = {
     )
   },
   'a34': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[67.38px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -392,7 +392,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a34': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[82.64px] top-[292.43px] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -403,7 +403,7 @@ export const US_STATES_MAP = {
     )
   },
   'a36': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[134.77px] top-[269.50px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -414,7 +414,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a36': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[150.25px] top-[292.71px] absolute">
             
             <svg width="38" height="22" viewBox="0 0 38 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -425,7 +425,7 @@ export const US_STATES_MAP = {
     )
   },
   'a38': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[202.15px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -436,7 +436,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a38': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[215.91px] top-[292.43px] absolute">
             
             <svg width="41" height="22" viewBox="0 0 41 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -447,7 +447,7 @@ export const US_STATES_MAP = {
     )
   },
   'a40': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[269.53px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -458,7 +458,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a40': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[286.22px] top-[292.71px] absolute">
             
             <svg width="35" height="22" viewBox="0 0 35 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -469,7 +469,7 @@ export const US_STATES_MAP = {
     )
   },
   'a42': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[336.92px] top-[269.50px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -480,7 +480,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a42': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[349.39px] top-[292.43px] absolute">
             
             <svg width="44" height="22" viewBox="0 0 44 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -491,7 +491,7 @@ export const US_STATES_MAP = {
     )
   },
   'a44': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[404.30px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -502,7 +502,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a44': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[421.58px] top-[292.71px] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -513,7 +513,7 @@ export const US_STATES_MAP = {
     )
   },
   'a46': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[471.68px] top-[269.50px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -524,7 +524,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a46': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[482.53px] top-[292.71px] absolute">
             
             <svg width="46" height="22" viewBox="0 0 46 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -535,7 +535,7 @@ export const US_STATES_MAP = {
     )
   },
   'a48': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[539.07px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -546,7 +546,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a48': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[554.85px] top-[292.71px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -557,7 +557,7 @@ export const US_STATES_MAP = {
     )
   },
   'a50': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[606.45px] top-[269.50px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -568,7 +568,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a50': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[619.52px] top-[292.71px] absolute">
             
             <svg width="43" height="22" viewBox="0 0 43 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -579,7 +579,7 @@ export const US_STATES_MAP = {
     )
   },
   'a52': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[673.83px] top-[269.50px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -590,7 +590,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a52': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[691.12px] top-[292.71px] absolute">
             
             <svg width="34" height="22" viewBox="0 0 34 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -601,7 +601,7 @@ export const US_STATES_MAP = {
     )
   },
   'a54': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[134.77px] top-[336.88px] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -612,7 +612,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a54': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[150.55px] top-[360.09px] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -623,7 +623,7 @@ export const US_STATES_MAP = {
     )
   },
   'a56': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[202.15px] top-[336.88px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -634,7 +634,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a56': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[214.62px] top-[360.09px] absolute">
             
             <svg width="43" height="22" viewBox="0 0 43 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -645,7 +645,7 @@ export const US_STATES_MAP = {
     )
   },
   'a58': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[269.53px] top-[336.88px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -656,7 +656,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a58': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[287.12px] top-[359.80px] absolute">
             
             <svg width="33" height="23" viewBox="0 0 33 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -667,7 +667,7 @@ export const US_STATES_MAP = {
     )
   },
   'a60': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[336.92px] top-[336.88px] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -678,7 +678,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a60': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[352.40px] top-[360.09px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -689,7 +689,7 @@ export const US_STATES_MAP = {
     )
   },
   'a62': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[404.30px] top-[336.88px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -700,7 +700,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a62': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[419.23px] top-[360.09px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -711,7 +711,7 @@ export const US_STATES_MAP = {
     )
   },
   'a64': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[471.68px] top-[336.88px] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -722,7 +722,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a64': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[486.56px] top-[359.80px] absolute">
             
             <svg width="39" height="23" viewBox="0 0 39 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -733,7 +733,7 @@ export const US_STATES_MAP = {
     )
   },
   'a66': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[539.07px] top-[336.88px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -744,7 +744,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a66': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[554.55px] top-[359.80px] absolute">
             
             <svg width="37" height="23" viewBox="0 0 37 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -755,7 +755,7 @@ export const US_STATES_MAP = {
     )
   },
   'a68': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[606.45px] top-[336.88px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -766,7 +766,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a68': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[621.93px] top-[359.80px] absolute">
             
             <svg width="39" height="23" viewBox="0 0 39 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -777,7 +777,7 @@ export const US_STATES_MAP = {
     )
   },
   'a70': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[268.93px] top-[404.25px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -788,7 +788,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a70': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[283.89px] top-[427.18px] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -799,7 +799,7 @@ export const US_STATES_MAP = {
     )
   },
   'a72': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[336.32px] top-[404.25px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -810,7 +810,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a72': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[353.90px] top-[427.46px] absolute">
             
             <svg width="35" height="22" viewBox="0 0 35 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -821,7 +821,7 @@ export const US_STATES_MAP = {
     )
   },
   'a74': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[403.70px] top-[404.25px] absolute">
             
             <svg width="69" height="68" viewBox="0 0 69 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -832,7 +832,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a74': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[417.97px] top-[427.18px] absolute">
             
             <svg width="41" height="22" viewBox="0 0 41 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -843,7 +843,7 @@ export const US_STATES_MAP = {
     )
   },
   'a76': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[471.08px] top-[404.25px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -854,7 +854,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a76': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[487.76px] top-[427.46px] absolute">
             
             <svg width="35" height="22" viewBox="0 0 35 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -865,7 +865,7 @@ export const US_STATES_MAP = {
     )
   },
   'a78': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[538.47px] top-[404.25px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -876,7 +876,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a78': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[553.73px] top-[427.18px] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -887,7 +887,7 @@ export const US_STATES_MAP = {
     )
   },
   'a80': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[605.85px] top-[134.75px] absolute">
             
             <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -898,7 +898,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a80': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[621.63px] top-[157.96px] absolute">
             
             <svg width="38" height="22" viewBox="0 0 38 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -909,7 +909,7 @@ export const US_STATES_MAP = {
     )
   },
   'a82': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[673.23px] top-[134.75px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -920,7 +920,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a82': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[686.91px] top-[157.96px] absolute">
             
             <svg width="43" height="22" viewBox="0 0 43 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -931,7 +931,7 @@ export const US_STATES_MAP = {
     )
   },
   'a84': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[740.62px] top-[134.75px] absolute">
             
             <svg width="68" height="69" viewBox="0 0 68 69" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -942,7 +942,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a84': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[763.92px] top-[157.96px] absolute">
             
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -953,7 +953,7 @@ export const US_STATES_MAP = {
     )
   },
   'a86': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[673.23px] top-[67.38px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -964,7 +964,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a86': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[688.71px] top-[90.59px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -975,7 +975,7 @@ export const US_STATES_MAP = {
     )
   },
   'a88': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[740.62px] top-[67.38px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -986,7 +986,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a88': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[755.19px] top-[90.59px] absolute">
             
             <svg width="38" height="22" viewBox="0 0 38 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -997,7 +997,7 @@ export const US_STATES_MAP = {
     )
   },
   'a90': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[740.62px] top-0 absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1008,7 +1008,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a90': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[755.49px] top-[23.21px] absolute">
             
             <svg width="39" height="22" viewBox="0 0 39 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1019,7 +1019,7 @@ export const US_STATES_MAP = {
     )
   },
   'a92': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[404.30px] top-[67.38px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1030,7 +1030,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a92': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[421.16px] top-[90.59px] absolute">
             
             <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1041,7 +1041,7 @@ export const US_STATES_MAP = {
     )
   },
   'a94': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-0 top-[67.38px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1052,7 +1052,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a94': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[15.18px] top-[90.59px] absolute">
             
             <svg width="37" height="22" viewBox="0 0 37 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1063,7 +1063,7 @@ export const US_STATES_MAP = {
     )
   },
   'a96': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-0 top-[404.25px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1074,7 +1074,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a96': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[21.80px] top-[427.46px] absolute">
             
             <svg width="25" height="22" viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1085,7 +1085,7 @@ export const US_STATES_MAP = {
     )
   },
   'a98': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[269.53px] top-[471.62px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1096,7 +1096,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a98': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[285.97px] top-[494.84px] absolute">
             
             <svg width="36" height="22" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1107,7 +1107,7 @@ export const US_STATES_MAP = {
     )
   },
   'a100': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[606.45px] top-[471.62px] absolute">
             
             <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1118,7 +1118,7 @@ export const US_STATES_MAP = {
     )
   },
   '_a100': {
-    svg: (state: State, onClick: (reference: string) => void) => (
+    renderSvg: (state: State, onClick: (reference: string) => void) => (
         <div className="left-[626.14px] top-[494.84px] absolute">
             
             <svg width="30" height="22" viewBox="0 0 30 22" fill="none" xmlns="http://www.w3.org/2000/svg">

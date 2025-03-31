@@ -14,7 +14,7 @@ export function useOfficerByPersonNbr(personNbr: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerData, setOfficerData] = useState<OfficerData | null>(null);
-
+console.log('personNbr', personNbr);
   useEffect(() => {
     async function fetchOfficer() {
       try {
