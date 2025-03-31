@@ -3,6 +3,7 @@ import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { StateData } from '@/types';
 import { US_STATES } from '@/constants/states';
+import { US_STATES_MAP } from '@/constants/states-map';
 
 export const metadata = {
   title: 'State Data | National Police Index',
@@ -57,6 +58,20 @@ export default async function StatesPage() {
         <p className="mt-3 text-lg text-gray-500">
           Select a state to view police officer records and employment histories
         </p>
+      </div>
+
+      <div className="relative w-full aspect-[4/3] max-w-4xl mx-auto mb-12 bg-gray-50 rounded-lg overflow-hidden">
+        {Object.entries(US_STATES_MAP).map(([key, { svg }]) => {
+          const state = statesData.find(s => s.abbreviation.toLowerCase() === key.toLowerCase());
+          if (!state) return null;
+          return svg({
+            name: state.name,
+            reference: state.abbreviation.toLowerCase(),
+            hasData: state.hasData,
+            key: key,
+            count: state.totalOfficers
+          }, (reference) => `/states/${reference}`);
+        })}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

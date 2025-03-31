@@ -89,7 +89,8 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
             No officers found matching your search criteria.
           </div>
         ) : (
-          <div className="space-y-8">
+          <>
+      <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {officerGroups.map((group) => (
               <Link 
                 href={`/officers/${group.person_nbr}`} 
@@ -125,6 +126,8 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
                 </div>
               </Link>
             ))}
+          </div>
+          <div className="mt-8">
             {totalPages > 1 && (
               <div className="mt-8">
                 <Pagination
@@ -135,6 +138,7 @@ export default function StatePage({ params, searchParams }: StatePageProps & { s
               </div>
             )}
           </div>
+          </>
         )}
       </div>
     </div>

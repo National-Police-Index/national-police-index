@@ -27,41 +27,48 @@ export default function AboutPage() {
         <h1 className="text-4xl font-bold font-inter leading-[48px] tracking-tight mb-10">About us</h1>
       </section>
 
-      <div className="px-28 bg-white inline-flex justify-start items-end gap-6 overflow-hidden">
-  <div className="justify-start text-black text-lg font-normal font-['Inter'] leading-relaxed">The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.<br/>The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.<br/>Access to this data helps show potential "wandering officers," and is intended for use by residents, journalists, researchers, attorneys, and other stakeholders. Information about the age, source, and other specifics for each state is available on each page.<br/>Each state's database is closed to the others; names are common, and an officer's name appearing in two states does not necessarily mean they are the same person. Specific records should be sought from state training boards and individual police departments to confirm the identity of an individual whose name appears in multiple states.<br/>In total, 27 states have released centralized employment history data, 23 of which are currently represented on the data tool.</div>
-  <img className="Rectangle3 w-[600px] h-[600px]" src="https://placehold.co/600x600" />
-</div>
-
       {/* Main Content */}
-      <section className="w-full px-28 py-14 flex justify-start items-end gap-6 flex-row">
-        <div className="">
-          <p className="text-lg font-normal font-inter leading-relaxed space-y-4">
-            The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.
-            <br/><br/>
-            The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.
-          </p>
-        </div>
+      <section className="relative w-full max-w-[1224px] mx-auto px-4 sm:px-6 lg:px-28 pt-4 pb-14">
         <div className="relative">
-          <Image 
-            src="/about.png" 
-            alt="About illustration" 
-            fill 
-            className="object-cover"
-          />
+          {/* Image - Floating right on desktop, full width on mobile */}
+          <div className="float-none w-full mb-6 sm:float-right sm:w-[300px] md:w-[400px] lg:w-[500px] sm:ml-8 sm:mb-4">
+            <img 
+              className="w-full h-auto aspect-square object-cover" 
+              src="https://placehold.co/600x600" 
+              alt="About illustration"
+            />
+          </div>
+          
+          {/* Text content that wraps around the image */}
+          <div className="text-lg font-normal font-inter leading-relaxed space-y-6">
+            <p>
+              The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S. All but one state has such a system.
+            </p>
+            
+            <p>
+              The National Police Index is a public data project led by reporter Sam Stecklow of Invisible Institute, a nonprofit public accountability journalism organization based in Chicago, created in partnership with Ayyub Ibrahim of the Berkeley Institute for Data Science, and Tarak Shah of the Human Rights Data Analysis Group.
+            </p>
+            
+            <p>
+              The data tool was created by Ayyub Ibrahim with contributions from Tarak Shah, Olive Lavine and Maheen Khan.
+            </p>
+            
+            <p>
+              The data files were collected over the course of over two years by a coalition of news and legal organizations. In addition to Invisible Institute, these included reporters, students, attorneys, and others with Big Local News at Stanford, CBS News, Hearst Newspapers, California Reporting Project, Howard Center for Investigative Journalism at the University of Maryland, ABC Owned & Operated Stations, American Public Media Research Lab, WPLN, Utah Investigative Journalism Project/Utah Freedom of Information Hotline, University of North Carolina at Chapel Hill, Oregon Public Broadcasting, Washington City Paper/George Washington University Public Justice Advocacy Clinic, Tony Webster, WyoFile, Dragline/ACLU of West Virginia, and Mirror Indy.
+            </p>
+            
+            <p>
+              Efforts are being and were made to obtain data in states that have made it inaccessible by Invisible Institute and Colorado Springs Gazette/Reporters Committee for Freedom of the Press, Detroit Metro Times/University of Michigan Civil Rights Litigation Initiative, Delaware Call/ACLU of Delaware, Hearst Newspapers, MuckRock/University of Virginia First Amendment Clinic, The Badger Project/Wisconsin Transparency Project/University of Illinois First Amendment Clinic, Louisiana Law Enforcement Accountability Database/Innocence Project New Orleans, AL.com, Arkansas Advocate, The Frontier, SpotlightPA/Pennsylvania NewsMedia Association, and Sioux Falls Argus Leader.
+            </p>
+            
+            <p>
+              Access the underlying data files for the National Police Index at this <Link href="#" className="underline">link</Link>.
+            </p>
+          </div>
+          
+          {/* Clear float */}
+          <div className="clear-both"></div>
         </div>
-      </section>
-
-      {/* Additional Information */}
-      <section className="w-full px-28 pt-4 pb-14 text-lg font-normal font-inter leading-relaxed">
-        <p className="w-full max-w-[1224px] mx-auto space-y-4">
-          The data tool was created by Ayyub Ibrahim with contributions from Tarak Shah, Olive Lavine and Maheen Khan.
-          <br/><br/>
-          The data files were collected over the course of over two years by a coalition of news and legal organizations. In addition to Invisible Institute, these included reporters, students, attorneys, and others with Big Local News at Stanford, CBS News, Hearst Newspapers, California Reporting Project, Howard Center for Investigative Journalism at the University of Maryland, ABC Owned & Operated Stations, American Public Media Research Lab, WPLN, Utah Investigative Journalism Project/Utah Freedom of Information Hotline, University of North Carolina at Chapel Hill, Oregon Public Broadcasting, Washington City Paper/George Washington University Public Justice Advocacy Clinic, Tony Webster, WyoFile, Dragline/ACLU of West Virginia, and Mirror Indy.
-          <br/><br/>
-          Efforts are being and were made to obtain data in states that have made it inaccessible by Invisible Institute and Colorado Springs Gazette/Reporters Committee for Freedom of the Press, Detroit Metro Times/University of Michigan Civil Rights Litigation Initiative, Delaware Call/ACLU of Delaware, Hearst Newspapers, MuckRock/University of Virginia First Amendment Clinic, The Badger Project/Wisconsin Transparency Project/University of Illinois First Amendment Clinic, Louisiana Law Enforcement Accountability Database/Innocence Project New Orleans, AL.com, Arkansas Advocate, The Frontier, SpotlightPA/Pennsylvania NewsMedia Association, and Sioux Falls Argus Leader.
-          <br/><br/>
-          Access the underlying data files for the National Police Index at this <Link href="#" className="underline">link</Link>.
-        </p>
       </section>
 
       {/* Team Section */}
@@ -93,6 +100,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-   </div>
+    </div>
   );
 }

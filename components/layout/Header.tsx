@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { US_STATES } from '@/constants/states';
 
+
 export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setIsStatesOpen(false);
   }, []);
 
   const stateColumns = useMemo(() => {
@@ -79,6 +81,7 @@ export default function Header() {
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
                         className="text-black text-base font-normal font-inter leading-normal hover:underline"
+                        onClick={() => setIsStatesOpen(false)}
                       >
                         {state.name}
                       </Link>

@@ -27,14 +27,15 @@ export default function Home() {
      </div>
 
 
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-start items-start gap-8 overflow-hidden">
-
-        <div className="justify-start text-black text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Recent Reporting</div>
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-start items-left gap-8 overflow-hidden mt-12 mb-12">
+        <div className="justify-start text-left text-black text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Recent Reporting</div>
+      </div>
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center gap-8 overflow-hidden">
         <div className="flex flex-col gap-6">
           {loading && <div className="text-center">Loading posts...</div>}
           {error && <div className="text-center text-red-600">Error loading posts: {error.message}</div>}
           {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center mx-auto">
               {posts.map((post) => (
                 <PostCard
                   key={post.id}
