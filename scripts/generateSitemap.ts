@@ -1,18 +1,25 @@
 import * as admin from 'firebase-admin';
-import * as fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { US_STATES } from '../constants/states';
+import { loadServiceAccount } from '../utils/loadServiceAccount';
 
-// Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
-  const serviceAccount = require('../firebase-service-account.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-}
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const db = admin.firestore();
 const baseUrl = 'https://nationalpoliceindex.org'; // Replace with your actual domain
+
+async function initializeFirebase() {
+  if (!admin.apps.length) {
+    const serviceAccount = await loadServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+  return admin.firestore();
+}
 
 interface SitemapUrl {
   loc: string;
@@ -22,11 +29,13 @@ interface SitemapUrl {
 }
 
 async function generateSitemap() {
+  const db = await initializeFirebase();
   try {
-    // Get all officer IDs
-    const officersSnapshot = await db.collection('officers').get();
+    // Get all officers using collectionGroup
+    const officersSnapshot = await db.collectionGroup('db_launch').get();
     const officers = officersSnapshot.docs.map(doc => ({
       id: doc.id,
+      personNbr: doc.data().person_nbr,
       lastModified: doc.updateTime.toDate()
     }));
 
@@ -50,7 +59,7 @@ async function generateSitemap() {
         })),
       // Officer pages
       ...officers.map(officer => ({
-        loc: `${baseUrl}/officers/${officer.id}`,
+        loc: `${baseUrl}/officers/${officer.personNbr}`,
         lastmod: officer.lastModified.toISOString(),
         changefreq: 'monthly',
         priority: '0.6'
@@ -79,7 +88,7 @@ ${urls.map(url => `  <url>
 }
 
 // Execute if running directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   generateSitemap()
     .then(() => process.exit(0))
     .catch(error => {

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "ts-node scripts/migrate.ts",
-    "generate-stats": "node scripts/build-stats.js"
+    "generate-stats": "node scripts/build-stats.js",
+    "generate-sitemap": "tsx scripts/generateSitemap.ts",
+    "seed-officers": "tsx scripts/seedOfficers.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -31,6 +33,7 @@
     "firebase-tools": "^13.35.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
 }

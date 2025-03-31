@@ -127,7 +127,7 @@ export default function SearchFilters() {
         </div>
 
         {/* Sort order */}
-        <div>
+        {false && (<div>
           <label htmlFor="sort-order" className="block text-sm font-medium text-gray-700">
             Sort Order
           </label>
@@ -141,7 +141,7 @@ export default function SearchFilters() {
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
-        </div>
+        </div>)}
       </div>
 
       <div className="flex justify-end space-x-4">
