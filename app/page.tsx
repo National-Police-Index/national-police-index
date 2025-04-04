@@ -35,7 +35,7 @@ export default function Home() {
         <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">National Police Index data map</div>
       </div>
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-6 mt-12 ">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 text-center mb-6 mt-12 ">
         <USMap />
       </div>
 

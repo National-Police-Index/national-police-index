@@ -20,7 +20,7 @@ export default function Footer() {
       <div className="w-full px-6 mx-auto py-12 sm:py-16 lg:px-8 flex-col justify-center gap-6">
 
         <div className="flex w-full lg:flex-row sm:flex-col justify-between items-start">
-          <div className="justify-start text-emerald-950 text-2xl font-bold font-['Inter'] leading-loose">National Police Index</div>
+          <div className="justify-start text-emerald-950 lg:text-2xl text-base font-bold font-['Inter'] leading-loose">National Police Index</div>
           <div className="flex justify-start items-center gap-6 pb-6">
             {navigation.main.map((item) => (
               <div key={item.name} >
