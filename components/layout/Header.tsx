@@ -1,43 +1,91 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { US_STATES } from '@/constants/states';
+
+const navigation = [
+  { name: 'State Data', href: '#', hasDropdown: true },
+  { name: 'About', href: '/about', hasDropdown: false },
+];
 
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
     setIsStatesOpen(false);
+    setIsMobileMenuOpen(false);
+
+    // Close mobile menu on resize to desktop
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Close menu on escape key
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Close menu when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        buttonRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const stateColumns = useMemo(() => {
     const statesWithData = US_STATES.filter(state => state.hasData);
     const columns = [];
     const itemsPerColumn = Math.ceil(statesWithData.length / 6);
-    
+
     for (let i = 0; i < statesWithData.length; i += itemsPerColumn) {
       columns.push(statesWithData.slice(i, i + itemsPerColumn));
     }
-    
+
     return columns;
   }, []);
 
   return (
-    <header className="bg-white">
-        <div className="w-full px-6 py-6 flex justify-between items-center">
-          <Link href="/" className="text-black text-3xl font-medium font-inter leading-10 tracking-tight">
-            National Police Index
-          </Link>
-        <div className="flex justify-end items-center gap-8">
+    <header>
+      <div className="w-full px-6 py-6 border-b border-emerald-950 flex justify-between items-center">
+
+        <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
+          National Police Index
+        </Link>
+
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex justify-end items-center gap-8">
           <button
             onClick={() => setIsStatesOpen(!isStatesOpen)}
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
-            <span className="text-black text-lg font-normal font-inter leading-relaxed">
+            <span className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed">
               State Data
             </span>
             <svg
@@ -50,52 +98,142 @@ export default function Header() {
             >
               <path
                 d="M1 5.74037L5.11616 1.62421C5.60227 1.1381 6.39773 1.1381 6.88384 1.62421L11 5.74037"
-                stroke="black"
+                stroke="currentColor"
                 strokeMiterlimit="10"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </button>
-          <Link href="/about" className="text-black text-lg font-normal font-inter leading-relaxed">
+          <Link href="/about" className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed hover:text-emerald-800">
             About
           </Link>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          ref={buttonRef}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-2 text-emerald-950"
+          aria-label="Toggle mobile menu"
+        >
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+          >
+            {isMobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            )}
+          </svg>
+        </button>
       </div>
 
-      {/* States Dropdown */}
+      {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className="w-full px-28 py-14 bg-white">
-          <div className="w-[1224px] flex flex-col justify-start items-start gap-8">
-            <div className="w-full flex flex-col justify-start items-start gap-2">
-              <div className="w-full text-black text-lg font-normal font-inter leading-relaxed">
+        <div className="hidden md:block absolute left-0 right-0 w-full bg-white shadow-lg z-50">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="w-full flex flex-col justify-start items-start gap-2 mb-6">
+              <div className="w-full text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed">
                 State
               </div>
-              <div className="w-full h-[1px] bg-black" />
+              <div className="w-full h-[1px] bg-emerald-950" />
             </div>
-            <div className="w-full inline-flex justify-between items-start">
+            <div className="w-full grid grid-cols-6 gap-8">
               {stateColumns.map((column, columnIndex) => (
-                  <div key={columnIndex} className="inline-flex flex-col justify-start items-start gap-4">
-                    {column.map((state) => (
+                <div key={columnIndex} className="flex flex-col gap-4">
+                  {column.map((state) => (
+                    <Link
+                      key={state.reference}
+                      href={`/states/${state.reference.toLowerCase()}`}
+                      className="text-emerald-950 text-base font-normal font-['Inter'] leading-normal hover:text-emerald-800 hover:underline"
+                      onClick={() => setIsStatesOpen(false)}
+                    >
+                      {state.name}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="mt-8">
+              <Link
+                href="#"
+                className="text-emerald-950 text-base font-bold font-['Inter'] leading-snug hover:text-emerald-800 hover:underline"
+              >
+                Why isn't my state's data here?
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Menu */}
+      {mounted && isMobileMenuOpen && (
+        <div ref={menuRef} className="md:hidden fixed inset-0 z-50 bg-white">
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto py-6 px-6">
+              <nav className="flex flex-col gap-6">
+                <button
+                  onClick={() => setIsStatesOpen(!isStatesOpen)}
+                  className="flex items-center justify-between text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed"
+                >
+                  <span>State Data</span>
+                  <svg
+                    width="12"
+                    height="7"
+                    viewBox="0 0 12 7"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`transform transition-transform ${!isStatesOpen ? 'rotate-180' : ''}`}
+                  >
+                    <path
+                      d="M1 5.74037L5.11616 1.62421C5.60227 1.1381 6.39773 1.1381 6.88384 1.62421L11 5.74037"
+                      stroke="currentColor"
+                      strokeMiterlimit="10"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                {isStatesOpen && (
+                  <div className="pl-4 flex flex-col gap-4">
+                    {US_STATES.filter(state => state.hasData).map((state) => (
                       <Link
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
-                        className="text-black text-base font-normal font-inter leading-normal hover:underline"
-                        onClick={() => setIsStatesOpen(false)}
+                        className="text-emerald-950 text-base font-normal font-['Inter'] leading-normal hover:text-emerald-800"
+                        onClick={() => {
+                          setIsStatesOpen(false);
+                          setIsMobileMenuOpen(false);
+                        }}
                       >
                         {state.name}
                       </Link>
                     ))}
+                    <Link
+                      href="#"
+                      className="text-emerald-950 text-base font-bold font-['Inter'] leading-snug hover:text-emerald-800"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Why isn't my state's data here?
+                    </Link>
                   </div>
-                ))
-              }
+                )}
+
+                <Link
+                  href="/about"
+                  className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed hover:text-emerald-800"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
+              </nav>
             </div>
-            <Link
-              href="#"
-              className="text-black text-base font-bold font-inter leading-snug hover:underline"
-            >
-              Why isn't my state's data here?
-            </Link>
           </div>
         </div>
       )}

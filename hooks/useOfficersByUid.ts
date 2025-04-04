@@ -44,6 +44,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
 
+  console.log('search parameters', searchParameters);
 
   useEffect(() => {
     async function fetchOfficers() {
@@ -67,8 +68,8 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         // Add optional filters if they exist
         if (searchParameters.query) {
           q = query(q,
-            where('full_name_lower', '>=', searchParameters.query),
-            where('full_name_lower', '<=', searchParameters.query + '\uf8ff')
+            where('full_name', '>=', searchParameters.query.toUpperCase()),
+            where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
           );
         }
 
@@ -93,6 +94,8 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
         
         // Get all documents up to the end of the current page
         q = query(q, limit((searchParameters.page) * pageSize));
+        
+        console.log('query', q);
         
         const snapshot = await getDocs(q);
         const allDocs = snapshot.docs;

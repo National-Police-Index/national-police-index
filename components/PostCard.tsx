@@ -7,18 +7,19 @@ interface PostCardProps {
 
 export default function PostCard({ title, image, description, date }: PostCardProps) {
   return (
-    <div className="flex flex-col gap-6 w-[392px]">
-      <img 
-        className="w-full h-[392px] object-cover"
-        src={image}
-        alt={title || "Post image"}
-      />
-      <p className="text-lg leading-[27px] text-black font-normal">
-        {description}
-      </p>
-      <p className="text-base leading-6 text-black font-normal">
-        {date}
-      </p>
+
+    <div className="flex flex-col justify-center items-center gap-6">
+      <img className="w-5/6 rounded-3xl" src={image} />
+      <div className="w-5/6 flex flex-col justify-start items-start gap-2">
+        <div className="justify-start text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed">
+          {description}
+        </div>
+        <div className="justify-start text-slate-500 text-base font-normal font-['Inter'] leading-normal">
+
+          {date}
+        </div>
+      </div>
     </div>
+
   );
 }
