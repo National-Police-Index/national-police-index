@@ -6,10 +6,12 @@ import { use } from 'react';
 import Link from 'next/link';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
-import OfficerCard from '@/components/officers/OfficerCard';
 import SearchFilters from '@/components/search/SearchFilters';
-import Pagination from '@/components/common/Pagination';
 import { US_STATES } from '@/constants/states';
+import PageHeader from '@/components/PageHeader';
+import Pagination from '@/components/common/Pagination';
+import OfficerCard from '@/components/officers/OfficerCard';
+import { group } from 'node:console';
 
 interface StatePageProps {
   params: Promise<{
@@ -56,20 +58,17 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
   const totalPages = stats ? Math.ceil(stats.total_officers / pageSize) : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-left mb-12">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          {stateData.name}
-        </h1>
-        <p className="mt-3 text-lg text-gray-500">
-          Search and explore police officer records in {stateData.name}
-        </p>
-        {stats && (
-          <p className="mt-2 text-sm text-gray-500">
-            Total officers: {stats.total_officers.toLocaleString()}
-          </p>
-        )}
-      </div>
+    <div className="w-full mx-auto">
+      <PageHeader
+        title={stateData.name}
+        description={`Searching  and explore police officer records in ${stateData.name}`}
+        statistics={[
+          {
+            value: stats?.total_officers || 0,
+            label: "Total officers"
+          }
+        ]}
+      />
 
       <SearchFilters />
 
@@ -89,57 +88,58 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
           </div>
         ) : (
           <>
-      <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {officerGroups.map((group) => (
-              <Link 
-                href={`/officers/${group.person_nbr}`} 
-                key={group.person_nbr} 
-                className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {group.records[0].full_name}
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-600">
-                        Latest Agency: {group.records[0].agency_name}
-                      </p>
-                    </div>
-                    <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                      {group.records.length} record{group.records.length !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                  <div className="mt-4 text-sm text-gray-600">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p>Latest Position: {group.records[0].position || 'N/A'}</p>
-                        <p className="mt-1">Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <p>Status: {group.records[0].status || 'Active'}</p>
-                        <p className="mt-1">End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto">
+              {officerGroups.map((group) => (
+                <OfficerCard key={group.person_nbr} officer={group.records[0]} />
+              ))}
+            </div>
+            <div className="mt-8">
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    baseUrl={`/states/${state}`}
+                  />
                 </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-8">
-            {totalPages > 1 && (
-              <div className="mt-8">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  baseUrl={`/states/${state}`}
-                />
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </>
         )}
       </div>
     </div>
   );
 }
+/*<Link
+                  href={`/officers/${group.person_nbr}`}
+                  key={group.person_nbr}
+                  className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {group.records[0].full_name}
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-600">
+                          Latest Agency: {group.records[0].agency_name}
+                        </p>
+                      </div>
+                      <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                        {group.records.length} record{group.records.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                    <div className="mt-4 text-sm text-gray-600">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p>Latest Position: {group.records[0].position || 'N/A'}</p>
+                          <p className="mt-1">Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <p>Status: {group.records[0].status || 'Active'}</p>
+                          <p className="mt-1">End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>*/

@@ -17,47 +17,53 @@ const navigation = {
 export default function Footer() {
   return (
     <footer className="bg-white">
-      <div className="w-full px-6 mx-auto py-12 sm:py-16 lg:px-8 flex-col justify-center gap-6">
-
-        <div className="flex w-full lg:flex-row sm:flex-col justify-between items-start">
-          <div className="justify-start text-emerald-950 lg:text-2xl text-base font-bold font-['Inter'] leading-loose">National Police Index</div>
-          <div className="flex justify-start items-center gap-6 pb-6">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 flex flex-col gap-8 sm:gap-12">
+        
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="text-emerald-950 text-xl sm:text-2xl font-bold font-['Inter'] leading-loose">National Police Index</div>
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {navigation.main.map((item) => (
-              <div key={item.name} >
-                <Link href={item.href} className="hover:text-gray-600 text-emerald-950 text-lg font-normal font-['Inter'] lg:leading-relaxed sm:leading-tight justify-start">
-                  {item.name}
-                </Link>
-              </div>
+              <Link 
+                key={item.name}
+                href={item.href} 
+                className="text-emerald-950 hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
+              >
+                {item.name}
+              </Link>
             ))}
+          </nav>
+        </div>
 
+        <div className="flex flex-wrap justify-start items-center gap-6 pt-4 border-t border-emerald-100">
+          <div className="w-full sm:w-auto aspect-[4.76/1]  relative max-w-[238px] min-w-[160px]">
+            <Image
+              src={logo1}
+              alt="Logo 1"
+              className="object-contain"
+              fill
+              sizes="(max-width: 640px) 100vw, 238px"
+            />
+          </div>
+          <div className="w-full sm:w-auto aspect-[3/1] relative max-w-[150px] min-w-[100px]">
+            <Image
+              src={logo2}
+              alt="Logo 2"
+              className="object-contain"
+              fill
+              sizes="(max-width: 640px) 100vw, 150px"
+            />
+          </div>
+          <div className="w-full sm:w-auto aspect-[1.52/1] relative max-w-[76px] min-w-[50px]">
+            <Image
+              src={logo3}
+              alt="Logo 3"
+              className="object-contain"
+              fill
+              sizes="(max-width: 640px) 100vw, 76px"
+            />
           </div>
         </div>
-
-        <div className="logos-container flex pt-6 justify-start items-center gap-6">
-          <Image
-            src={logo1}
-            alt="Logo 1"
-            className="w-60 h-12 logo1 object-contain"
-            width={238}
-            height={50}
-          />
-          <Image
-            src={logo2}
-            alt="Logo 2"
-            className="w-36 h-12 logo2 object-contain"
-            width={150}
-            height={50}
-          />
-          <Image
-            src={logo3}
-            alt="Logo 3"
-            className="w-20 h-12 logo3 object-contain"
-            width={76}
-            height={50}
-          />
-        </div>
       </div>
-
     </footer>
   );
 }

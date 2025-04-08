@@ -60,7 +60,7 @@ export default function Header() {
   }, []);
 
   const stateColumns = useMemo(() => {
-    const statesWithData = US_STATES.filter(state => state.hasData);
+    const statesWithData = US_STATES;
     const columns = [];
     const itemsPerColumn = Math.ceil(statesWithData.length / 6);
 
@@ -114,7 +114,7 @@ export default function Header() {
         <button
           ref={buttonRef}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-emerald-950"
+          className="md:hidden p-2 text-emerald-950 cursor-pointer"
           aria-label="Toggle mobile menu"
         >
           <svg
@@ -177,9 +177,16 @@ export default function Header() {
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto py-6 px-6">
               <nav className="flex flex-col gap-6">
+                <Link
+                  href="/about"
+                  className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed hover:text-emerald-800"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
                 <button
                   onClick={() => setIsStatesOpen(!isStatesOpen)}
-                  className="flex items-center justify-between text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed"
+                  className="flex items-center flex-row gap-4 text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed pointer"
                 >
                   <span>State Data</span>
                   <svg
@@ -202,7 +209,7 @@ export default function Header() {
 
                 {isStatesOpen && (
                   <div className="pl-4 flex flex-col gap-4">
-                    {US_STATES.filter(state => state.hasData).map((state) => (
+                    {US_STATES.map((state) => (
                       <Link
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
@@ -215,6 +222,7 @@ export default function Header() {
                         {state.name}
                       </Link>
                     ))}
+
                     <Link
                       href="#"
                       className="text-emerald-950 text-base font-bold font-['Inter'] leading-snug hover:text-emerald-800"
@@ -225,13 +233,6 @@ export default function Header() {
                   </div>
                 )}
 
-                <Link
-                  href="/about"
-                  className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed hover:text-emerald-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  About
-                </Link>
               </nav>
             </div>
           </div>
