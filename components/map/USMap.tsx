@@ -23,6 +23,10 @@ export default function USMap() {
     return stateData.hasData ? '#1D4ED8' : '#93C5FD'; // blue-700 : blue-300
   };
 
+  const _handleStateClick = (stateReference: string) => {
+    console.log(stateReference);
+  };
+
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
     console.log(stateReference, stateData);
@@ -32,38 +36,38 @@ export default function USMap() {
   };
 
   return (
-    <div className="w-full lg:mt-6 lg:mb-6 mx-auto flex-col sm:gap-2 lg:gap-6">
-      <div className="w-full sm:w-[100%] md:w-5/7 lg:w-5/6 mx-auto items-center justify-center">
+    <div className="w-full lg:mt-6 lg:mb-2 mx-auto flex-col sm:gap-2 lg:gap-6">
+      <div className="w-full sm:w-[100%] mx-auto items-center justify-center">
         <div className={styles.mapContainer}>
           <div className={styles.mapWrapper}>
             {US_STATES.map((state, index) => (
               <div key={index} className={styles.stateItem}>
-                {(US_STATES_MAP as unknown as StatesMap)[state.key].renderSvg(state, (reference: string) => handleStateClick(reference))}
-                {(US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
+                {(US_STATES_MAP as unknown as StatesMap)[state.key] && (US_STATES_MAP as unknown as StatesMap)[state.key].renderSvg(state, (reference: string) => handleStateClick(reference))}
+                {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row justify-center lg:items-start sm:items-start lg:mx-auto sm:gap-4 lg:gap-6 lg:px-4">
+      <div className="flex flex-col lg:flex-row justify-center items-start lg:mx-auto gap-4 md:gap-4 lg:gap-6 lg:px-4">
         <div className="flex justify-start items-center gap-4">
-          <div className="w-6 h-6 bg-gray-200" />
+          <div className="w-8 h-8 bg-emerald-200 rounded-lg" />
           <div className="FullDataAvailable text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Full Data Available</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-6 h-6 bg-stone-300" />
+          <div className="w-8 h-8 bg-lime-100 rounded-lg" />
           <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-6 h-6 bg-neutral-400" />
+          <div className="w-8 h-8 bg-amber-100 rounded-lg" />
           <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Some Data Available</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-6 h-6 bg-neutral-500" />
+          <div className="w-8 h-8 bg-rose-100 rounded-lg" />
           <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
         </div>
         <div className="inline-flex justify-start items-center gap-4">
-          <div className="w-6 h-6 bg-zinc-700" />
+          <div className="w-8 h-8 bg-rose-200 rounded-lg" />
           <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
         </div>
       </div>

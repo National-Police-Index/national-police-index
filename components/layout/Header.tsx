@@ -72,7 +72,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header>
+    <header className="w-5/6 mx-auto">
       <div className="w-full px-6 py-6 border-b border-emerald-950 flex justify-between items-center">
 
         <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
@@ -135,7 +135,7 @@ export default function Header() {
 
       {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className="hidden md:block absolute left-0 right-0 w-full bg-white shadow-lg z-50">
+        <div className="hidden md:block absolute left-0 right-0 w-full shadow-lg z-50">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="w-full flex flex-col justify-start items-start gap-2 mb-6">
               <div className="w-full text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed">
@@ -173,10 +173,37 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mounted && isMobileMenuOpen && (
-        <div ref={menuRef} className="md:hidden fixed inset-0 z-50 bg-white">
-          <div className="flex flex-col h-full">
+        <div ref={menuRef} className="md:hidden px-6 mx-auto fixed inset-0 z-50 bg-[#F3F3F3] ">
+          <div className="flex flex-col h-full  rounded-bl-3xl rounded-br-3xl ">
             <div className="flex-1 overflow-y-auto py-6 px-6">
               <nav className="flex flex-col gap-6">
+                <div className="pb-4 pl-6 pr-6 flex justify-between items-center border-b border-b-solid border-emerald-950">
+
+                  <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
+                    National Police Index
+                  </Link>
+                  <button
+                    ref={buttonRef}
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="md:hidden p-2 text-emerald-950 cursor-pointer"
+                    aria-label="Toggle mobile menu"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                    >
+                      {isMobileMenuOpen ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                      )}
+                    </svg>
+                  </button>
+
+                </div>
                 <Link
                   href="/about"
                   className="text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed hover:text-emerald-800"

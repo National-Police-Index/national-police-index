@@ -18,17 +18,18 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
   });
 
   return (
+
     <nav className="flex items-center justify-center">
       <ul className="flex items-center -space-x-px">
         {/* Previous page */}
         <li>
+
           <Link
             href={currentPage === 1 ? '#' : `${baseUrl}?page=${currentPage - 1}`}
-            className={`block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg ${
-              currentPage === 1
-                ? 'cursor-not-allowed opacity-50'
-                : 'hover:bg-gray-100 hover:text-gray-700'
-            }`}
+            className={`block px-3 py-2 ml-0 text-emerald-900 text-lg ${currentPage === 1
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-gray-100 hover:text-gray-700'
+              }`}
             aria-disabled={currentPage === 1}
           >
             <span className="sr-only">Previous</span>
@@ -41,11 +42,10 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           <li key={page}>
             <Link
               href={`${baseUrl}?page=${page}`}
-              className={`px-3 py-2 leading-tight border ${
-                currentPage === page
-                  ? 'z-10 text-blue-600 border-blue-300 bg-blue-50'
-                  : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700'
-              }`}
+              className={`px-3 py-2 leading-tight ${currentPage === page
+                ? 'z-10 text-emerald-900 text-lg font-normal font-["Inter"] underline leading-relaxed'
+                : 'text-emerald-950 text-lg font-normal font-["Inter"] leading-relaxed hover:bg-gray-100 hover:text-gray-700'
+                }`}
             >
               {page}
             </Link>
@@ -56,11 +56,10 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
         <li>
           <Link
             href={currentPage === totalPages ? '#' : `${baseUrl}?page=${currentPage + 1}`}
-            className={`block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg ${
-              currentPage === totalPages
-                ? 'cursor-not-allowed opacity-50'
-                : 'hover:bg-gray-100 hover:text-gray-700'
-            }`}
+            className={`block px-3 py-2 leading-tight text-gray-500 ${currentPage === totalPages
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-gray-100 hover:text-gray-700 text-slate-500'
+              }`}
             aria-disabled={currentPage === totalPages}
           >
             <span className="sr-only">Next</span>

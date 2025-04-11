@@ -45,10 +45,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
-        <div className="min-h-full w-5/6 mx-auto flex flex-col">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full bg-[#F3F3F3]`}>
+        <div className="min-h-fulld flex flex-col">
           <Header />
-          <main className="flex-grow">
+          <main className="flex-grow w-full ">
             {children}
           </main>
           <Footer />

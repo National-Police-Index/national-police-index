@@ -27,23 +27,26 @@ export default function Home() {
         ]}
       />
 
+      <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
+        <div className="w-5/6 mx-auto">
+          <div className="pt-4 border-t border-emerald-950 flex justify-start items-center ">
+            <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">National Police Index data map</div>
+          </div>
 
-      <div className="w-full mx-auto pt-4 border-t border-emerald-950 flex justify-start items-center ">
-        <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">National Police Index data map</div>
-      </div>
+          <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 text-center mb-6 mt-12 ">
 
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 text-center mb-6 mt-12 ">
-        <USMap />
-      </div>
+            <USMap />
+          </div>
+          <div className="p-14 mt-12 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-8">
+            <div className="w-full pt-4 border-t border-emerald-950 flex justify-start items-center gap-2.5">
+              <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">Recent reporting</div>
+            </div>
 
-      <div className="p-14 mt-12 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-8">
-        <div className="w-full pt-4 border-t border-emerald-950 flex justify-start items-center gap-2.5">
-          <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">Recent reporting</div>
+            <PostsSection />
+          </div>
         </div>
 
-        <PostsSection />
       </div>
-
     </div>
   );
 }

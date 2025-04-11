@@ -88,7 +88,7 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
           </div>
         ) : (
           <>
-            <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto">
+            <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
               {officerGroups.map((group) => (
                 <OfficerCard key={group.person_nbr} officer={group.records[0]} />
               ))}
