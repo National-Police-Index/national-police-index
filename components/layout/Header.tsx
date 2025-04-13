@@ -135,7 +135,7 @@ export default function Header() {
 
       {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className="hidden md:block absolute left-0 right-0 w-full shadow-lg z-50">
+        <div className="hidden md:block absolute left-0 right-0 w-full shadow-lg z-50 bg-[#F3F3F3]">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="w-full flex flex-col justify-start items-start gap-2 mb-6">
               <div className="w-full text-emerald-950 text-lg font-normal font-['Inter'] leading-relaxed">

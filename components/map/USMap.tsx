@@ -14,6 +14,14 @@ type StatesMap = {
   [key: string]: StateMapEntry;
 };
 
+export const DATA_FLAGS = {
+  'full': 'bg-emerald-200',
+  'comming_soon': 'bg-lime-100',
+  'some_data': 'bg-amber-100',
+  'no_data_tb': 'bg-rose-100',
+  'no_data_lb': 'bg-rose-200',
+};
+
 export default function USMap() {
   const router = useRouter();
 
@@ -21,10 +29,6 @@ export default function USMap() {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
     if (!stateData) return '#E5E7EB'; // gray-200
     return stateData.hasData ? '#1D4ED8' : '#93C5FD'; // blue-700 : blue-300
-  };
-
-  const _handleStateClick = (stateReference: string) => {
-    console.log(stateReference);
   };
 
   const handleStateClick = (stateReference: string) => {
