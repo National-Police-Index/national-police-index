@@ -17,10 +17,13 @@ const navigation = {
 export default function Footer() {
   return (
     <footer className="w-full bg-white">
-      <div className="w-5/6 mx-auto container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 flex flex-col gap-8 sm:gap-12">
+      <div className="w-5/6 mx-auto py-8 sm:py-12 lg:py-16 flex flex-col gap-8 sm:gap-12">
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <div className="text-emerald-950 text-xl sm:text-2xl font-bold font-['Inter'] leading-loose">National Police Index</div>
+          <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
+            National Police Index
+          </Link>
+
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {navigation.main.map((item) => (
               <Link

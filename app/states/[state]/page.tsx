@@ -70,76 +70,48 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
         ]}
       />
 
-      <SearchFilters />
+      <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
+        <div className="w-5/6 mx-auto">
 
-      <div className="mt-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-            <p className="mt-4 text-gray-600">Loading officers...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-12 text-red-600">
-            Error loading officers: {error.message}
-          </div>
-        ) : officerGroups.length === 0 ? (
-          <div className="text-center py-12 text-gray-600">
-            No officers found matching your search criteria.
-          </div>
-        ) : (
-          <>
-            <div className="space-y-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
-              {officerGroups.map((group) => (
-                <OfficerCard key={group.person_nbr} officer={group.records[0]} />
-              ))}
-            </div>
-            <div className="mt-8">
-              {totalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    baseUrl={`/states/${state}`}
-                  />
+          <SearchFilters />
+
+          <div className="mt-8">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                <p className="mt-4 text-gray-600">Loading officers...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12 text-red-600">
+                Error loading officers: {error.message}
+              </div>
+            ) : officerGroups.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                No officers found matching your search criteria.
+              </div>
+            ) : (
+              <>
+                <div className="space-y-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
+                  {officerGroups.map((group) => (
+                    <OfficerCard key={group.person_nbr} officer={group.records[0]} />
+                  ))}
                 </div>
-              )}
-            </div>
-          </>
-        )}
+                <div className="mt-8">
+                  {totalPages > 1 && (
+                    <div className="mt-8">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        baseUrl={`/states/${state}`}
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-/*<Link
-                  href={`/officers/${group.person_nbr}`}
-                  key={group.person_nbr}
-                  className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {group.records[0].full_name}
-                        </h3>
-                        <p className="mt-2 text-sm text-gray-600">
-                          Latest Agency: {group.records[0].agency_name}
-                        </p>
-                      </div>
-                      <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                        {group.records.length} record{group.records.length !== 1 ? 's' : ''}
-                      </div>
-                    </div>
-                    <div className="mt-4 text-sm text-gray-600">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p>Latest Position: {group.records[0].position || 'N/A'}</p>
-                          <p className="mt-1">Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <p>Status: {group.records[0].status || 'Active'}</p>
-                          <p className="mt-1">End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>*/

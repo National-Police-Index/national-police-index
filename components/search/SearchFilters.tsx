@@ -43,19 +43,16 @@ export default function SearchFilters() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Search input */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700">
-            Search
-          </label>
           <div className="mt-1 relative rounded-md shadow-sm bg-zinc-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-300 ">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-[#122823]" aria-hidden="true" />
             </div>
             <input
               type="text"
               name="search"
               id="search"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
-              placeholder="Search by name, agency, or ID"
+              placeholder="Search Data"
               value={filters.query}
               onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             />
@@ -67,9 +64,6 @@ export default function SearchFilters() {
       <div className="grid gap-4 grid-cols-5">
         {/* Date range pickers */}
         <div>
-          <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">
-            Start Date
-          </label>
           <DatePicker
             id="start-date"
             selected={filters.startDate}
@@ -80,9 +74,6 @@ export default function SearchFilters() {
         </div>
 
         <div>
-          <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">
-            End Date
-          </label>
           <DatePicker
             id="end-date"
             selected={filters.endDate}
@@ -95,9 +86,6 @@ export default function SearchFilters() {
         {/* Agency filter */}
 
         <div>
-          <label htmlFor="agency" className="block text-sm font-medium text-gray-700">
-            Agency
-          </label>
           <select
             id="agency"
             name="agency"
@@ -112,9 +100,6 @@ export default function SearchFilters() {
 
         {/* Sort by */}
         <div>
-          <label htmlFor="sort-by" className="block text-sm font-medium text-gray-700">
-            Sort By
-          </label>
           <select
             id="sort-by"
             name="sort-by"
@@ -130,9 +115,6 @@ export default function SearchFilters() {
 
         {/* Sort order */}
         <div>
-          <label htmlFor="sort-order" className="block text-sm font-medium text-gray-700">
-            Download
-          </label>
           <select
             id="sort-order"
             name="sort-order"
@@ -149,7 +131,7 @@ export default function SearchFilters() {
       <div className="flex justify-end space-x-4">
         <button
           type="button"
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          className="px-4 py-2 text-sm font-medium text-[#122823] bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           onClick={() => setFilters({
             query: '',
             startDate: undefined,

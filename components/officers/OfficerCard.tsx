@@ -25,7 +25,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
 
   return (
     <Link
-      href={`/officers/${officer.document_id}`}
+      href={`/officers/${officer.person_nbr}`}
       className="group flex w-full max-w-sm hover:scale-[1.02] transition-transform duration-200"
     >
       <div className="w-[5%] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />
