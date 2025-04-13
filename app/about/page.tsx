@@ -1,26 +1,14 @@
+'use client';
+
 import PageHeader from '@/components/PageHeader';
-import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-
-export const metadata: Metadata = {
-  title: 'About Us | National Police Index',
-  description: 'Learn about our mission to promote transparency and accountability in law enforcement through comprehensive police officer records.',
-};
-
-interface TeamMember {
-  name: string;
-  pronouns: string;
-  description: string;
-}
-
-const teamMembers: TeamMember[] = Array(12).fill({
-  name: 'Sam Stecklow',
-  pronouns: 'he/him',
-  description: 'An investigative journalist and FOIA fellow with Invisible Institute. He works on Invisible Institute\'s Civic Police Data Project and investigations.',
-});
+import TeamCard from '@/components/team/TeamCard';
+import { useTeam } from '@/hooks/useTeam';
+import aboutImage from '@/images/about-image.png';
 
 export default function AboutPage() {
+  const { loading, error, teamMembers } = useTeam();
   return (
     <div className="w-full mx-auto">
       <PageHeader
@@ -36,9 +24,9 @@ export default function AboutPage() {
             <div className="relative">
               {/* Image - Floating right on desktop, full width on mobile */}
               <div className="float-none w-full mb-6 sm:float-right sm:w-[300px] md:w-[400px] lg:w-[500px] sm:ml-8 sm:mb-4">
-                <img
+                <Image
                   className="w-full h-auto aspect-square object-cover"
-                  src="https://placehold.co/600x600"
+                  src={aboutImage}
                   alt="About illustration"
                 />
               </div>
@@ -81,29 +69,26 @@ export default function AboutPage() {
               <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Team</div>
             </div>
 
-            <div className="w-full mx-auto space-y-6">
-              {[0, 1, 2].map((rowIndex) => (
-                <div key={rowIndex} className="flex justify-center items-center gap-6">
-                  {teamMembers.slice(rowIndex * 4, (rowIndex + 1) * 4).map((member, index) => (
-                    <div key={index} className="w-72 p-4 bg-gray-200 flex flex-col gap-2">
-                      <div className="pb-2 border-b border-black flex items-center gap-2">
-                        <span className="text-base font-normal font-inter">{member.name}</span>
-                        <span className="text-xs font-normal font-inter">({member.pronouns})</span>
-                      </div>
-                      <div className="text-sm font-normal font-inter leading-relaxed">
-                        {member.description.split('Invisible Institute').map((part, i, arr) => (
-                          <div key={i} className="flex items-center gap-2">
-                            {part}
-                            {i < arr.length - 1 && (
-                              <Link href="#" className="underline">Invisible Institute</Link>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+            <div className="w-full mx-auto py-8">
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                  <p className="ml-4 text-gray-600">Loading team members...</p>
+                </div>
+              ) : error ? (
+                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : (
+                <div className="w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-4 grid gap-6">
+                  {teamMembers.map((member) => (
+                    <TeamCard
+                      key={member.name}
+                      name={member.name}
+                      pronouns={member.pronouns}
+                      description={member.description}
+                    />
                   ))}
                 </div>
-              ))}
+              )}
             </div>
           </section>
 

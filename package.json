@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "ts-node scripts/migrate.ts",
+    "migrate": "tsx scripts/migrate.ts",
     "generate-stats": "node scripts/build-stats.js",
     "generate-sitemap": "tsx scripts/generateSitemap.ts",
-    "seed-officers": "tsx scripts/seedOfficers.ts"
+    "seed-officers": "tsx scripts/seedOfficers.ts",
+    "seed-team": "tsx scripts/seedTeamData.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

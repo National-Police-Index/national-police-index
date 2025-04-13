@@ -73,7 +73,7 @@ export default function Header() {
 
   return (
     <header className="w-5/6 mx-auto">
-      <div className="w-full px-6 py-6 border-b border-emerald-950 flex justify-between items-center">
+      <div className="w-full py-6 border-b border-emerald-950 flex justify-between items-center">
 
         <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
           National Police Index
@@ -173,11 +173,11 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mounted && isMobileMenuOpen && (
-        <div ref={menuRef} className="md:hidden px-6 mx-auto fixed inset-0 z-50 bg-[#F3F3F3] ">
+        <div ref={menuRef} className="md:hidden mx-auto fixed inset-0 z-50 bg-[#F3F3F3] ">
           <div className="flex flex-col h-full  rounded-bl-3xl rounded-br-3xl ">
             <div className="flex-1 overflow-y-auto py-6 px-6">
               <nav className="flex flex-col gap-6">
-                <div className="pb-4 pl-6 pr-6 flex justify-between items-center border-b border-b-solid border-emerald-950">
+                <div className="pb-4 pr-6 flex justify-between items-center border-b border-b-solid border-emerald-950">
 
                   <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
                     National Police Index

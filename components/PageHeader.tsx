@@ -5,11 +5,11 @@ interface Statistic {
 
 interface PageHeaderProps {
   title: string;
-  description: string;
+  description?: string;
   statistics?: Statistic[];
 }
 
-export default function PageHeader({ title, description = '', statistics = [] }: PageHeaderProps) {
+export default function PageHeader({ title, description, statistics }: PageHeaderProps) {
   return (
     <div className='w-5/6 mx-auto lg:py-28 py-12 flex gap-8 lg:flex-row flex-col justify-between lg:items-end items-start'>
       <div className='w-full flex flex-col justify-start items-start gap-8'>
