@@ -27,7 +27,7 @@ interface UseOfficersByUidProps {
   };
 }
 
-export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: UseOfficersByUidProps) {
+export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: UseOfficersByUidProps) {
   // Memoize search parameters to prevent unnecessary re-renders
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
@@ -36,10 +36,11 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
-    pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 20),
+    pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : (searchParams.page || 1)
-  }), [searchParams.query, searchParams.agency, searchParams.startDate, 
-      searchParams.endDate, searchParams.sortBy, searchParams.sortOrder]);
+  }), [searchParams.query, searchParams.agency, searchParams.startDate,
+  searchParams.endDate, searchParams.sortBy, searchParams.sortOrder,
+  searchParams.pageSize, searchParams.page]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
@@ -57,9 +58,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
 
         // Add sorting
         const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
-                         searchParameters.sortBy === 'agency' ? 'agency_name' :
-                         'last_name';
-        
+          searchParameters.sortBy === 'agency' ? 'agency_name' :
+            'last_name';
+
         const sortDirection = searchParameters.sortOrder === 'desc' ? 'desc' : 'asc';
 
         // Build query with mandatory state filter
@@ -87,33 +88,43 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
 
         // Add sorting
         q = query(q, orderBy(sortField, sortDirection));
-        
+
         // Add pagination
-        const pageSize = searchParameters.pageSize;
-        const offset = (searchParameters.page - 1) * pageSize;
-        
-        // Get all documents up to the end of the current page
-        q = query(q, limit((searchParameters.page) * pageSize));
-        
+        const pageSize = searchParameters.pageSize || 16;
+
+        // If not on first page, we need to get the document to start after
+        if (searchParameters.page > 1) {
+          // First get all documents up to the start of our target page
+          const previousPageQuery = query(q, limit((searchParameters.page - 1) * pageSize));
+          const previousPageSnapshot = await getDocs(previousPageQuery);
+
+          if (!previousPageSnapshot.empty) {
+            // Get the last document from the previous page
+            const lastDoc = previousPageSnapshot.docs[previousPageSnapshot.docs.length - 1];
+            // Now create the actual query starting after that document
+            q = query(q, startAfter(lastDoc), limit(pageSize));
+          }
+        } else {
+          // First page just needs the limit
+          q = query(q, limit(pageSize));
+        }
+
         console.log('query', q);
-        
+
         const snapshot = await getDocs(q);
         const allDocs = snapshot.docs;
-        
-        // Get only the documents for the current page
-        const pageDocs = allDocs.slice(offset, offset + pageSize);
-        
+
         // Group officers by person_nbr
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
-        
-        pageDocs.forEach((doc) => {
+
+        allDocs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
           const person_nbr = officer.person_nbr;
-          
+
           if (!groupedOfficers.has(person_nbr)) {
             groupedOfficers.set(person_nbr, []);
           }
-          
+
           groupedOfficers.get(person_nbr)?.push(officer);
         });
 
@@ -138,7 +149,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: 20 } }: Use
     }
 
     fetchOfficers();
-  }, [state, searchParameters]);
+  }, [state, searchParameters, searchParams.page]);
 
   return {
     loading,

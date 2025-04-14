@@ -38,7 +38,7 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
   }
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
-  const pageSize = parseInt(resolvedSearchParams.pageSize || '20', 10);
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10);
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
   const { loading: officersLoading, error: officersError, officerGroups } = useOfficersByUid({
