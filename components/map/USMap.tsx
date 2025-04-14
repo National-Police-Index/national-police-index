@@ -25,12 +25,6 @@ export const DATA_FLAGS = {
 export default function USMap() {
   const router = useRouter();
 
-  const getStateColor = (stateReference: string) => {
-    const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
-    if (!stateData) return '#E5E7EB'; // gray-200
-    return stateData.hasData ? '#1D4ED8' : '#93C5FD'; // blue-700 : blue-300
-  };
-
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
     console.log(stateReference, stateData);

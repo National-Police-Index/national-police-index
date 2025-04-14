@@ -15,13 +15,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
     }
   };
 
-  const getStatusColor = (status: string = 'none') => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('active')) return 'bg-green-100 text-green-800';
-    if (statusLower.includes('lapsed')) return 'bg-yellow-100 text-yellow-800';
-    if (statusLower.includes('revoked')) return 'bg-red-100 text-red-800';
-    return 'bg-gray-100 text-gray-800';
-  };
+  const fullName = officer.full_name || officer.first_name + ' ' + officer.last_name;
 
   return (
     <Link
@@ -33,7 +27,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
         <div className="self-stretch flex flex-col justify-start items-start gap-2">
           <div className="self-stretch pb-2 border-b-[0.50px] border-emerald-950 inline-flex justify-center items-center gap-2">
             <div className="flex-1 justify-start text-emerald-950 text-base font-semibold font-['Inter'] leading-normal">
-              {officer.full_name}
+              {fullName}
             </div>
           </div>
           <div className="self-stretch justify-start text-emerald-950 text-sm font-normal font-['Inter'] leading-tight">
@@ -41,14 +35,14 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
           </div>
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
             <div className="self-stretch justify-start text-emerald-950 text-sm font-normal font-['Inter'] leading-tight">
-              DC, Region 3
+              {officer.agency_name}
             </div>
             <div className="inline-flex justify-start items-start gap-4">
               <div className="justify-start text-emerald-950 text-xs font-normal font-['Inter'] leading-none">
-                11/14/1999
+                {formatDate(officer.start_date)}
               </div>
               <div className="justify-start text-emerald-950 text-xs font-normal font-['Inter'] leading-none">
-                09/09/2004
+                {formatDate(officer.end_date)}
               </div>
             </div>
           </div>
@@ -62,47 +56,6 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
           </div>
         </div>
       </div>
-
-
-      {
-/*
-
-      <div className="bg-zinc-100 rounded-tr-2xl rounded-br-2xl inline-flex flex-col justify-start items-start gap-2 ">
-        <div className="p-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {officer.full_name}
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                UID: {officer.person_nbr}
-              </p>
-            </div>
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
-                officer.current_certificate_status
-              )}`}
-            >
-              {officer.current_certificate_status}
-            </span>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Agency:</span> {officer.agency_name}
-            </p>
-            <p className="mt-1 text-sm text-gray-500">
-              <span className="font-medium">Rank:</span> {officer.rank}
-            </p>
-            <div className="mt-2 flex justify-between text-sm text-gray-500">
-              <span>{formatDate(officer.start_date)}</span>
-              <span>→</span>
-              <span>{formatDate(officer.end_date)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      */}
     </Link>
   );
 }

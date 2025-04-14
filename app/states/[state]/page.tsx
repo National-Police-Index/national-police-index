@@ -1,9 +1,7 @@
 'use client';
 
-import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { use } from 'react';
-import Link from 'next/link';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
 import SearchFilters from '@/components/search/SearchFilters';
@@ -11,7 +9,6 @@ import { US_STATES } from '@/constants/states';
 import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
-import { group } from 'node:console';
 
 interface StatePageProps {
   params: Promise<{
@@ -57,6 +54,13 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
   const error = statsError || officersError;
   const totalPages = stats ? Math.ceil(stats.total_officers / pageSize) : 0;
 
+  const lastYearIndex = Object.keys(stats?.total_officer_end_date || {}).length;
+  const lastYear = lastYearIndex > 0 ? Object.keys(stats?.total_officer_end_date || {})[lastYearIndex - 1] : '';
+  const lastYearAmount = lastYearIndex > 0 ? (stats?.total_officer_end_date?.[lastYear]) : 0;
+
+  const startYearIndex = Object.keys(stats?.total_officer_start_date || {}).length;
+  const startYear = startYearIndex > 0 ? Object.keys(stats?.total_officer_start_date || {})[startYearIndex - 1] : '';
+  const startYearAmount = startYearIndex > 0 ? (stats?.total_officer_start_date?.[startYear]) : 0;
   return (
     <div className="w-full mx-auto">
       <PageHeader
@@ -66,7 +70,15 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
           {
             value: stats?.total_officers || 0,
             label: "Total officers"
-          }
+          },
+          {
+            value: lastYearAmount || 0,
+            label: `Officers terminated in ${lastYear}`
+          },
+          {
+            value: startYearAmount || 0,
+            label: `Officers started in ${startYear}`
+          },
         ]}
       />
 

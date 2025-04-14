@@ -1,5 +1,3 @@
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { StateData } from '@/types';
 import { US_STATES } from '@/constants/states';
@@ -11,7 +9,7 @@ export const metadata = {
 };
 
 function getStatesData() {
-  const statesData: StateData[] = US_STATES.map(({name, hasData, abbreviation}) => ({
+  const statesData: StateData[] = US_STATES.map(({ name, hasData, abbreviation }) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     abbreviation,
     hasData,
@@ -54,9 +52,8 @@ export default async function StatesPage() {
           <Link
             key={state.abbreviation}
             href={state.hasData ? `/states/${state.abbreviation.toLowerCase()}` : '#'}
-            className={`relative block p-6 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow ${
-              state.hasData ? 'border-blue-200 hover:border-blue-300' : 'border-gray-200'
-            }`}
+            className={`relative block p-6 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow ${state.hasData ? 'border-blue-200 hover:border-blue-300' : 'border-gray-200'
+              }`}
           >
             <div className="flex justify-between items-start">
               <div>

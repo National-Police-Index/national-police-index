@@ -8,9 +8,9 @@ import logo3 from '@/images/logo3.png';
 
 const navigation = {
   main: [
-    { name: 'Contact', href: '/contact' },
-    { name: 'Github', href: '/github' },
-    { name: 'About', href: '/about' },
+    { name: 'Contact', href: 'https://invisible.institute/contact', target: '_blank' },
+    { name: 'Github', href: 'https://github.com/ayyubibrahimi/us-post-data', target: '_blank' },
+    { name: 'About', href: '/about', target: '_self' },
   ],
 };
 
@@ -29,6 +29,7 @@ export default function Footer() {
               <Link
                 key={item.name}
                 href={item.href}
+                target={item.target}
                 className="text-emerald-950 hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
               >
                 {item.name}

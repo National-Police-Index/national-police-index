@@ -193,13 +193,12 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
         console.log(`Storing partial results for ${state.name} with ${totalOfficers} officers`);
         const stateStats: StateStats = {
           title: state.name,
-          description: `Partial police officer records and history in ${state.name} (${pageCount} pages processed)`,
+          description: `Partial police officer records and history in ${state.name}`,
           total_officers: totalOfficers,
           total_officer_end_date: endDateStats,
           total_officer_start_date: startDateStats,
           last_updated: new Date(),
-          is_partial: true,
-          pages_processed: pageCount
+          is_partial: true
         };
 
         try {

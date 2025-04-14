@@ -1,5 +1,5 @@
-import {onSchedule} from "firebase-functions/v2/scheduler";
-import {onRequest} from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 // Import generateSitemap function directly
 export const generateSitemap = async () => {
@@ -11,10 +11,16 @@ export const generateSitemap = async () => {
 export const generateSitemapHttp = onRequest(async (req, res) => {
   try {
     await generateSitemap();
-    res.status(200).send({success: true, message: "Sitemap generated successfully"});
+    res.status(200).send({
+      success: true,
+      message: "Sitemap generated successfully"
+    });
   } catch (error) {
     console.error("Error generating sitemap:", error);
-    res.status(500).send({success: false, message: "Error generating sitemap"});
+    res.status(500).send({
+      success: false,
+      message: "Error generating sitemap"
+    });
   }
 });
 
@@ -28,7 +34,7 @@ export const generateSitemapScheduled = onSchedule({
 }, async () => {
   try {
     await generateSitemap();
-    console.log("Sitemap generated successfully via scheduled function");
+    console.log("Sitemap generated successfully");
     return;
   } catch (error) {
     console.error("Error generating sitemap:", error);

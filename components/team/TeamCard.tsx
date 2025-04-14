@@ -15,7 +15,7 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
       if (linkMatch) {
         const [_, text, url] = linkMatch;
         return (
-          <Link key={index} href={url} className="text-emerald-950 text-sm font-normal font-['Inter'] underline leading-tight hover:text-emerald-700">
+          <Link key={index} href={url} className={`text-emerald-950 text-sm font-normal font-['Inter'] underline leading-tight hover:text-emerald-700 ${_}`}>
             {text}
           </Link>
         );

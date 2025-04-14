@@ -7,4 +7,5 @@ export interface Post {
   state: string;
   createdAt: Date;
   updatedAt: Date;
+  url: string;
 }

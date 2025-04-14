@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
 import PageHeader from '@/components/PageHeader';
 import { formatDate } from 'date-fns/format';
@@ -44,12 +43,11 @@ export default function OfficerProfilePage() {
 
   const { latestRecord, records } = officerData;
   console.log('Officer data', officerData);
-
+  const fullName = latestRecord.full_name || latestRecord.first_name + ' ' + latestRecord.last_name;
   return (
-
     <div className="w-full mx-auto">
       <PageHeader
-        title={latestRecord.full_name}
+        title={fullName}
         description={`Latest Agency: ${latestRecord.agency_name}`}
         statistics={[
           {
@@ -69,7 +67,7 @@ export default function OfficerProfilePage() {
             <div className="w-full px-4 py-8 flex flex-col justify-start items-start gap-4">
 
               <div className="self-stretch flex justify-center items-center gap-2">
-                <div className="flex-1 justify-start text-emerald-950 text-xl font-bold font-['Inter'] leading-7">{latestRecord.full_name}</div>
+                <div className="flex-1 justify-start text-emerald-950 text-xl font-bold font-['Inter'] leading-7">{fullName}</div>
               </div>
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
                 <div className="self-stretch py-2 border-t-[0.50px] border-b-[0.50px] border-emerald-950 flex justify-center items-center gap-2">

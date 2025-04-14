@@ -9,7 +9,6 @@ import { SearchFilters as SearchFiltersType } from '@/types';
 
 export default function SearchFilters() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState<SearchFiltersType>({
     query: '',

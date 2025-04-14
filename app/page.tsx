@@ -1,13 +1,10 @@
 'use client';
 
 import USMap from '@/components/map/USMap';
-import PostCard from '../components/PostCard';
-import { usePosts } from '@/hooks/usePosts';
 import PageHeader from '@/components/PageHeader';
 import PostsSection from '@/components/PostsSection';
 
 export default function Home() {
-  const { posts, loading, error } = usePosts({ limit: 6 });
 
   return (
     <div className="w-full mx-auto">
@@ -37,7 +34,7 @@ export default function Home() {
 
             <USMap />
           </div>
-          <div className="p-14 mt-12 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-8">
+          <div className="lg:p-14 p-6 mt-12 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-8">
             <div className="w-full pt-4 border-t border-emerald-950 flex justify-start items-center gap-2.5">
               <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] tracking-tight">Recent reporting</div>
             </div>

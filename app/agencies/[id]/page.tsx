@@ -19,11 +19,10 @@ interface SearchParams {
 export default function AgencyPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
-  const agencyName = decodeURIComponent(id as string).replace(/-/g, ' ');
-  
+
   // Get agency statistics
   const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id as string);
-  
+
   // Get officers for this agency
   const { loading: officersLoading, error: officersError, officerGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',
@@ -105,9 +104,9 @@ export default function AgencyPage() {
         ) : (
           <>
             {officerGroups.map((group) => (
-              <Link 
-                href={`/officers/${group.person_nbr}`} 
-                key={group.person_nbr} 
+              <Link
+                href={`/officers/${group.person_nbr}`}
+                key={group.person_nbr}
                 className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
               >
                 <div className="p-6">

@@ -23,10 +23,13 @@ export default function PageHeader({ title, description, statistics }: PageHeade
 
       {statistics && statistics.length > 0 && (
         <div className='flex flex-col justify-center items-start gap-8'>
-          {statistics.map((stat, index) => (
+          {statistics.filter(stat => stat.value !== 0 && stat.value).map((stat, index) => (
             <div key={index} className='w-5/6 flex flex-col justify-start items-start gap-2'>
               <div className='justify-start text-emerald-800 text-7xl font-bold font-["Inter"] tracking-wide'>
-                {stat.value}
+                {typeof stat.value === 'number'
+                  ? stat.value.toLocaleString('en-US')
+                  : stat.value
+                }
               </div>
               <div className='self-stretch justify-start text-emerald-700 text-lg font-semibold font-["Inter"] tracking-wide'>
                 {stat.label}

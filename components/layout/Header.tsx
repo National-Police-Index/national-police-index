@@ -4,12 +4,6 @@ import Link from 'next/link';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { US_STATES } from '@/constants/states';
 
-const navigation = [
-  { name: 'State Data', href: '#', hasDropdown: true },
-  { name: 'About', href: '/about', hasDropdown: false },
-];
-
-
 export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
@@ -161,10 +155,11 @@ export default function Header() {
             </div>
             <div className="mt-8">
               <Link
-                href="#"
+                href="https://invisible.institute/national-police-index#block-yui_3_17_2_1_1726594221053_11311"
+                target="_blank"
                 className="text-emerald-950 text-base font-bold font-['Inter'] leading-snug hover:text-emerald-800 hover:underline"
               >
-                Why isn't my state's data here?
+                Why isn&apos;t my state&apos;s data here?
               </Link>
             </div>
           </div>
@@ -251,11 +246,11 @@ export default function Header() {
                     ))}
 
                     <Link
-                      href="#"
+                      href="https://invisible.institute/national-police-index#block-yui_3_17_2_1_1726594221053_11311"
                       className="text-emerald-950 text-base font-bold font-['Inter'] leading-snug hover:text-emerald-800"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Why isn't my state's data here?
+                      Why isn&apos;t my state&apos;s data here?
                     </Link>
                   </div>
                 )}
