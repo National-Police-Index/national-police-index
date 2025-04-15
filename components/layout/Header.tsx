@@ -54,7 +54,7 @@ export default function Header() {
   }, []);
 
   const stateColumns = useMemo(() => {
-    const statesWithData = US_STATES;
+    const statesWithData = US_STATES.filter(state => state.hasData);
     const columns = [];
     const itemsPerColumn = Math.ceil(statesWithData.length / 6);
 

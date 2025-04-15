@@ -6,18 +6,19 @@ export interface USState {
   key: string;
   count?: number;
   dataFlag: string;
+  url?: string;
 }
 
 //    "florida-discipline"
 //    "georgia-discipline"
 
 export const US_STATES: USState[] = [
-  { name: 'Alabama', reference: 'alabama', abbreviation: 'AL', hasData: false, key: 'a38', dataFlag: 'no_data_lb' },
+  { name: 'Alabama', reference: 'alabama', abbreviation: 'AL', hasData: false, key: 'a38', dataFlag: 'no_data_lb', url: 'https://www.al.com/news/2024/09/police-employment-history-is-usually-a-public-record-in-alabama-its-a-state-secret.html' },
   { name: 'Alaska', reference: 'alaska', abbreviation: 'AK', hasData: true, key: 'a47', dataFlag: 'full' },
   { name: 'Arizona', reference: 'arizona', abbreviation: 'AZ', hasData: true, key: 'a27', dataFlag: 'full' },
-  { name: 'Arkansas', reference: 'arkansas', abbreviation: 'AR', hasData: false, key: 'a30', dataFlag: 'no_data_lb' },
+  { name: 'Arkansas', reference: 'arkansas', abbreviation: 'AR', hasData: false, key: 'a30', dataFlag: 'no_data_lb', url: 'https://arkansasadvocate.com/2023/11/27/arkansas-declines-to-release-police-officer-database-preventing-public-oversight-of-problem-cops/' },
   { name: 'California', reference: 'california', abbreviation: 'CA', hasData: true, key: 'a17', dataFlag: 'full' },
-  { name: 'Colorado', reference: 'colorado', abbreviation: 'CO', hasData: false, key: 'a19', dataFlag: 'no_data_lb' },
+  { name: 'Colorado', reference: 'colorado', abbreviation: 'CO', hasData: false, key: 'a19', dataFlag: 'no_data_lb', url: 'https://coloradofoic.org/even-with-new-post-database-and-reforms-colorado-is-in-the-minority-of-states-keeping-comprehensive-police-officer-data-secret/' },
   { name: 'Connecticut', reference: 'connecticut', abbreviation: 'CT', hasData: false, key: 'a16', dataFlag: 'no_data_tb' },
   { name: 'Delaware', reference: 'delaware', abbreviation: 'DE', hasData: true, key: 'a26', dataFlag: 'full' },
   { name: 'Columbia', reference: 'columbia', abbreviation: 'DC', hasData: true, key: 'a34', dataFlag: 'full' },
@@ -34,23 +35,23 @@ export const US_STATES: USState[] = [
   { name: 'Maine', reference: 'maine', abbreviation: 'ME', hasData: false, key: 'a45', dataFlag: 'no_data_tb' },
   { name: 'Maryland', reference: 'maryland', abbreviation: 'MD', hasData: true, key: 'a25', dataFlag: 'full' },
   { name: 'Massachusetts', reference: 'massachusetts', abbreviation: 'MA', hasData: false, key: 'a41', dataFlag: 'no_data_tb' },
-  { name: 'Michigan', reference: 'michigan', abbreviation: 'MI', hasData: false, key: 'a6', dataFlag: 'no_data_lb' },
+  { name: 'Michigan', reference: 'michigan', abbreviation: 'MI', hasData: false, key: 'a6', dataFlag: 'no_data_lb', url: 'https://www.metrotimes.com/news/police-transparency-expands-with-new-national-database-but-michigan-blocks-officer-data-37384703' },
   { name: 'Minnesota', reference: 'minnesota', abbreviation: 'MN', hasData: true, key: 'a4', dataFlag: 'full' },
   { name: 'Mississippi', reference: 'mississippi', abbreviation: 'MS', hasData: true, key: 'a37', dataFlag: 'full' },
-  { name: 'Missouri', reference: 'missouri', abbreviation: 'MO', hasData: false, key: 'a21', dataFlag: 'no_data_lb' },
-  { name: 'Montana', reference: 'montana', abbreviation: 'MT', hasData: false, key: 'a2', dataFlag: 'no_data_lb' },
+  { name: 'Missouri', reference: 'missouri', abbreviation: 'MO', hasData: false, key: 'a21', dataFlag: 'no_data_lb', url: 'https://gatewayjr.org/missouri-is-home-of-police-decertification-it-also-keeps-data-showing-wandering-officers-a-secret/' },
+  { name: 'Montana', reference: 'montana', abbreviation: 'MT', hasData: false, key: 'a2', dataFlag: 'no_data_lb', url: 'https://thepulp.org/montana-blocks-access-to-basic-police-data/' },
   { name: 'Nebraska', reference: 'nebraska', abbreviation: 'NE', hasData: false, key: 'a20', dataFlag: 'no_data_tb' },
-  { name: 'Nevada', reference: 'nevada', abbreviation: 'NV', hasData: false, key: 'a18', dataFlag: 'no_data_lb' },
+  { name: 'Nevada', reference: 'nevada', abbreviation: 'NV', hasData: false, key: 'a18', dataFlag: 'no_data_lb', url: 'https://www.reviewjournal.com/investigations/agency-withholds-data-about-police-certification-employment-history-from-journalists-2881670/' },
   { name: 'New Hampshire', reference: 'new-hampshire', abbreviation: 'NH', hasData: false, key: 'a44', dataFlag: 'no_data_tb' },
   { name: 'New Jersey', reference: 'new-jersey', abbreviation: 'NJ', hasData: false, key: 'a15', dataFlag: 'no_data_tb' },
   { name: 'New Mexico', reference: 'new-mexico', abbreviation: 'NM', hasData: true, key: 'a28', dataFlag: 'full' },
-  { name: 'New York', reference: 'new-york', abbreviation: 'NY', hasData: false, key: 'a40', dataFlag: 'no_data_lb' },
+  { name: 'New York', reference: 'new-york', abbreviation: 'NY', hasData: false, key: 'a40', dataFlag: 'no_data_lb', url: 'https://nysfocus.com/2024/10/31/new-york-police-misconduct-employment-records' },
   { name: 'North Carolina', reference: 'north-carolina', abbreviation: 'NC', hasData: true, key: 'a32', dataFlag: 'full' },
   { name: 'North Dakota', reference: 'north-dakota', abbreviation: 'ND', hasData: true, key: 'a3', dataFlag: 'comming_soon' },
   { name: 'Ohio', reference: 'ohio', abbreviation: 'OH', hasData: true, key: 'a13', dataFlag: 'full' },
   { name: 'Oklahoma', reference: 'oklahoma', abbreviation: 'OK', hasData: false, key: 'a35', dataFlag: 'no_data_lb' },
   { name: 'Oregon', reference: 'oregon', abbreviation: 'OR', hasData: true, key: 'a7', dataFlag: 'full' },
-  { name: 'Pennsylvania', reference: 'pennsylvania', abbreviation: 'PA', hasData: false, key: 'a14', dataFlag: 'no_data_lb' },
+  { name: 'Pennsylvania', reference: 'pennsylvania', abbreviation: 'PA', hasData: false, key: 'a14', dataFlag: 'no_data_lb', url: 'https://www.spotlightpa.org/news/2023/08/pennsylvania-police-officer-data-denied/' },
   { name: 'Rhode Island', reference: 'rhode-island', abbreviation: 'RI', hasData: true, key: 'a42', dataFlag: 'full' },
   { name: 'South Carolina', reference: 'south-carolina', abbreviation: 'SC', hasData: true, key: 'a33', dataFlag: 'full' },
   { name: 'South Dakota', reference: 'south-dakota', abbreviation: 'SD', hasData: false, key: 'a10', dataFlag: 'no_data_lb' },
@@ -58,9 +59,9 @@ export const US_STATES: USState[] = [
   { name: 'Texas', reference: 'texas', abbreviation: 'TX', hasData: true, key: 'a49', dataFlag: 'full' },
   { name: 'Utah', reference: 'utah', abbreviation: 'UT', hasData: true, key: 'a8', dataFlag: 'full' },
   { name: 'Vermont', reference: 'vermont', abbreviation: 'VT', hasData: true, key: 'a43', dataFlag: 'full' },
-  { name: 'Virginia', reference: 'virginia', abbreviation: 'VA', hasData: false, key: 'a24', dataFlag: 'no_data_lb' },
+  { name: 'Virginia', reference: 'virginia', abbreviation: 'VA', hasData: false, key: 'a24', dataFlag: 'no_data_lb', url: 'https://vcij.org/stories/virginia-is-in-the-minority-of-states-keeping-even-the-most-basic-police-data-secret' },
   { name: 'Washington', reference: 'washington', abbreviation: 'WA', hasData: true, key: 'a0', dataFlag: 'full' },
   { name: 'West Virginia', reference: 'west-virginia', abbreviation: 'WV', hasData: true, key: 'a23', dataFlag: 'full' },
-  { name: 'Wisconsin', reference: 'wisconsin', abbreviation: 'WI', hasData: false, key: 'a46', dataFlag: 'no_data_lb' },
+  { name: 'Wisconsin', reference: 'wisconsin', abbreviation: 'WI', hasData: false, key: 'a46', dataFlag: 'no_data_lb', url: 'https://wisconsinexaminer.com/2024/05/24/wisconsin-is-in-the-minority-of-states-shielding-police-data-were-suing-to-change-that/' },
   { name: 'Wyoming', reference: 'wyoming', abbreviation: 'WY', hasData: true, key: 'a9', dataFlag: 'full' },
 ];

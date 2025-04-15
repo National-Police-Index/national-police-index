@@ -30,6 +30,10 @@ export default function USMap() {
     console.log(stateReference, stateData);
     if (stateData?.hasData) {
       router.push(`/states/${stateReference.toLowerCase()}`);
+    } else {
+      if (stateData?.url) {
+        window.open(stateData.url, '_blank');
+      }
     }
   };
 
