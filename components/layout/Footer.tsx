@@ -6,6 +6,8 @@ import logo1 from '@/images/logo1.png';
 import logo2 from '@/images/logo2.png';
 import logo3 from '@/images/logo3.png';
 
+import styles from './styles.module.scss';
+
 const navigation = {
   main: [
     { name: 'Contact', href: 'https://invisible.institute/contact', target: '_blank' },
@@ -16,11 +18,11 @@ const navigation = {
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-white">
+    <footer className={`w-full bg-white ${styles.footer}`}>
       <div className="w-5/6 mx-auto py-8 sm:py-12 lg:py-16 flex flex-col gap-8 sm:gap-12">
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-          <Link href="/" className="justify-start text-emerald-950 lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
+          <Link href="/" className="justify-start text-[#122823] lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
             National Police Index
           </Link>
 
@@ -30,7 +32,7 @@ export default function Footer() {
                 key={item.name}
                 href={item.href}
                 target={item.target}
-                className="text-emerald-950 hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
+                className="text-[#122823] hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
               >
                 {item.name}
               </Link>

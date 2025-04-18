@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  sassOptions: {
+    prependData: `@import "app/_functions.scss"; @import "app/_variables.scss";`,
+  },
 };
 
 export default nextConfig;

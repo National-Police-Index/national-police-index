@@ -13,6 +13,28 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: $greenC;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+.wrapper {
+  &:before {
+    background-image: url(../public/texture.png);
+    background-size: 500px;
+    content: "";
+    height: 100%;
+    position: fixed;
+    width: 100%;
+  }
+}
+
+main {
+  align-self: center;
+  max-width: 1440px;
+}
+
+h2 {
+  font-size: 40px;
+  line-height: 1.2;
+  letter-spacing: .01em;
 }

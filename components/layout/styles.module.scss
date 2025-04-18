@@ -1,0 +1,44 @@
+.header {
+  max-width: 1400px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.headerContent:not(.headerContentOpen) {
+  border-bottom: 1px solid $greenC;
+}
+
+.mainMenu {
+  animation: fadeIn 0.1s ease-in-out;
+  background-size: 500px;
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  &:before {
+    background-image: url(../../public/texture.png);
+    background-size: 500px;
+    border-radius: 0 0 24px 24px;
+    content: "";
+    display: flex;
+    height: 100%;
+    left: calc(50% - 50vw);
+    position: absolute;
+    width: 100vw;
+  }
+}
+
+.mainMenuHeader {
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.footer {
+  background-color: white;
+  position: relative;
+}

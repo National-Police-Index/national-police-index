@@ -67,20 +67,20 @@ export default function OfficerProfilePage() {
             <div className="w-full px-4 py-8 flex flex-col justify-start items-start gap-4">
 
               <div className="self-stretch flex justify-center items-center gap-2">
-                <div className="flex-1 justify-start text-emerald-950 text-xl font-bold font-['Inter'] leading-7">{fullName}</div>
+                <div className="flex-1 justify-start text-[#122823] text-xl font-bold font-['Inter'] leading-7">{fullName}</div>
               </div>
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
-                <div className="self-stretch py-2 border-t-[0.50px] border-b-[0.50px] border-emerald-950 flex justify-center items-center gap-2">
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">UID Number</div>
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
+                <div className="self-stretch py-2 border-t-[0.50px] border-b-[0.50px] border-[#2F5E50] flex justify-center items-center gap-2">
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">UID Number</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
-                <div className="self-stretch pb-2 border-b-[0.50px] border-emerald-950 flex justify-center items-center gap-2">
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">Last Agency Name</div>
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">{latestRecord.agency_name}</div>
+                <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] flex justify-center items-center gap-2">
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency Name</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.agency_name}</div>
                 </div>
-                <div className="self-stretch pb-2 border-b-[0.50px] border-emerald-950 inline-flex justify-center items-center gap-2">
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">Date</div>
-                  <div className="flex-1 justify-start text-emerald-950 text-base font-normal font-['Inter'] leading-normal">{formatDate(latestRecord.start_date, 'yyyy-MM-dd', { locale: enGB })}</div>
+                <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center gap-2">
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Date</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{formatDate(latestRecord.start_date, 'yyyy-MM-dd', { locale: enGB })}</div>
                 </div>
               </div>
             </div>
@@ -88,7 +88,7 @@ export default function OfficerProfilePage() {
 
             <div className="w-full p-6 lg:p-8 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-6 relative overflow-hidden">
               <div className="self-stretch pb-4 border-b border-emerald-900/10 flex items-center justify-between">
-                <h2 className="text-emerald-950 text-xl font-bold">Timeline</h2>
+                <h2 className="text-[#122823] text-xl font-bold">Timeline</h2>
                 {false && <span className="text-sm text-emerald-700">{records.length} Records</span>}
               </div>
 
@@ -99,19 +99,19 @@ export default function OfficerProfilePage() {
                 return acc;
               }, {} as { [key: string]: typeof records })).sort((a, b) => Number(b[0]) - Number(a[0])).map(([year, yearRecords]) => (
                 <div key={year} className="flex flex-col w-full gap-4">
-                  <div className="text-emerald-950 text-lg font-bold">{year}</div>
+                  <div className="text-[#122823] text-lg font-bold">{year}</div>
                   <div className="w-full flex flex-col gap-2">
                     {yearRecords
                       .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
                       .map((record, index) => (
                         <div key={`${record.document_id}-${index}`} className="flex flex-col w-full gap-4 ">
                           <div className="w-full flex flex-row justify-between lg:gap-6 gap-2">
-                            <div className="lg:w-[100px] w-[70px] justify-start text-emerald-950 text-sm font-normal font-['Inter'] ">
+                            <div className="lg:w-[100px] w-[70px] justify-start text-[#122823] text-sm font-normal font-['Inter'] ">
 
                               {formatDate(record.start_date, 'MMMM d', { locale: enGB })}
 
                             </div>
-                            <div className="flex-1 justify-start text-emerald-950 text-sm font-normal font-['Inter'] ">
+                            <div className="flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter'] ">
                               <h3 className="mt-1 text-base font-medium text-gray-900">
                                 {record.agency_name}
                               </h3>

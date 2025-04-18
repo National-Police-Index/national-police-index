@@ -65,8 +65,8 @@ export default function AboutPage() {
 
           {/* Team Section */}
           <section className="w-full py-14">
-            <div className="w-full pt-4 border-t border-emerald-950 inline-flex justify-start items-center gap-2.5">
-              <div className="justify-start text-emerald-950 text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Team</div>
+            <div className="w-full pt-4 border-t border-[#2F5E50] inline-flex justify-start items-center gap-2.5">
+              <div className="justify-start text-[#122823] text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Team</div>
             </div>
 
             <div className="w-full mx-auto py-8">

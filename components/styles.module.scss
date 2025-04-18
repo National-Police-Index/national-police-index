@@ -1,0 +1,32 @@
+.pageHeader {
+  gap: 100px;
+  min-height: 570px;
+  padding: 112px 0;
+  position: sticky;
+  top: 81px;
+}
+
+.title {
+  color: $greenC;
+  font-size: fluid(32px, 48px);
+}
+
+.description {
+  color: $greenC;
+}
+
+.statistics {
+  flex: 0 0 288px
+}
+
+.statLabel {
+  color: $greenB;
+}
+
+.statValue {
+  color: $greenA;
+}
+
+.postCard {
+  align-self: flex-start;
+}

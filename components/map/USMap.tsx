@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { US_STATES } from '@/constants/states';
 import { State, US_STATES_MAP } from '@/constants/states-map';
-import styles from './USMap.module.css';
+import styles from './USMap.module.scss';
 
 export interface StateMapEntry {
   renderSvg: (state: State, onClick: (reference: string) => void) => React.ReactElement;
@@ -15,11 +15,11 @@ type StatesMap = {
 };
 
 export const DATA_FLAGS = {
-  'full': 'bg-emerald-200',
-  'comming_soon': 'bg-lime-100',
-  'some_data': 'bg-amber-100',
-  'no_data_tb': 'bg-rose-100',
-  'no_data_lb': 'bg-rose-200',
+  'full': 'bg-[#A1D1C1]',
+  'comming_soon': 'bg-[#D7F4CE]',
+  'some_data': 'bg-[#FFF5CC]',
+  'no_data_tb': 'bg-[#FFE1C7]',
+  'no_data_lb': 'bg-[#FAD2D2]',
 };
 
 export default function USMap() {
@@ -38,7 +38,7 @@ export default function USMap() {
   };
 
   return (
-    <div className="w-full lg:mt-6 lg:mb-2 mx-auto flex-col sm:gap-2 lg:gap-6">
+    <div className="w-full flex flex-column mx-auto flex-col sm:gap-2 lg:gap-12">
       <div className="w-full sm:w-[100%] mx-auto items-center justify-center">
         <div className={styles.mapContainer}>
           <div className={styles.mapWrapper}>
@@ -51,26 +51,26 @@ export default function USMap() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row justify-center items-start lg:mx-auto gap-4 md:gap-4 lg:gap-6 lg:px-4">
+      <div className={`flex flex-col lg:flex-row justify-center items-start lg:mx-auto gap-4 md:gap-4 lg:gap-4 lg:px-4 ${styles.legendContainer}`}>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-emerald-200 rounded-lg" />
-          <div className="FullDataAvailable text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Full Data Available</div>
+          <div className="w-8 h-8 bg-[#A1D1C1] rounded-lg" />
+          <div className="FullDataAvailable font-normal font-['Inter'] leading-normal">Full Data Available</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-lime-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
+          <div className="w-8 h-8 bg-[#D7F4CE] rounded-lg" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-amber-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Some Data Available</div>
+          <div className="w-8 h-8 bg-[#FFF5CC] rounded-lg" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">Some Data Available</div>
         </div>
         <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-rose-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
+          <div className="w-8 h-8 bg-[#FFE1C7] rounded-lg" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
         </div>
         <div className="inline-flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-rose-200 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
+          <div className="w-8 h-8 bg-[#FAD2D2] rounded-lg" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
         </div>
       </div>
 

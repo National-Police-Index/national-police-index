@@ -65,8 +65,8 @@ export default function PostsSection() {
               className={`p-3 transition-all hover:scale-110 ${!canGoPrev ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
               aria-label="Previous posts"
             >
-              <svg width="50" height="30" viewBox="0 0 41 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7.02941 1.00001L1.37256 6.65686L7.02941 12.3137" stroke="#4F8C7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="9" height="14" viewBox="0 0 9 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.02941 1.00001L1.37256 6.65686L7.02941 12.3137" stroke="#4F8C7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
 
@@ -76,8 +76,8 @@ export default function PostsSection() {
               className={`p-3 transition-all hover:scale-110 ${!canGoNext ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
               aria-label="Next posts"
             >
-              <svg width="50" height="30" viewBox="0 0 41 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M34.3431 1.00001L40 6.65686L34.3431 12.3137" stroke="#122823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1.34312 1.00001L6.99997 6.65686L1.34312 12.3137" stroke="#122823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>
