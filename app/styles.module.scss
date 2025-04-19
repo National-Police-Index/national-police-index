@@ -1,11 +1,27 @@
 .mapSection {
   background-color: white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding-top: fluid(32px, 56px);
   position: sticky;
   top: 0px;
   z-index: 1;
 }
 
 .recentReporting {
-  margin-left: -56px;
-  width: calc(100% + 112px);
+  background-color: #F3F3F3;
+  border-radius: 24px;
+  gap: fluid(24px, 32px);
+  margin-left: fluid(-20px, -56px, 1304px, 1448px);
+  padding: 56px;
+  padding-bottom: fluid(24px, 56px);
+  padding-top: fluid(24px, 56px);
+  padding-left: fluid(20px, 56px, 1304px, 1448px);
+  padding-right: fluid(20px, 56px, 1304px, 1448px);
+  width: calc(100% + fluid(40px, 112px, 1304px, 1448px));
+}
+
+.mapComponentContainer {
+  margin-bottom: fluid(32px, 56px);
+  margin-top: fluid(24px, 32px);
 }

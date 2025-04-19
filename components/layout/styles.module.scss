@@ -1,17 +1,44 @@
 .header {
-  max-width: 1400px;
+  max-width: 1440px;
   position: sticky;
   top: 0;
+  width: 100%;
   z-index: 1;
 }
 
-.headerContent:not(.headerContentOpen) {
-  border-bottom: 1px solid $greenC;
+.headerContent {
+  position: relative;
+  &:before {
+    content: '';
+    border-bottom: 1px solid $greenC;
+    bottom: 0;
+    position: absolute;
+    width: calc(100% - 80px);
+  }
+  &.headerContentOpen {
+    &:before {
+      border-bottom: 1px solid transparent;
+    }
+  }
+}
+
+header.showMenu {
+  .mainMenu {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.siteTitle {
+  font-size: fluid(16px, 24px);
 }
 
 .mainMenu {
-  animation: fadeIn 0.1s ease-in-out;
-  background-size: 500px;
+  animation: fadeIn .1s ease-in-out;
+  opacity: 0;
+  transition: all .1s ease-in-out;
+  visibility: hidden;
+  z-index: 1;
   @keyframes fadeIn {
     0% {
       opacity: 0;
@@ -21,13 +48,15 @@
     }
   }
   &:before {
-    background-image: url(../../public/texture.png);
-    background-size: 500px;
+    background-image: url(../../public/texture.svg);
+    background-size: 1440px;
+    background-position: center;
     border-radius: 0 0 24px 24px;
+    box-shadow: 0 10px 10px -10px gray;
     content: "";
     display: flex;
     height: 100%;
-    left: calc(50% - 50vw);
+    max-width: 100%;
     position: absolute;
     width: 100vw;
   }
@@ -40,5 +69,28 @@
 
 .footer {
   background-color: white;
+  margin: 0 auto;
+  max-width: 1440px;
+  padding-bottom: fluid(32px, 56px);
+  padding-top: fluid(32px, 56px);
   position: relative;
+  > div {
+    gap: fluid(32px, 40px);
+    > div:first-child {
+      gap: fluid(8px, 16px);
+      nav {
+        gap: 24px;
+      }
+    }
+    > div:last-child {
+      gap: fluid(8px, 24px);
+    }
+  }
+}
+
+.logosContainer {
+  img {
+    height: fluid(32px, 50px);
+    width: auto;
+  }
 }

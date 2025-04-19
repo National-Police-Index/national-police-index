@@ -40,10 +40,10 @@ export default function PostsSection() {
       )}
       {error && <div className="text-center text-red-600 py-8">Error loading posts: {error.message}</div>}
       {!loading && !error && (
-        <div className="flex flex-col justify-start items-start gap-3">
+        <div className="flex flex-col justify-start items-start gap-6">
           <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-6 relative">
             {/* Posts Container with transition */}
-            <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-300 ease-in-out">
+            <div className="w-full grid sm:grid-cols-3 gap-6 transition-all duration-300 ease-in-out">
               {visiblePosts.map((post) => (
                 <PostCard
                   key={post.id}
@@ -58,7 +58,7 @@ export default function PostsSection() {
           </div>
 
           {/* Navigation Controls */}
-          <div className="w-full flex justify-end mt-8">
+          <div className="w-full flex justify-end my-[-12px]">
             <button
               onClick={handlePrev}
               disabled={!canGoPrev}
@@ -77,7 +77,7 @@ export default function PostsSection() {
               aria-label="Next posts"
             >
               <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.34312 1.00001L6.99997 6.65686L1.34312 12.3137" stroke="#122823" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M1.34312 1.00001L6.99997 6.65686L1.34312 12.3137" stroke="#4F8C7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>

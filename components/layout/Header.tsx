@@ -10,6 +10,7 @@ export default function Header() {
   const [isStatesOpen, setIsStatesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -67,17 +68,27 @@ export default function Header() {
   }, []);
 
   return (
-    <header className={`w-5/6 mx-auto header ${styles.header}`}>
-      <div className={`w-full py-6 flex justify-between items-center ${styles.headerContent} ${mounted && isStatesOpen ? styles.headerContentOpen : ''}`}>
+    <header ref={headerRef} className={`mx-auto header ${styles.header}`}>
+      <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${mounted && isStatesOpen ? styles.headerContentOpen : ''}`}>
 
-        <Link href="/" className="justify-start text-[#122823] lg:text-2xl sm:text-base font-bold font-['Inter']">
+        <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] ${styles.siteTitle}`}>
           National Police Index
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex justify-end items-center gap-8">
           <button
-            onClick={() => setIsStatesOpen(!isStatesOpen)}
+            onClick={() => {
+              if (!isStatesOpen) {
+                setIsStatesOpen(true);
+                headerRef.current?.classList.add(styles.showMenu);
+              } else {
+                headerRef.current?.classList.remove(styles.showMenu);
+                setTimeout(() => {
+                  setIsStatesOpen(false);
+                }, 100)
+              }
+            }}
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
@@ -109,7 +120,7 @@ export default function Header() {
         <button
           ref={buttonRef}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-[#122823] cursor-pointer"
+          className="md:hidden p-2 m-[-8px] text-[#122823] cursor-pointer"
           aria-label="Toggle mobile menu"
         >
           <svg
@@ -130,8 +141,8 @@ export default function Header() {
 
       {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className={`hidden md:block absolute left-0 right-0 w-full z-50 bg-[#F3F3F3] ${styles.mainMenu}`}>
-          <div className="mx-auto pb-14 relative">
+        <div className={`md:block absolute left-0 right-0 w-full z-50 bg-[#F3F3F3] ${styles.mainMenu}`}>
+          <div className="container-a mx-auto pb-14 relative">
             <div className={`w-full flex flex-col justify-start items-start gap-2 mb-6 ${styles.mainMenuHeader}`}>
               <div className="w-full text-lg font-normal font-['Inter'] leading-[1.5]">
                 State
@@ -175,7 +186,7 @@ export default function Header() {
               <nav className="flex flex-col gap-6">
                 <div className="pb-4 pr-6 flex justify-between items-center border-b border-b-solid border-[#2F5E50]">
 
-                  <Link href="/" className="justify-start text-[#122823] lg:text-2xl sm:text-base font-bold font-['Inter'] leading-loose">
+                  <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] ${styles.siteTitle}`}>
                     National Police Index
                   </Link>
                   <button

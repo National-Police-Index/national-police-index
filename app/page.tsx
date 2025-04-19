@@ -25,17 +25,17 @@ export default function Home() {
         ]}
       />
 
-      <div className={`w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-14 map-section ${styles.mapSection}`}>
-        <div className="w-5/6 mx-auto">
+      <div className={`w-full bg-white ${styles.mapSection}`}>
+        <div className="container-a mx-auto">
           <div className="pt-4 border-t border-[#2F5E50] flex justify-start items-center ">
             <h2 className="justify-start text-[#122823] font-bold font-['Inter']">National Police Index data map</h2>
           </div>
 
-          <div className="w-full mx-auto text-center mt-8 mb-14">
+          <div className={`w-full mx-auto text-center ${styles.mapComponentContainer}`}>
 
             <USMap />
           </div>
-          <div className={`lg:p-14 p-6 mt-12 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-8 ${styles.recentReporting} `}>
+          <div className={`flex flex-col justify-start items-start ${styles.recentReporting} `}>
             <div className="w-full pt-4 border-t border-[#2F5E50] flex justify-start items-center gap-2.5">
               <h2 className="justify-start text-[#122823] text-4xl font-bold font-['Inter'] tracking-tight">Recent reporting</h2>
             </div>

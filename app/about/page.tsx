@@ -16,7 +16,7 @@ export default function AboutPage() {
       />
 
       <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
-        <div className="w-5/6 mx-auto ">
+        <div className="container-a mx-auto ">
 
 
           {/* Main Content */}

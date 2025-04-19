@@ -38,7 +38,7 @@ export default function USMap() {
   };
 
   return (
-    <div className="w-full flex flex-column mx-auto flex-col sm:gap-2 lg:gap-12">
+    <div className={`w-full flex flex-column mx-auto flex-col ${styles.mapWrapper}`}>
       <div className="w-full sm:w-[100%] mx-auto items-center justify-center">
         <div className={styles.mapContainer}>
           <div className={styles.mapWrapper}>
@@ -51,25 +51,25 @@ export default function USMap() {
           </div>
         </div>
       </div>
-      <div className={`flex flex-col lg:flex-row justify-center items-start lg:mx-auto gap-4 md:gap-4 lg:gap-4 lg:px-4 ${styles.legendContainer}`}>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-[#A1D1C1] rounded-lg" />
+      <div className={`flex flex-row justify-center items-start lg:mx-auto ${styles.legendContainer}`}>
+        <div className="flex justify-start items-center">
+          <div className="bg-[#A1D1C1]" />
           <div className="FullDataAvailable font-normal font-['Inter'] leading-normal">Full Data Available</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-[#D7F4CE] rounded-lg" />
+        <div className="flex justify-start items-center">
+          <div className="bg-[#D7F4CE]" />
           <div className="text-center font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-[#FFF5CC] rounded-lg" />
+        <div className="flex justify-start items-center">
+          <div className="bg-[#FFF5CC]" />
           <div className="text-center font-normal font-['Inter'] leading-normal">Some Data Available</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-[#FFE1C7] rounded-lg" />
+        <div className="flex justify-start items-center">
+          <div className="bg-[#FFE1C7]" />
           <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
         </div>
-        <div className="inline-flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-[#FAD2D2] rounded-lg" />
+        <div className="inline-flex justify-start items-center">
+          <div className="bg-[#FAD2D2]" />
           <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
         </div>
       </div>
