@@ -15,6 +15,9 @@ body {
   color: $greenC;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   min-width: 320px;
+}
+
+.wrapper {
   &:before {
     background-color: var(--background);
     background-image: url(../public/texture.svg);
@@ -25,9 +28,6 @@ body {
     position: fixed;
     width: 100%;
   }
-}
-
-.wrapper {
 }
 
 main {
