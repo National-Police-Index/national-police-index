@@ -55,6 +55,15 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    const body = document.body;
+    if (isMobileMenuOpen) {
+      body.style.overflow = 'hidden';
+    } else {
+      body.style.overflow = 'auto';
+    }
+  }, [isMobileMenuOpen]);  
+
   const stateColumns = useMemo(() => {
     const statesWithData = US_STATES.filter(state => state.hasData);
     const columns = [];
@@ -68,10 +77,10 @@ export default function Header() {
   }, []);
 
   return (
-    <header ref={headerRef} className={`mx-auto header ${styles.header}`}>
+    <header ref={headerRef} className={`mx-auto header ${styles.header} ${isMobileMenuOpen && styles.headerOpen}`}>
       <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${mounted && isStatesOpen ? styles.headerContentOpen : ''}`}>
 
-        <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] ${styles.siteTitle}`}>
+        <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] p-2 m-[-8px] ${styles.siteTitle}`}>
           National Police Index
         </Link>
 
@@ -94,21 +103,8 @@ export default function Header() {
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
               State Data
             </span>
-            <svg
-              width="12"
-              height="7"
-              viewBox="0 0 12 7"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className={`transform transition-transform ${!isStatesOpen ? 'rotate-180' : ''}`}
-            >
-              <path
-                d="M1 5.74037L5.11616 1.62421C5.60227 1.1381 6.39773 1.1381 6.88384 1.62421L11 5.74037"
-                stroke="currentColor"
-                strokeMiterlimit="10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
+              <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           <Link href="/about" className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]">
@@ -141,7 +137,7 @@ export default function Header() {
 
       {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className={`md:block absolute left-0 right-0 w-full z-50 bg-[#F3F3F3] ${styles.mainMenu}`}>
+        <div className={`md:block absolute left-0 right-0 w-full z-50 ${styles.mainMenu}`}>
           <div className="container-a mx-auto pb-14 relative">
             <div className={`w-full flex flex-col justify-start items-start gap-2 mb-6 ${styles.mainMenuHeader}`}>
               <div className="w-full text-lg font-normal font-['Inter'] leading-[1.5]">
@@ -180,74 +176,34 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mounted && isMobileMenuOpen && (
-        <div ref={menuRef} className="md:hidden mx-auto fixed inset-0 z-50 bg-[#F3F3F3] ">
-          <div className="flex flex-col h-full  rounded-bl-3xl rounded-br-3xl ">
-            <div className="flex-1 overflow-y-auto py-6 px-6">
-              <nav className="flex flex-col gap-6">
-                <div className="pb-4 pr-6 flex justify-between items-center border-b border-b-solid border-[#2F5E50]">
-
-                  <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] ${styles.siteTitle}`}>
-                    National Police Index
-                  </Link>
-                  <button
-                    ref={buttonRef}
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="md:hidden p-2 text-[#122823] cursor-pointer"
-                    aria-label="Toggle mobile menu"
-                  >
-                    <svg
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                    >
-                      {isMobileMenuOpen ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                      )}
-                    </svg>
-                  </button>
-
-                </div>
+        <div ref={menuRef} className={`container-a py-6 md:hidden mx-auto inset-0 z-50 ${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''} ${isStatesOpen ? styles.mobileStatesOpen : ''}`}>
+          <div className="flex flex-col h-full relative">
+            <div className="">
+              <nav className="flex flex-col gap-4">
                 <Link
                   href="/about"
-                  className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]"
+                  className="text-[#122823] font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   About
                 </Link>
                 <button
                   onClick={() => setIsStatesOpen(!isStatesOpen)}
-                  className="flex items-center flex-row gap-4 text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed pointer"
+                  className="flex items-center flex-row gap-4 text-[#122823] font-normal leading-relaxed font-['Inter'] cursor-pointer"
                 >
                   <span>State Data</span>
-                  <svg
-                    width="12"
-                    height="7"
-                    viewBox="0 0 12 7"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`transform transition-transform ${!isStatesOpen ? 'rotate-180' : ''}`}
-                  >
-                    <path
-                      d="M1 5.74037L5.11616 1.62421C5.60227 1.1381 6.39773 1.1381 6.88384 1.62421L11 5.74037"
-                      stroke="currentColor"
-                      strokeMiterlimit="10"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
+                    <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
 
                 {isStatesOpen && (
-                  <div className="pl-4 flex flex-col gap-4">
+                  <div className="flex flex-col gap-2 pb-8">
                     {US_STATES.map((state) => (
                       <Link
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
-                        className="text-[#122823] text-base font-normal font-['Inter'] leading-normal hover:text-[#2F5E50]"
+                        className="text-[#122823] text-[14px] font-normal font-['Inter'] leading-[1.5] hover:text-[#2F5E50]"
                         onClick={() => {
                           setIsStatesOpen(false);
                           setIsMobileMenuOpen(false);
@@ -259,7 +215,7 @@ export default function Header() {
 
                     <Link
                       href="https://invisible.institute/national-police-index#block-yui_3_17_2_1_1726594221053_11311"
-                      className="text-[#122823] text-base font-bold font-['Inter'] leading-snug hover:text-[#2F5E50]"
+                      className="text-[#122823] text-[14px] font-bold font-['Inter'] leading-snug hover:text-[#2F5E50] pt-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Why isn&apos;t my state&apos;s data here?

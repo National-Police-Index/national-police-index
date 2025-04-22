@@ -21,7 +21,7 @@ export const US_STATES: USState[] = [
   { name: 'Colorado', reference: 'colorado', abbreviation: 'CO', hasData: false, key: 'a19', dataFlag: 'no_data_lb', url: 'https://coloradofoic.org/even-with-new-post-database-and-reforms-colorado-is-in-the-minority-of-states-keeping-comprehensive-police-officer-data-secret/' },
   { name: 'Connecticut', reference: 'connecticut', abbreviation: 'CT', hasData: false, key: 'a16', dataFlag: 'no_data_tb' },
   { name: 'Delaware', reference: 'delaware', abbreviation: 'DE', hasData: true, key: 'a26', dataFlag: 'full' },
-  { name: 'Columbia', reference: 'columbia', abbreviation: 'DC', hasData: true, key: 'a34', dataFlag: 'full' },
+  { name: 'District of Columbia', reference: 'columbia', abbreviation: 'DC', hasData: true, key: 'a34', dataFlag: 'full' },
   { name: 'Florida', reference: 'florida', abbreviation: 'FL', hasData: true, key: 'a50', dataFlag: 'full' },
   { name: 'Georgia', reference: 'georgia', abbreviation: 'GA', hasData: true, key: 'a39', dataFlag: 'full' },
   { name: 'Hawaii', reference: 'hawaii', abbreviation: 'HI', hasData: true, key: 'a48', dataFlag: 'full' },
