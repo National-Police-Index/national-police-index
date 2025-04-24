@@ -1,39 +1,65 @@
 .pageHeader {
   gap: fluid(32px, 100px);
-  min-height: 570px;
-  padding-bottom: fluid(56px, 112px);
-  padding-top: fluid(56px, 112px);
-  position: sticky;
-  top: fluid(72px, 80px);
-  > div {
-    gap: fluid(24px, 32px);
+  //position: sticky;
+  position: relative;
+  &.homeHeader {
+    min-height: 570px;
+    padding-bottom: fluid(56px, 112px);
+    padding-top: fluid(56px, 112px);
+    > div {
+      gap: fluid(24px, 32px);
+    }
+    .title {
+      color: $greenC;
+      font-size: fluid(32px, 48px);
+    }
+    .description {
+      color: $greenC;
+      font-size: fluid(16px, 18px);
+    }
+    .statistics {
+      @media screen and (min-width: 1024px) {
+        flex: 0 0 288px;
+      }
+    }  
+    .statValue {
+      color: $greenA;
+      font-size: fluid(56px, 80px);
+    }
+    .statLabel {
+      color: $greenB;
+      font-size: fluid(16px, 18px);
+    }
   }
-}
-
-.title {
-  color: $greenC;
-  font-size: fluid(32px, 48px);
-}
-
-.description {
-  color: $greenC;
-  font-size: fluid(16px, 18px);
-}
-
-.statistics {
-  @media screen and (min-width: 1024px) {
-    flex: 0 0 288px;
+  &:not(.homeHeader) {
+    padding-bottom: 56px;
+    padding-top: 56px;
+    > div {
+      gap: fluid(24px, 32px);
+    }
+    .title {
+      color: $greenC;
+      font-size: 40px;
+    }
+    .description {
+      color: $greenC;
+      font-size: 16px
+    }
+    .statistics {
+      gap: 24px;
+      @media screen and (min-width: 1024px) {
+        flex: 0 0 392px;
+      }
+    }  
+    .statValue {
+      color: $greenA;
+      font-size: 48px;
+    }
+    .statLabel {
+      color: $greenB;
+      font-size: fluid(16px, 18px);
+    }
   }
-}
-
-.statLabel {
-  color: $greenB;
-  font-size: fluid(16px, 18px);
-}
-
-.statValue {
-  color: $greenA;
-  font-size: fluid(56px, 80px);
 }
 
 .postCard {
@@ -43,21 +69,19 @@
     margin: auto;
     max-width: 300px;
   }
-}
-
-.imageWrapper {
-  height: 0;
-  padding-top: 100%;
-  width: 100%;
-  img {
-    height: 100%;
-    position: absolute;
-    top: 0;
+  .imageWrapper {
+    height: 0;
+    padding-top: 100%;
+    width: 100%;
+    img {
+      height: 100%;
+      position: absolute;
+      top: 0;
+    }
   }
-}
-
-.textWrapper {
-  > div {
-    font-size: fluid(16px, 18px);
+  .textWrapper {
+    > div {
+      font-size: fluid(16px, 18px);
+    }
   }
 }

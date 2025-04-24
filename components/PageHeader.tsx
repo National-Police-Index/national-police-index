@@ -4,6 +4,7 @@ interface Statistic {
 }
 
 interface PageHeaderProps {
+  home: boolean;
   title: string;
   description?: string;
   statistics?: Statistic[];
@@ -11,9 +12,9 @@ interface PageHeaderProps {
 
 import styles from "./styles.module.scss";
 
-export default function PageHeader({ title, description, statistics }: PageHeaderProps) {
+export default function PageHeader({ home, title, description, statistics }: PageHeaderProps) {
   return (
-    <div className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${styles.pageHeader}`}>
+    <div className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${styles.pageHeader} ${home && styles.homeHeader}`}>
       <div className='w-full flex flex-col justify-start items-start'>
         <h1 className={'self-stretch justify-start text-[#122823] font-bold font-["Inter"] tracking-[.01em] leading-[1.2] ' + styles.title}>
           {title}

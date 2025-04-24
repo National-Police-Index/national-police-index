@@ -12,7 +12,6 @@
 }
 
 body {
-  background: var(--background);
   color: $greenC;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   min-width: 320px;
@@ -20,6 +19,7 @@ body {
 
 .wrapper {
   &:before {
+    background-color: var(--background);
     background-image: url(../public/texture.svg);
     background-size: 1440px;
     background-position: center;

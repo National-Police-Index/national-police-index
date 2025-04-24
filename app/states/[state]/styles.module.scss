@@ -1,0 +1,27 @@
+.pageContentWrapper {
+  margin-left: calc(50% - 50vw);
+  padding: 56px 0 0;
+  width: 100vw;
+}
+
+.cardsWrapper {
+  margin-top: fluid(32px, 56px);
+}
+
+.cards {
+  margin-left: auto;
+  margin-right: auto;
+  @media screen and (max-width: 1303px) {
+    max-width: calc(288px*3 + 24px*2);
+  }
+  @media screen and (max-width: 991px) {
+    max-width: calc(288px*2 + 24px);
+  }
+  @media screen and (max-width: 679px) {
+    justify-content: center;
+  }
+}
+
+.paginationWrapper {
+  margin-top: fluid(32px, 56px);
+}

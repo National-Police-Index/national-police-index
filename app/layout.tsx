@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.variable} antialiased h-full bg-[#F3F3F3]`}>
+      <body className={`${inter.variable} antialiased h-full`}>
         <div className="min-h-fulld flex flex-col wrapper">
           <Header />
           <main className="flex-grow w-full ">

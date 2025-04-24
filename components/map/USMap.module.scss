@@ -1,5 +1,13 @@
+$dateFull: #A1D1C1;
+$dataSoon: #D7F4CE;
+$dataSome: #FFF5CC;
+$dataNoTB: #FFE1C7;
+$dataNoLB: #FAD2D2;
+
 .mapWrapper {
+  display: flex;
   gap: fluid(32px, 56px);
+  position: relative;
   .mapContainer {
     position: relative;
     width: 100%;
@@ -25,7 +33,7 @@
     @media screen and (max-width: 399px) {
       height: 170px;
     }
-    .mapWrapper {
+    > div {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -58,7 +66,35 @@
 .stateItem {
   position: absolute;
   cursor: pointer;
-  > div {
+  &.full {
+    > div > div > :first-child {
+      background-color: $dateFull;
+    }
+  }
+  &.coming_soon {
+    > div > div > :first-child {
+      background-color: $dataSoon;
+    }
+  }
+  &.some_data {
+    > div > div > :first-child {
+      background-color: $dataSome;
+    }
+  }
+  &.no_data_tb {
+    > div > div > :first-child {
+      background-color: $dataNoTB;
+    }
+  }
+  &.no_data_lb {
+    > div > div > :first-child {
+      background-color: $dataNoLB;
+    }
+  }
+  > div > div {
+    @media screen and (max-width: 499px) {
+      pointer-events: none;
+    }
     > :first-child {
       border: 1.5px solid white;
       border-radius: 10px
@@ -91,5 +127,41 @@
       font-weight: 600;
       text-align: start;
     }
+  }
+}
+
+.tooltip {
+  background: #F3F3F3;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  color: $greenC;
+  padding: fluid(8px, 16px);
+  border-radius: fluid(12px, 16px);
+  border-top-left-radius: 0;
+  font-size: fluid(12px, 16px);
+  max-width: 200px;
+  opacity: 0;
+  position: absolute;
+  text-align: start;
+  transition: opacity .1s ease-in-out, visibility .1s ease-in-out;
+  visibility: hidden;
+  @media screen and (max-width: 767px) {
+    width: 125px;
+  }
+  @media screen and (max-width: 499px) {
+    display: none;
+    pointer-events: none;
+  }
+  &.tooltipVisible {
+    opacity: 1;
+    visibility: visible;
+  }
+  &.tooltipRight {
+    border-radius: fluid(12px, 16px);
+    border-top-right-radius: 0;  
+    transform: translateX(-100%);
+  }
+  hr {
+    margin: fluid(4px, 8px) 0;
+    border-top: 1px solid $greenC;
   }
 }

@@ -1,0 +1,116 @@
+.formFilters {
+  display: flex;
+  flex-direction: column;
+  gap: fluid(16px, 24px);
+  .searchIcon {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    left: 16px;
+  }
+  .filtersRow {
+    justify-content: space-between;
+    gap: fluid(16px, 22px);
+    @media screen and (max-width: 1023px) {
+      flex-wrap: wrap;
+    }
+    > div {
+      flex: 0 1 184px;
+    }
+    .agency {
+      flex: 1;
+      min-width: 200px;
+      @media screen and (max-width: 1023px) {
+        min-width: unset;      
+      }
+    }
+    .datePicker {
+      @media screen and (max-width: 1023px) {
+        flex: 0 0 calc(50% - fluid(16px, 22px)/2);
+        > div {
+          width: 100%;
+        }
+      }
+      input {
+        background-image: url(../../images/datepicker-chevron.svg);
+        background-position: calc(100% - 16px) center;
+        background-repeat: no-repeat;
+        background-size: 12px 7px;
+      }
+    }
+    @media screen and (max-width: 1023px) {
+      :nth-last-child(3), :nth-last-child(2), :last-child {
+        flex: 0 0 calc(33% - fluid(16px, 22px)*(2/3));
+      }
+    }
+    @media screen and (max-width: 679px) {
+      :nth-last-child(3), :nth-last-child(2), :last-child {
+        flex: 0 0 100%;
+      }
+    }
+  }
+  select {
+    background-image: url(../../images/datepicker-chevron.svg);
+    background-position: calc(100% - 16px) center;
+    background-repeat: no-repeat;
+    background-size: 12px 7px;
+  }
+  input, select {
+    appearance: none;
+    background-color: $grayA;
+    border: 1px solid $grayB;
+    border-radius: 8px;
+    color: $greenC;
+    font-size: 16px;
+    height: fluid(40px, 45px);
+    padding: 8px 16px;
+    width: 100%;
+    &[id=search] {
+      padding-left: 64px;
+    }
+    &::placeholder {
+      color: $greenC;
+      font-size: 16px;
+    }
+    &:focus {
+      outline: 2px solid $greenC;
+      outline-offset: -2px;
+    }
+  }
+  .buttonGroup {
+    display: flex;
+    gap: 16px;
+    @media screen and (max-width: 479px) {
+      flex-direction: column;
+    }  
+    button {
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      height: fluid(40px, 45px);
+      padding: fluid(5px, 8px) 16px;
+      transition: all .1s ease-in-out;
+      &.clearButton {
+        background-color: white;
+        border: 2px solid $greenA;
+        color: $greenA;
+        &:hover {
+          background-color: $grayA;
+          border: 2px solid $greenA;
+          color: $greenA;
+        }     
+      }
+      &.applyButton {
+        background-color: $greenA;
+        border: 2px solid $greenA;
+        color: white;
+        &:hover {
+          background-color: lighten($greenA, 5%);
+          border: 2px solid $greenA;
+          color: white;
+        }  
+      }
+    }
+  }
+}
