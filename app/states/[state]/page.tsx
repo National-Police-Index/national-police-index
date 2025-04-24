@@ -10,6 +10,8 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 
+import styles from '../../styles.module.scss';
+
 interface StatePageProps {
   params: Promise<{
     state: string;
@@ -82,7 +84,7 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
         ]}
       />
 
-      <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
+      <div className={`w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12  ${styles.mapSection}`}>
         <div className="container-a mx-auto">
 
           <SearchFilters />
@@ -103,7 +105,7 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
               </div>
             ) : (
               <>
-                <div className="space-y-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
                   {officerGroups.map((group) => (
                     <OfficerCard key={group.person_nbr} officer={group.records[0]} />
                   ))}

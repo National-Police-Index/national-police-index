@@ -89,42 +89,26 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         // Add sorting
         q = query(q, orderBy(sortField, sortDirection));
 
-        // Add pagination
+        // Remove Firestore pagination; fetch a large enough batch to ensure enough groups for the requested page.
+        // You may want to tune this multiplier for performance if your dataset is very large.
         const pageSize = searchParameters.pageSize || 16;
+        const page = searchParameters.page || 1;
+        const officerFetchLimit = pageSize * 10; // Fetch up to 10x the page size to increase likelihood of filling the group page.
+        // Remove limit/startAfter pagination
+        const qWithLimit = query(q, limit(officerFetchLimit));
+        console.log('query', qWithLimit);
 
-        // If not on first page, we need to get the document to start after
-        if (searchParameters.page > 1) {
-          // First get all documents up to the start of our target page
-          const previousPageQuery = query(q, limit((searchParameters.page - 1) * pageSize));
-          const previousPageSnapshot = await getDocs(previousPageQuery);
-
-          if (!previousPageSnapshot.empty) {
-            // Get the last document from the previous page
-            const lastDoc = previousPageSnapshot.docs[previousPageSnapshot.docs.length - 1];
-            // Now create the actual query starting after that document
-            q = query(q, startAfter(lastDoc), limit(pageSize));
-          }
-        } else {
-          // First page just needs the limit
-          q = query(q, limit(pageSize));
-        }
-
-        console.log('query', q);
-
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(qWithLimit);
         const allDocs = snapshot.docs;
 
         // Group officers by person_nbr
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
-
         allDocs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
           const person_nbr = officer.person_nbr;
-
           if (!groupedOfficers.has(person_nbr)) {
             groupedOfficers.set(person_nbr, []);
           }
-
           groupedOfficers.get(person_nbr)?.push(officer);
         });
 
@@ -137,9 +121,14 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
             return dateB - dateA; // Sort by most recent first
           })
         }));
-        console.log('sorted groups', sortedGroups);
 
-        setOfficerGroups(sortedGroups);
+        // Paginate groups in-memory
+        const startIdx = (page - 1) * pageSize;
+        const endIdx = startIdx + pageSize;
+        const paginatedGroups = sortedGroups.slice(startIdx, endIdx);
+        console.log('paginated groups', paginatedGroups);
+
+        setOfficerGroups(paginatedGroups);
 
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch officers'));

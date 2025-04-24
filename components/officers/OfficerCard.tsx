@@ -49,8 +49,8 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
           <div className="self-stretch inline-flex justify-end items-center gap-6">
             <div className="text-right justify-start text-slate-500 text-xs font-normal font-['Inter'] leading-none">More</div>
             <div data-svg-wrapper>
-              <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 0.759521L6.88384 4.87568C6.39773 5.36179 5.60227 5.36179 5.11616 4.87568L1 0.759521" stroke="#4F8C7E" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+              <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-[#4F8C7E] strokeMiterlimit-[10] strokeLinecap-[round] strokeLinejoin-[round]">
+                <path d="M11 0.759521L6.88384 4.87568C6.39773 5.36179 5.60227 5.36179 5.11616 4.87568L1 0.759521" />
               </svg>
             </div>
           </div>
