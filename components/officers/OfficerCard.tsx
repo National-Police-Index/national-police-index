@@ -1,6 +1,10 @@
+'use client';
+
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { PoliceOfficer } from '@/types';
+import styles from './OfficeCard.module.scss';
 
 interface OfficerCardProps {
   officer: PoliceOfficer;
@@ -9,51 +13,77 @@ interface OfficerCardProps {
 export default function OfficerCard({ officer }: OfficerCardProps) {
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      return format(new Date(dateString), 'MM/dd/yyyy');
     } catch {
       return 'N/A';
     }
   };
 
+  const cardContent = useRef<HTMLDivElement>(null);
+
+  const [more, setMore] = useState(false);
+  const [moreActive, setMoreActive] = useState(false);
+
+  useEffect(() => {
+    // console log scroll height of cardContent
+    if (cardContent.current) {
+      const scrollHeight = cardContent.current.scrollHeight;
+      const clientHeight = cardContent.current.clientHeight;
+      if (scrollHeight > clientHeight) {
+        setMore(true);
+      }
+    }
+  }, []);
+
   const fullName = officer.full_name || officer.first_name + ' ' + officer.last_name;
+
+  const onMoreClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setMoreActive(!moreActive);
+  }
+
 
   return (
     <Link
       href={`/officers/${officer.person_nbr}`}
-      className="group flex w-full max-w-sm hover:scale-[1.02] transition-transform duration-200"
+      className={`group flex w-full max-w-sm ${styles.officerCard} ${moreActive ? styles.moreActive : ''}`}
     >
       <div className="w-[5%] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />
-      <div className="flex-1 aspect-[4/2.75] p-4 bg-zinc-100 rounded-tr-2xl rounded-br-2xl flex flex-col justify-start items-start gap-2 group-hover:bg-zinc-50 transition-colors duration-200">
-        <div className="self-stretch flex flex-col justify-start items-start gap-2">
-          <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center gap-2">
-            <div className="flex-1 justify-start text-[#122823] text-base font-semibold font-['Inter'] leading-normal">
-              {fullName}
-            </div>
+      <div className={`flex-1 flex flex-col justify-start items-start ${styles.cardContent}`}>
+        <div ref={cardContent}>
+          <div className={styles.name}>
+            {fullName}
           </div>
-          <div className="self-stretch justify-start text-[#122823] text-sm font-normal font-['Inter'] leading-tight">
+          <hr />
+          <div className={styles.uidNumber}>
             UID Number: {officer.person_nbr}
           </div>
-          <div className="self-stretch flex flex-col justify-start items-start gap-1">
-            <div className="self-stretch justify-start text-[#122823] text-sm font-normal font-['Inter'] leading-tight">
+          <div className={styles.agency}>
+            <div className={styles.agencyName}>
               {officer.agency_name}
             </div>
-            <div className="inline-flex justify-start items-start gap-4">
-              <div className="justify-start text-[#122823] text-xs font-normal font-['Inter'] leading-none">
+            <div className={styles.agencyDates}>
+              <div>
                 {formatDate(officer.start_date)}
               </div>
-              <div className="justify-start text-[#122823] text-xs font-normal font-['Inter'] leading-none">
+              <div>
                 {formatDate(officer.end_date)}
               </div>
             </div>
           </div>
-          <div className="self-stretch inline-flex justify-end items-center gap-6">
-            <div className="text-right justify-start text-slate-500 text-xs font-normal font-['Inter'] leading-none">More</div>
-            <div data-svg-wrapper>
-              <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 0.759521L6.88384 4.87568C6.39773 5.36179 5.60227 5.36179 5.11616 4.87568L1 0.759521" stroke="#4F8C7E" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </div>
-          </div>
+          {more && (
+            <button 
+              className={styles.more}
+              onClick={onMoreClick}
+            >
+              <div>More</div>
+              <div data-svg-wrapper>
+                <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 0.759521L6.88384 4.87568C6.39773 5.36179 5.60227 5.36179 5.11616 4.87568L1 0.759521" stroke="#4F8C7E" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </button>
+          )}
         </div>
       </div>
     </Link>

@@ -1,3 +1,9 @@
+$dateFull: #A1D1C1;
+$dataSoon: #D7F4CE;
+$dataSome: #FFF5CC;
+$dataNoTB: #FFE1C7;
+$dataNoLB: #FAD2D2;
+
 .mapWrapper {
   display: flex;
   gap: fluid(32px, 56px);
@@ -60,6 +66,31 @@
 .stateItem {
   position: absolute;
   cursor: pointer;
+  &.full {
+    > div > div > :first-child {
+      background-color: $dateFull;
+    }
+  }
+  &.coming_soon {
+    > div > div > :first-child {
+      background-color: $dataSoon;
+    }
+  }
+  &.some_data {
+    > div > div > :first-child {
+      background-color: $dataSome;
+    }
+  }
+  &.no_data_tb {
+    > div > div > :first-child {
+      background-color: $dataNoTB;
+    }
+  }
+  &.no_data_lb {
+    > div > div > :first-child {
+      background-color: $dataNoLB;
+    }
+  }
   > div > div {
     @media screen and (max-width: 499px) {
       pointer-events: none;

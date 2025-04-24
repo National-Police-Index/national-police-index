@@ -9,6 +9,7 @@ import { US_STATES } from '@/constants/states';
 import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
+import styles from './styles.module.scss';
 
 interface StatePageProps {
   params: Promise<{
@@ -82,12 +83,12 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
         ]}
       />
 
-      <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
+      <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
         <div className="container-a mx-auto">
 
           <SearchFilters />
 
-          <div className="mt-8">
+          <div className={styles.cardsWrapper}>
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
@@ -103,14 +104,14 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
               </div>
             ) : (
               <>
-                <div className="space-y-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto place-items-center">
+                <div className={`flex flex-wrap gap-6 ${styles.cards}`}>
                   {officerGroups.map((group) => (
                     <OfficerCard key={group.person_nbr} officer={group.records[0]} />
                   ))}
                 </div>
-                <div className="mt-8">
+                <div className={styles.paginationWrapper}>
                   {totalPages > 1 && (
-                    <div className="mt-8">
+                    <div>
                       <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}

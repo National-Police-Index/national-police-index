@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, use } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { US_STATES } from '@/constants/states';
 import { State, US_STATES_MAP } from '@/constants/states-map';
@@ -16,7 +16,7 @@ type StatesMap = {
 
 export const DATA_FLAGS = {
   'full': 'bg-[#A1D1C1]',
-  'comming_soon': 'bg-[#D7F4CE]',
+  'coming_soon': 'bg-[#D7F4CE]',
   'some_data': 'bg-[#FFF5CC]',
   'no_data_tb': 'bg-[#FFE1C7]',
   'no_data_lb': 'bg-[#FAD2D2]',
@@ -24,7 +24,7 @@ export const DATA_FLAGS = {
 
 export const DATA_FLAG_MESSAGES = {
   'full': 'Full Data Available',
-  'comming_soon': 'Data Coming Soon',
+  'coming_soon': 'Data Coming Soon',
   'some_data': 'Some Data Available',
   'no_data_tb': 'No Data (Technical Barrier)',
   'no_data_lb': 'No Data (Legal Barrier)',
@@ -112,10 +112,11 @@ export default function USMap() {
               
               // Get the original SVG
               const originalSvg = mapEntry.renderSvg(state, handleStateClick);
-              
-              // Add wrapper div with event handlers
+
+              console.log(state.dataFlag)
+          
               return (
-                <div key={index} className={styles.stateItem}>
+                <div key={index} className={`${styles.stateItem}  ${styles[state.dataFlag]}`}>
                   <div 
                     onMouseEnter={(e) => handleMouseEnter(e, state.reference)}
                     onMouseLeave={handleMouseLeave}

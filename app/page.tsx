@@ -11,6 +11,7 @@ export default function Home() {
     <div className="w-full mx-auto">
 
       <PageHeader
+        home={true}
         title="Is Police Employment History Data Public?"
         description="The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S."
         statistics={[

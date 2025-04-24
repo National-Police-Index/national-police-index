@@ -2,10 +2,12 @@
   background-color: white;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
+  margin-left: calc(50% - 50vw);
   padding-top: fluid(32px, 56px);
   position: sticky;
   top: 0px;
   z-index: 1;
+  width: 100vw;
 }
 
 .recentReporting {
