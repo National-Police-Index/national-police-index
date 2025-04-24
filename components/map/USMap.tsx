@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { US_STATES } from '@/constants/states';
 import { State, US_STATES_MAP } from '@/constants/states-map';
-import styles from './USMap.module.css';
+import styles from './USMap.module.scss';
 
 export interface StateMapEntry {
   renderSvg: (state: State, onClick: (reference: string) => void) => React.ReactElement;
@@ -15,15 +15,39 @@ type StatesMap = {
 };
 
 export const DATA_FLAGS = {
-  'full': 'bg-emerald-200',
-  'comming_soon': 'bg-lime-100',
-  'some_data': 'bg-amber-100',
-  'no_data_tb': 'bg-rose-100',
-  'no_data_lb': 'bg-rose-200',
+  'full': 'bg-[#A1D1C1]',
+  'coming_soon': 'bg-[#D7F4CE]',
+  'some_data': 'bg-[#FFF5CC]',
+  'no_data_tb': 'bg-[#FFE1C7]',
+  'no_data_lb': 'bg-[#FAD2D2]',
+};
+
+export const DATA_FLAG_MESSAGES = {
+  'full': 'Full Data Available',
+  'coming_soon': 'Data Coming Soon',
+  'some_data': 'Some Data Available',
+  'no_data_tb': 'No Data (Technical Barrier)',
+  'no_data_lb': 'No Data (Legal Barrier)',
 };
 
 export default function USMap() {
   const router = useRouter();
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    stateName: string;
+    message: string;
+    direction?: string;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    stateName: '',
+    message: '',
+    direction: undefined,
+  });
 
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
@@ -37,43 +61,110 @@ export default function USMap() {
     }
   };
 
+  const handleMouseEnter = (e: React.MouseEvent, stateReference: string) => {
+    const stateData = US_STATES.find(s => s.reference.toLowerCase() === stateReference.toLowerCase());
+
+    if (stateData) {
+      const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';      
+
+      const eTarget = (e.target as HTMLElement).getBoundingClientRect();      
+      const wrapperRect = mapWrapperRef.current?.getBoundingClientRect();
+      const relativeX = wrapperRect 
+        ? eTarget.left - wrapperRect.left + (eTarget.width * .2)
+        : eTarget.left + (eTarget.width * .2)
+      const relativeY = wrapperRect 
+        ? eTarget.top - wrapperRect.top + eTarget.height - (eTarget.height * .1)
+        : eTarget.top + eTarget.height - (eTarget.height * .1)
+
+      const mapWrapperWidth = mapWrapperRef.current?.offsetWidth || 0;
+      let direction = 'left';
+      if (relativeX > mapWrapperWidth * 0.7) {
+        direction = 'right';
+      }
+      
+      setTooltip({
+        visible: true,
+        x: relativeX,
+        y: relativeY,
+        stateName: stateData.name,
+        message,
+        direction,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
+
   return (
-    <div className="w-full lg:mt-6 lg:mb-2 mx-auto flex-col sm:gap-2 lg:gap-6">
+    <div 
+      className={`w-full flex flex-column mx-auto flex-col ${styles.mapWrapper}`}
+      ref={mapWrapperRef}
+    >
       <div className="w-full sm:w-[100%] mx-auto items-center justify-center">
         <div className={styles.mapContainer}>
-          <div className={styles.mapWrapper}>
-            {US_STATES.map((state, index) => (
-              <div key={index} className={styles.stateItem}>
-                {(US_STATES_MAP as unknown as StatesMap)[state.key] && (US_STATES_MAP as unknown as StatesMap)[state.key].renderSvg(state, (reference: string) => handleStateClick(reference))}
-                {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
-              </div>
-            ))}
+          <div>
+            {US_STATES.map((state, index) => {
+              const mapEntry = (US_STATES_MAP as unknown as StatesMap)[state.key];
+              
+              if (!mapEntry) return null;
+              
+              // Get the original SVG
+              const originalSvg = mapEntry.renderSvg(state, handleStateClick);
+
+              console.log(state.dataFlag)
+          
+              return (
+                <div key={index} className={`${styles.stateItem}  ${styles[state.dataFlag]}`}>
+                  <div 
+                    onMouseEnter={(e) => handleMouseEnter(e, state.reference)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    {originalSvg}
+                  </div>
+                  {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`] && 
+                    (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row justify-center items-start lg:mx-auto gap-4 md:gap-4 lg:gap-6 lg:px-4">
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-emerald-200 rounded-lg" />
-          <div className="FullDataAvailable text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Full Data Available</div>
+      <div className={`flex flex-row justify-center items-start lg:mx-auto ${styles.legendContainer}`}>
+        <div className="flex justify-start items-center">
+          <div className="bg-[#A1D1C1]" />
+          <div className="FullDataAvailable font-normal font-['Inter'] leading-normal">Full Data Available</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-lime-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
+        <div className="flex justify-start items-center">
+          <div className="bg-[#D7F4CE]" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-amber-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">Some Data Available</div>
+        <div className="flex justify-start items-center">
+          <div className="bg-[#FFF5CC]" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">Some Data Available</div>
         </div>
-        <div className="flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-rose-100 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
+        <div className="flex justify-start items-center">
+          <div className="bg-[#FFE1C7]" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
         </div>
-        <div className="inline-flex justify-start items-center gap-4">
-          <div className="w-8 h-8 bg-rose-200 rounded-lg" />
-          <div className="text-center justify-start text-black text-base font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
+        <div className="inline-flex justify-start items-center">
+          <div className="bg-[#FAD2D2]" />
+          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
         </div>
       </div>
 
+      <div 
+        className={`absolute z-10 ${styles.tooltip} ${tooltip.direction === 'right' && styles.tooltipRight} ${tooltip.visible && styles.tooltipVisible}`}
+        style={{
+          left: tooltip.x,
+          top: tooltip.y,
+        }}
+      >
+        <p>{tooltip.stateName}</p>
+        <hr />
+        <p>{tooltip.message}</p>
+      </div>
     </div>
   );
 }

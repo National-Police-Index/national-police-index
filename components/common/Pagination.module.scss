@@ -1,0 +1,21 @@
+.pagination {
+  ul {
+    gap: fluid(0px, 20px);
+    margin: 10px 0;
+    li {
+      align-items: center;
+      display: flex;
+      height: fluid(40px, 64px);
+      justify-content: center;
+      width: fluid(40px, 64px);
+      a {
+        align-items: center;
+        color: $greenB;
+        display: flex;
+        height: fluid(40px, 64px);
+        justify-content: center;
+        width: fluid(40px, 64px);
+      }
+    }
+  }
+}

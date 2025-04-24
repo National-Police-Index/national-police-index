@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import styles from './Pagination.module.scss';
 
 interface PaginationProps {
   currentPage: number;
@@ -26,54 +27,88 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
     return currentPage - 2 + i;
   });
 
+  const Prev: React.FC<{ disabled: boolean }> = ({ disabled }) => (
+    <>
+      <span className="sr-only">Previous</span>
+      <svg width="9" height="14" viewBox="0 0 9 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path opacity={disabled ? .5 : 1} d="M7.34313 1.34315L1.68628 7L7.34313 12.6569" stroke="#4F8C7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </>
+  );
+
+  const Next: React.FC<{ disabled: boolean }> = ({ disabled }) => (
+    <>
+      <span className="sr-only">Next</span>
+      <svg width="9" height="14" viewBox="0 0 9 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path opacity={disabled ? .5 : 1} d="M1.65687 1.34315L7.31372 7L1.65687 12.6569" stroke="#4F8C7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </>
+  );
+
   return (
 
-    <nav className="flex items-center justify-center">
-      <ul className="flex items-center -space-x-px">
+    <nav className={`flex items-center justify-center ${styles.pagination}`}>
+      <ul className="flex items-center">
         {/* Previous page */}
-        <li>
-
-          <Link
-            href={currentPage === 1 ? '#' : createPageUrl(currentPage - 1)}
-            className={`block px-3 py-2 ml-0 text-emerald-900 text-lg ${currentPage === 1
-              ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-gray-100 hover:text-gray-700'
-              }`}
-            aria-disabled={currentPage === 1}
-          >
-            <span className="sr-only">Previous</span>
-            <ChevronLeftIcon className="w-5 h-5" />
-          </Link>
+        <li className={currentPage === 1 ? 'cursor-not-allowed' : ''}>
+          {currentPage !== 1 ? 
+            (<Link
+              href={currentPage === 1 ? '#' : createPageUrl(currentPage - 1)}
+              className={`block text-emerald-900 text-lg ${currentPage === 1
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:bg-gray-100 hover:text-gray-700'
+                }`}
+              aria-disabled={currentPage === 1}
+            >
+              <Prev disabled={false} />
+            </Link>) :
+            (
+              <Prev disabled={true} />
+            )}
         </li>
 
         {/* Page numbers */}
-        {pages.map((page) => (
-          <li key={page}>
-            <Link
-              href={createPageUrl(page)}
-              className={`px-3 py-2 leading-tight ${currentPage === page
-                ? 'z-10 text-emerald-900 text-lg font-normal font-["Inter"] underline leading-relaxed'
-                : 'text-emerald-950 text-lg font-normal font-["Inter"] leading-relaxed hover:bg-gray-100 hover:text-gray-700'
-                }`}
-            >
-              {page}
-            </Link>
-          </li>
-        ))}
+        {pages.map((page) => {
+          if (page !== currentPage) {
+            return (
+              <li key={page}>
+                <Link
+                  href={createPageUrl(page)}
+                  className={`leading-tight ${currentPage === page
+                    ? 'z-10 text-lg font-normal font-["Inter"] underline'
+                    : 'text-[#122823] text-lg font-normal font-["Inter"] leading-relaxed hover:bg-gray-100 hover:text-gray-700'
+                    }`}
+                >
+                  {page}
+                </Link>
+              </li>
+            )
+          } else {
+            return (
+              <li key={page}>
+                <span className='underline'>{page}</span>
+              </li>
+            )
+          }
+        })}
 
         {/* Next page */}
-        <li>
-          <Link
-            href={currentPage === totalPages ? '#' : createPageUrl(currentPage + 1)}
-            className={`block px-3 py-2 leading-tight text-gray-500 ${currentPage === totalPages
-              ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-gray-100 hover:text-gray-700 text-slate-500'
-              }`}
-            aria-disabled={currentPage === totalPages}
-          >
-            <span className="sr-only">Next</span>
-            <ChevronRightIcon className="w-5 h-5" />
-          </Link>
+        <li className={currentPage !== totalPages ? 'cursor-not-allowed' : ''}>
+          {currentPage !== totalPages ? 
+            (<Link
+              href={currentPage === totalPages ? '#' : createPageUrl(currentPage + 1)}
+              className={`${currentPage === totalPages
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:bg-gray-100 hover:text-gray-700 text-slate-500'
+                }`}
+              aria-disabled={currentPage === totalPages}
+            >
+              <Next disabled={false} />
+            </Link>) :
+            (
+              <Next disabled={true} />
+            )
+          }
         </li>
       </ul>
     </nav>

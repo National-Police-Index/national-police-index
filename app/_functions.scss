@@ -1,0 +1,13 @@
+@function fluid($size-at-min-width, $size-at-max-width, $min-width: 576px, $max-width: 1400px) {
+  @if $size-at-min-width > $size-at-max-width {
+    $slope: calc(($size-at-min-width - $size-at-max-width) / ($min-width - $max-width));
+    $y-axis-intersection: -1 * $max-width * $slope + $size-at-max-width;
+    $return-value: clamp(#{$size-at-max-width}, #{$y-axis-intersection} + #{$slope} * 100vw, #{$size-at-min-width});
+    @return $return-value;
+  } @else {
+    $slope: calc(($size-at-max-width - $size-at-min-width) / ($max-width - $min-width));
+    $y-axis-intersection: -1 * $min-width * $slope + $size-at-min-width;
+    $return-value: clamp(#{$size-at-min-width}, #{$y-axis-intersection} + #{$slope} * 100vw, #{$size-at-max-width});
+    @return $return-value;
+  }
+}
