@@ -11,8 +11,6 @@ import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 
-import styles from '../../styles.module.scss';
-
 interface StatePageProps {
   params: Promise<{
     state: string;
