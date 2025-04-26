@@ -1,7 +1,11 @@
 .contentSection {
   margin-left: calc(50% - 50vw);
+  min-width: 320px;
   padding: fluid(32px, 56px) 0px;
   width: 100vw;
+  @media screen and (max-width: 319px) {
+    margin-left: 0;
+  }
   .content {
     gap: 24px;
   }

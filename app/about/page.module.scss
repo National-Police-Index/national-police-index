@@ -1,7 +1,11 @@
 .pageContentWrapper {
   margin-left: calc(50% - 50vw);
+  min-width: 320px;
   padding: fluid(32px, 56px) 0 0;
   width: 100vw;
+  @media screen and (max-width: 319px) {
+    margin-left: 0;
+  }
 }
 
 .container {

@@ -2,9 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 // Import images
-import logo1 from '@/images/logo1.png';
-import logo2 from '@/images/logo2.png';
-import logo3 from '@/images/logo3.png';
+import invist from '@/images/invist-logo-black.png';
+import ipno from '@/images/ipno.jpg';
+import hrdag from '@/images/hrdag.png';
 
 import styles from './styles.module.scss';
 
@@ -41,24 +41,24 @@ export default function Footer() {
         </div>
 
         <div className={`flex flex-wrap justify-start items-center ${styles.logosContainer}`}>
-          <div className="relative">
+          <a className="relative" href="https://invisible.institute/national-police-index" target="_blank">
             <Image
-              src={logo1}
-              alt="Logo 1"
+              src={invist}
+              alt="Invisible Institute logo"
               />
-          </div>
-          <div className="relative">
+          </a>
+          <a className="relative" href="https://ip-no.org" target="_blank">
             <Image
-              src={logo2}
-              alt="Logo 2"
+              src={ipno}
+              alt="Innocence Project New Orleans logo"
             />
-          </div>
-          <div className="relative">
+          </a>
+          <a className="relative" href="https://hrdag.org" target="_blank">
             <Image
-              src={logo3}
-              alt="Logo 3"
+              src={hrdag}
+              alt="Human Rights Data Analysis Group logo"
             />
-          </div>
+          </a>
         </div>
       </div>
     </footer>
