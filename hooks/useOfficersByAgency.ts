@@ -23,7 +23,7 @@ interface UseOfficersByAgencyProps {
   };
 }
 
-export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20' } }: UseOfficersByAgencyProps) {
+export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '16' } }: UseOfficersByAgencyProps) {
   console.log('Agency Name:', agencyName);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
@@ -31,7 +31,7 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
-    pageSize: (searchParams.pageSize || '20'),
+    pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: parseInt(searchParams.page || '1', 10)
   }), [searchParams.query, searchParams.startDate, searchParams.endDate, 
       searchParams.sortBy, searchParams.sortOrder, searchParams.pageSize, searchParams.page]);
@@ -39,6 +39,7 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
+  const [sortedGroups, setSortedGroups] = useState<OfficerGroup[]>([]);
 
   useEffect(() => {
     async function fetchOfficers() {
@@ -74,22 +75,19 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20
           q = query(q, where('end_date', '<=', searchParameters.endDate));
         }
 
-        // Add pagination
-        // Add pagination
-        const pageSize = parseInt(searchParameters.pageSize);
-        q = query(q, limit(pageSize * searchParameters.page));
+        // Remove Firestore pagination; fetch a large enough batch to ensure enough groups for the requested page
+        const pageSize = searchParameters.pageSize || 16;
+        const page = searchParameters.page || 1;
+        const officerFetchLimit = pageSize * 10; // Fetch up to 10x the page size to increase likelihood of filling the group page
+        const qWithLimit = query(q, limit(officerFetchLimit));
         
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(qWithLimit);
         const allDocs = snapshot.docs;
-        
-        // Get only the documents for the current page
-        const startIndex = (searchParameters.page - 1) * pageSize;
-        const pageDocs = allDocs.slice(startIndex, startIndex + pageSize);
 
         // Group officers by person_nbr
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
         
-        pageDocs.forEach((doc) => {
+        allDocs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
           const person_nbr = officer.person_nbr;
           
@@ -110,7 +108,15 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20
           })
         }));
 
-        setOfficerGroups(sortedGroups);
+        setSortedGroups(sortedGroups);
+
+        // Paginate groups in-memory
+        const startIdx = (page - 1) * pageSize;
+        const endIdx = startIdx + pageSize;
+        const paginatedGroups = sortedGroups.slice(startIdx, endIdx);
+        console.log('paginated groups', paginatedGroups);
+
+        setOfficerGroups(paginatedGroups);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch officers'));
       } finally {
@@ -124,6 +130,7 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '20
   return {
     loading,
     error,
-    officerGroups
+    officerGroups,
+    totalGroups: sortedGroups?.length || 0
   };
 }

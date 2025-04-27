@@ -14,7 +14,7 @@ interface AgencyStats {
   last_updated: Date;
 }
 
-export function useAgencyStats(agencyId: string) {
+export function useAgencyStats(agencyName: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState<AgencyStats | null>(null);
@@ -25,6 +25,8 @@ export function useAgencyStats(agencyId: string) {
         setLoading(true);
         setError(null);
 
+        const agencyId = agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        console.log('Agency ID:', agencyId);
         const statsRef = doc(db, 'agency_statistics', agencyId);
         const statsDoc = await getDoc(statsRef);
 
@@ -43,7 +45,7 @@ export function useAgencyStats(agencyId: string) {
     }
 
     fetchStats();
-  }, [agencyId]);
+  }, [agencyName]);
 
   return { loading, error, stats };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
 import PageHeader from '@/components/PageHeader';
 import { formatDate } from 'date-fns/format';
@@ -48,7 +49,14 @@ export default function OfficerProfilePage() {
     <div className="w-full mx-auto">
       <PageHeader
         title={fullName}
-        description={`Latest Agency: ${latestRecord.agency_name}`}
+        description={
+          <>
+            Latest Agency:{' '}
+            <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
+              {latestRecord.agency_name}
+            </Link>
+          </>
+        }
         statistics={[
           {
             value: records.length,
@@ -76,7 +84,11 @@ export default function OfficerProfilePage() {
                 </div>
                 <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] flex justify-center items-center gap-2">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency Name</div>
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.agency_name}</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
+                    <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
+                      {latestRecord.agency_name}
+                    </Link>
+                  </div>
                 </div>
                 <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center gap-2">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Date</div>
@@ -113,7 +125,9 @@ export default function OfficerProfilePage() {
                             </div>
                             <div className="flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter'] ">
                               <h3 className="mt-1 text-base font-medium text-gray-900">
-                                {record.agency_name}
+                                <Link href={`/agencies/${encodeURIComponent(record.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
+                                  {record.agency_name}
+                                </Link>
                               </h3>
                               <p className="mt-1 text-sm text-gray-500">
                                 {record.position || 'Position not specified'}

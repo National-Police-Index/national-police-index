@@ -42,7 +42,7 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
   const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10);
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
-  const { loading: officersLoading, error: officersError, officerGroups } = useOfficersByUid({
+  const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByUid({
     state,
     searchParams: {
       ...resolvedSearchParams,
@@ -53,7 +53,8 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
 
   const loading = statsLoading || officersLoading;
   const error = statsError || officersError;
-  const totalPages = stats ? Math.ceil(stats.total_officers / pageSize) : 0;
+  // Calculate total pages based on unique officer groups instead of total records
+  const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
   const lastYearIndex = Object.keys(stats?.total_officer_end_date || {}).length;
   const lastYear = lastYearIndex > 0 ? Object.keys(stats?.total_officer_end_date || {})[lastYearIndex - 1] : '';

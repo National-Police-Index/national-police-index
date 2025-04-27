@@ -9,6 +9,7 @@ import Pagination from '@/components/common/Pagination';
 
 interface SearchParams {
   page?: string;
+  pageSize?: string;
   query?: string;
   startDate?: string;
   endDate?: string;
@@ -19,23 +20,33 @@ interface SearchParams {
 export default function AgencyPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
+  const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
+
+  const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10);
 
   // Get agency statistics
-  const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id as string);
+  console.log('Resolved Search Params:', decodeURIComponent(id), resolvedSearchParams);
+  const { loading: statsLoading, error: statsError, stats } = useAgencyStats(decodeURIComponent(id) as string);
+  console.log('STats', stats)
 
   // Get officers for this agency
-  const { loading: officersLoading, error: officersError, officerGroups } = useOfficersByAgency({
+  const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',
-    searchParams: Object.fromEntries(searchParams) as SearchParams
+    searchParams: {
+      ...resolvedSearchParams,
+      pageSize: pageSize.toString(),
+    }
   });
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
-  const totalPages = stats ? Math.ceil(stats.total_officers / pageSize) : 0;
+  const loading = statsLoading || officersLoading;
+  const error = statsError || officersError;
+  // Calculate total pages based on unique officer groups instead of total records
+  const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  if (statsLoading || officersLoading) {
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
           <p className="mt-4 text-gray-600">Loading agency data...</p>
@@ -44,11 +55,11 @@ export default function AgencyPage() {
     );
   }
 
-  if (statsError || officersError) {
+  if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center py-12 text-red-600">
-          {statsError?.message || officersError?.message}
+          {error.message}
         </div>
       </div>
     );
@@ -56,7 +67,7 @@ export default function AgencyPage() {
 
   if (!stats) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center py-12 text-gray-600">
           Agency not found
         </div>
@@ -65,7 +76,7 @@ export default function AgencyPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header */}
       <div className="bg-white shadow rounded-lg p-6 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{stats.name}</h1>
@@ -103,40 +114,42 @@ export default function AgencyPage() {
           </div>
         ) : (
           <>
-            {officerGroups.map((group) => (
-              <Link
-                href={`/officers/${group.person_nbr}`}
-                key={group.person_nbr}
-                className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {group.records[0].full_name}
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-600">
-                        Latest Position: {group.records[0].position || 'N/A'}
-                      </p>
-                    </div>
-                    <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                      {group.records.length} record{group.records.length !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                  <div className="mt-4 text-sm text-gray-600">
-                    <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-6">
+              {officerGroups.map((group) => (
+                <Link
+                  href={`/officers/${group.person_nbr}`}
+                  key={group.person_nbr}
+                  className="block bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <p>Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {group.records[0].full_name}
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-600">
+                          Latest Position: {group.records[0].position || 'N/A'}
+                        </p>
                       </div>
-                      <div>
-                        <p>Status: {group.records[0].status || 'Active'}</p>
-                        <p>End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
+                      <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                        {group.records.length} record{group.records.length !== 1 ? 's' : ''}
                       </div>
                     </div>
+                    <div className="mt-4 text-sm text-gray-600">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p>Start Date: {new Date(group.records[0].start_date).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <p>Status: {group.records[0].status || 'Active'}</p>
+                          <p>End Date: {group.records[0].end_date ? new Date(group.records[0].end_date).toLocaleDateString() : 'Present'}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -144,7 +157,7 @@ export default function AgencyPage() {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  baseUrl={`/agencies/${id}`}
+                  baseUrl={`/agencies/${decodeURIComponent(id)}`}
                 />
               </div>
             )}

@@ -44,6 +44,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
+  const [sortedGroups, setSortedGroups] = useState<OfficerGroup[]>([]);
 
   console.log('search parameters', searchParameters);
 
@@ -113,7 +114,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         });
 
         // Sort records within each group by date
-        const sortedGroups = Array.from(groupedOfficers.entries()).map(([person_nbr, records]) => ({
+        const allGroups = Array.from(groupedOfficers.entries()).map(([person_nbr, records]) => ({
           person_nbr,
           records: records.sort((a, b) => {
             const dateA = new Date(a.start_date).getTime();
@@ -121,11 +122,12 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
             return dateB - dateA; // Sort by most recent first
           })
         }));
+        setSortedGroups(allGroups);
 
         // Paginate groups in-memory
         const startIdx = (page - 1) * pageSize;
         const endIdx = startIdx + pageSize;
-        const paginatedGroups = sortedGroups.slice(startIdx, endIdx);
+        const paginatedGroups = allGroups.slice(startIdx, endIdx);
         console.log('paginated groups', paginatedGroups);
 
         setOfficerGroups(paginatedGroups);
@@ -140,9 +142,11 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
     fetchOfficers();
   }, [state, searchParameters, searchParams.page]);
 
+  // Return totalGroups along with the paginated groups
   return {
     loading,
     error,
-    officerGroups
+    officerGroups,
+    totalGroups: sortedGroups?.length || 0
   };
 }
