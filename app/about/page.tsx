@@ -6,6 +6,7 @@ import Link from 'next/link';
 import TeamCard from '@/components/team/TeamCard';
 import { useTeam } from '@/hooks/useTeam';
 import aboutImage from '@/images/about-image.png';
+import styles from './page.module.scss';
 
 export default function AboutPage() {
   const { loading, error, teamMembers } = useTeam();
@@ -14,13 +15,12 @@ export default function AboutPage() {
       <PageHeader
         title='About us'
       />
-
-      <div className="w-full bg-white rounded-tl-3xl rounded-tr-3xl pt-12 ">
-        <div className="container-a mx-auto ">
+      <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
+        <div className={`container-a mx-auto ${styles.container}`}>
 
 
           {/* Main Content */}
-          <section className="relative w-full mx-auto 28 pt-4 pb-14">
+          <section className="relative w-full mx-auto">
             <div className="relative">
               {/* Image - Floating right on desktop, full width on mobile */}
               <div className="float-none w-full mb-6 sm:float-right sm:w-[300px] md:w-[400px] lg:w-[500px] sm:ml-8 sm:mb-4">
@@ -64,12 +64,12 @@ export default function AboutPage() {
           </section>
 
           {/* Team Section */}
-          <section className="w-full py-14">
+          <section className="w-full">
             <div className="w-full pt-4 border-t border-[#2F5E50] inline-flex justify-start items-center gap-2.5">
               <div className="justify-start text-[#122823] text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Team</div>
             </div>
 
-            <div className="w-full mx-auto py-8">
+            <div className={`w-full mx-auto`}>
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
@@ -78,7 +78,7 @@ export default function AboutPage() {
               ) : error ? (
                 <div className="text-red-600 text-center py-12">{error.message}</div>
               ) : (
-                <div className="w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-4 grid gap-6">
+                <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {teamMembers.map((member) => (
                     <TeamCard
                       key={member.name}

@@ -1,7 +1,11 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .header {
   background-color: var(--background);
   background-image: url(../../public/texture.svg);
   background-position: center;
+  min-width: 320px;
   position: sticky;
   top: 0;
   width: 100vw;
@@ -69,6 +73,7 @@ header.showMenu {
     display: flex;
     height: 100%;
     max-width: 100%;
+    min-width: 320px;
     position: absolute;
     width: 100vw;
   }
@@ -102,7 +107,11 @@ header.showMenu {
 .logosContainer {
   img {
     height: fluid(32px, 50px);
+    transition: all .1s ease-in-out;
     width: auto;
+    &:hover {
+      filter: opacity(.8);
+    }
   }
 }
 

@@ -66,6 +66,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
               <div>{formatDate(officer.end_date)}</div>
             </div>
           </div>
+        </div>
           {more && (
             <button
               className={styles.more}
@@ -79,7 +80,6 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
               </div>
             </button>
           )}
-        </div>
       </div>
     </Link>
   );

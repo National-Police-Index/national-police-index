@@ -1,3 +1,6 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 $dateFull: #A1D1C1;
 $dataSoon: #D7F4CE;
 $dataSome: #FFF5CC;
@@ -66,6 +69,11 @@ $dataNoLB: #FAD2D2;
 .stateItem {
   position: absolute;
   cursor: pointer;
+  &:focus {
+    > div > div > :first-child {
+      outline: 2px solid $greenB;
+    }
+  }
   &.full {
     > div > div > :first-child {
       background-color: $dateFull;

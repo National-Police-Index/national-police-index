@@ -1,27 +1,38 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .officerCard {
   flex: 0 0 288px;
-  height: 100%;
   height: 178px;
   margin-bottom: 0;
+  max-width: 100%;
+
   &:hover {
-    > div:first-child {
+    >div:first-child {
       background-color: lighten($greenA, 5%);
     }
-    .cardContent, .more {
-      background-color: darken($grayA, 5%)!important;
+
+    .cardContent,
+    .more {
+      background-color: darken($grayA, 5%) !important;
     }
   }
-  > div:first-child {
+
+  >div:first-child {
     transition: all .1s ease-in-out;
   }
+
   &.moreActive {
     height: min-content;
+
     .cardContent {
       height: min-content;
       overflow: visible;
-      > div {
+
+      >div {
         height: min-content;
       }
+
       .more {
         svg {
           transform: scaleY(-1)
@@ -29,6 +40,7 @@
       }
     }
   }
+
   .cardContent {
     background-color: $grayA;
     border-bottom-right-radius: 16px;
@@ -36,75 +48,87 @@
     color: $greenC;
     height: 178px;
     padding: 16px;
+    position: relative;
     transition: all .1s ease-in-out;
-    > div {
+
+    >div {
       display: flex;
       flex-direction: column;
       gap: 8px;
       height: calc(178px - 32px);
       overflow: hidden;
-      position: relative;
+
       .name {
         font-size: 16px;
         font-weight: 600;
         letter-spacing: -.01em;
         line-height: 1.5;
       }
+
       hr {
         height: 1px solid $greenB;
         margin: 0;
         width: 100%;
       }
+
       .uidNumber {
         font-size: 14px;
         font-weight: 400;
         letter-spacing: -.01em;
         line-height: 1.5;
       }
+
       .agency {
         display: flex;
         flex-direction: column;
         gap: 4px;
+
         .agencyName {
           font-size: 14px;
           font-weight: 400;
           letter-spacing: -.01em;
           line-height: 1.5;
         }
+
         .agencyDates {
           display: flex;
           gap: 16px;
-          > div {
+
+          >div {
             font-size: 12px;
             font-weight: 400;
             letter-spacing: -.01em;
-            line-height: 1.5;  
+            line-height: 1.5;
           }
         }
       }
-      .more {
-        align-items: center;
-        background-color: $grayA;
-        bottom: 0;
-        color: $greenB;
-        display: flex;
-        font-size: 14px;
-        gap: 24px;
-        line-height: 1.5;
-        margin: -10px;
-        padding: 10px;
-        position: absolute;
-        right: 0;
+    }
+
+    .more {
+      align-items: center;
+      background-color: $grayA;
+      border-radius: 16px;
+      bottom: 0;
+      color: $greenB;
+      display: flex;
+      font-size: 14px;
+      gap: 24px;
+      line-height: 1.5;
+      padding: 10px;
+      position: absolute;
+      right: 0;
+      transition: all .1s ease-in-out;
+
+      path {
         transition: all .1s ease-in-out;
+      }
+
+      &:hover {
+        color: $greenC;
+        cursor: pointer;
+
         path {
-          transition: all .1s ease-in-out;
-        }
-        &:hover {
-          color: $greenC;
-          cursor: pointer;
-          path {
-            stroke: $greenC;
-          }
+          stroke: $greenC;
         }
       }
     }

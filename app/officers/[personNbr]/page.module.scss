@@ -1,0 +1,89 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
+.contentSection {
+  margin-left: calc(50% - 50vw);
+  min-width: 320px;
+  padding: fluid(32px, 56px) 0px;
+  width: 100vw;
+  @media screen and (max-width: 319px) {
+    margin-left: 0;
+  }
+  .content {
+    gap: 24px;
+  }
+}
+
+.officeData {
+  > div {
+    gap: 16px;
+    padding: 8px 0;
+  }
+  div {
+    font-size: fluid(14px, 16px);
+  }
+}
+
+.timeline {
+  background-color: $grayA;
+  gap: 16px;
+  padding: 32px fluid(16px, 32px);
+  > div:first-child {
+    border-bottom: .5px solid $greenC;
+    h2 {
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+  }
+  .timelineYear {
+    gap: 8px;
+    .timelineEvents {
+      gap: 10px;
+      .timelineItem {
+        gap: fluid(16px, 24px);
+        > div {
+          font-size: fluid(14px, 16px);
+        }
+        .timelineDate {
+          flex: 0 0 34px;
+          @media screen and (max-width: 1023px) {
+            flex: 0 0 20%;
+            min-width: 80px;
+          }
+          @media screen and (max-width: 479px) {
+            flex: 0 0 20px;
+            min-width: unset;
+          }
+          .timelineDateMobile {
+            display: none;
+            @media screen and (max-width: 479px) {
+              display: flex;
+            }
+          }
+          .timelineDateDesktop {
+            @media screen and (max-width: 479px) {
+              display: none;
+            }
+          }
+        }
+        .timelineType {
+          border: 1px solid $greenA;
+          border-radius: 8px;
+          color: $greenB;
+          flex: 0 0 fluid(100px, 132px);
+          font-weight: 700;
+          line-height: 1.4;
+          padding: 8px fluid(8px, 16px);
+          text-align: center;
+          @media screen and (max-width: 479px) {
+            flex: 0 0 52px;
+            padding: 4px;
+            span {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+  }
+}

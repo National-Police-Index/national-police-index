@@ -1,20 +1,33 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .pagination {
   ul {
-    gap: fluid(0px, 20px);
+    gap: fluid(4px, 20px);
     margin: 10px 0;
     li {
       align-items: center;
       display: flex;
+      flex: 1;
       height: fluid(40px, 64px);
       justify-content: center;
-      width: fluid(40px, 64px);
+      width: fluid(24px, 64px);
+      &.arrow {
+        width: fluid(24px, 40px);
+      }
+      &.ellipsis {
+        width: 20px;
+      }
+      a, span {
+        font-size: fluid(14px, 18px);
+      }
       a {
         align-items: center;
         color: $greenB;
         display: flex;
         height: fluid(40px, 64px);
         justify-content: center;
-        width: fluid(40px, 64px);
+        width: fluid(24px, 64px);
       }
     }
   }

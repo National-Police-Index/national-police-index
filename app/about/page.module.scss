@@ -3,17 +3,24 @@
 
 .pageContentWrapper {
   margin-left: calc(50% - 50vw);
-  padding: 56px 0 0;
+  min-width: 320px;
+  padding: fluid(32px, 56px) 0 0;
   width: 100vw;
+  @media screen and (max-width: 319px) {
+    margin-left: 0;
+  }
 }
 
-.cardsWrapper {
-  margin-top: fluid(32px, 56px);
+.container {
+  section {
+    padding-bottom: fluid(32px, 56px);
+  }
 }
 
-.cards {
+.teamSection {
   margin-left: auto;
   margin-right: auto;
+  padding-top: 40px;
   @media screen and (max-width: 1303px) {
     max-width: calc(288px*3 + 24px*2);
   }
@@ -23,8 +30,4 @@
   @media screen and (max-width: 679px) {
     justify-content: center;
   }
-}
-
-.paginationWrapper {
-  margin-top: fluid(32px, 56px);
 }

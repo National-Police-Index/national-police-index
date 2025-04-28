@@ -116,7 +116,16 @@ export default function USMap() {
               console.log(state.dataFlag)
           
               return (
-                <div key={index} className={`${styles.stateItem}  ${styles[state.dataFlag]}`}>
+                <div
+                  key={index}
+                  className={`${styles.stateItem} ${styles[state.dataFlag]}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleStateClick(state.reference);
+                    }
+                  }}
+                  tabIndex={0}
+                >
                   <div 
                     onMouseEnter={(e) => handleMouseEnter(e, state.reference)}
                     onMouseLeave={handleMouseLeave}

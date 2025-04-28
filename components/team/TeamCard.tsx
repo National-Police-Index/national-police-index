@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import styles from './TeamCard.module.scss';
 
 interface TeamMember {
   name: string;
@@ -29,16 +30,16 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
   };
 
   return (
-    <div className="w-full min-h-[150px] p-4 bg-zinc-100 rounded-2xl inline-flex flex-col justify-start items-start gap-2">
+    <div className={`w-full min-h-[150px] p-4 bg-zinc-100 rounded-2xl inline-flex flex-col justify-start items-start gap-2 ${styles.card}`}>
       <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] inline-flex justify-start items-center gap-2">
         <div className="justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
           {name}
         </div>
-        <div className="justify-start text-[#122823] text-xs font-normal font-['Inter'] leading-none">
+        <i className="justify-start text-[#122823] text-xs font-normal font-['Inter'] leading-none">
           {pronouns}
-        </div>
+        </i>
       </div>
-      <div className="self-stretch justify-start">
+      <div className={`self-stretch justify-start ${styles.description}`}>
         {renderDescription(description)}
       </div>
     </div>
