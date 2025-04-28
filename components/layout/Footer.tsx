@@ -1,4 +1,6 @@
+'use client';
 import Link from 'next/link';
+import { useStaticText } from '@/hooks/useStaticText';
 import Image from 'next/image';
 
 // Import images
@@ -17,13 +19,14 @@ const navigation = {
 };
 
 export default function Footer() {
+  const { getText } = useStaticText('footer');
   return (
     <footer className={`w-full bg-white ${styles.footer}`}>
       <div className="container-a mx-auto flex flex-col">
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] ${styles.siteTitle}`}>
-            National Police Index
+            {getText('site-title', 'National Police Index')}
           </Link>
 
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -34,7 +37,7 @@ export default function Footer() {
                 target={item.target}
                 className="text-[#122823] hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
               >
-                {item.name}
+                {getText(item.name.toLowerCase(), item.name)}
               </Link>
             ))}
           </nav>

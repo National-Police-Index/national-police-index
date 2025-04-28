@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useSearchParams } from 'next/navigation';
+import { useStaticText } from '@/hooks/useStaticText';
 import Link from 'next/link';
 import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
@@ -18,7 +19,9 @@ interface SearchParams {
 }
 
 export default function AgencyPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params.id as string;
+  const { getText } = useStaticText('agency');
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
 
@@ -83,14 +86,14 @@ export default function AgencyPage() {
         <p className="text-gray-600 mb-4">State: {stats.state.toUpperCase()}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-sm text-gray-600">Total Officers</p>
-            <p className="text-2xl font-semibold">{stats.total_officers}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Active Records</p>
+            <p className="text-sm text-gray-600">{getText('active-records', 'Active Records')}</p>
             <p className="text-2xl font-semibold">
               {Object.values(stats.total_officer_start_date).reduce((a, b) => a + b, 0)}
             </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">{getText('total-officers', 'Total Officers')}</p>
+            <p className="text-2xl font-semibold">{stats.total_officers}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Last Updated</p>

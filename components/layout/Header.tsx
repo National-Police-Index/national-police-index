@@ -1,16 +1,17 @@
 'use client';
-
 import Link from 'next/link';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { US_STATES } from '@/constants/states';
 import styles from './styles.module.scss';
+import { useStaticText } from '@/hooks/useStaticText';
 
 export default function Header() {
+  const { getText } = useStaticText('header');
   const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -77,11 +78,11 @@ export default function Header() {
   }, []);
 
   return (
-    <header ref={headerRef} className={`mx-auto header ${styles.header} ${isMobileMenuOpen && styles.headerOpen}`}>
-      <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${mounted && isStatesOpen ? styles.headerContentOpen : ''}`}>
+    <header ref={headerRef} className={`mx-auto ${styles.header} ${isMobileMenuOpen ? styles.headerOpen : ''}`}>
+      <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ''}`}>
 
         <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] p-2 m-[-8px] ${styles.siteTitle}`}>
-          National Police Index
+              {getText('site-name', 'National Police Index')}
         </Link>
 
         {/* Desktop Navigation */}
@@ -101,14 +102,14 @@ export default function Header() {
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
-              State Data
+              {getText('nav-states', 'State Data')}
             </span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
               <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           <Link href="/about" className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]">
-            About
+            {getText('nav-about', 'About')}
           </Link>
         </div>
 

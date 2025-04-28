@@ -1,9 +1,9 @@
 'use client';
-
 import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { PoliceOfficer } from '@/types';
+import { useStaticText } from '@/hooks/useStaticText';
 import styles from './OfficeCard.module.scss';
 
 interface OfficerCardProps {
@@ -11,6 +11,8 @@ interface OfficerCardProps {
 }
 
 export default function OfficerCard({ officer }: OfficerCardProps) {
+  const { getText } = useStaticText('officer-card');
+  const [expanded, setExpanded] = useState(false);
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'MM/dd/yyyy');
@@ -55,24 +57,17 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
             {fullName}
           </div>
           <hr />
-          <div className={styles.uidNumber}>
-            UID Number: {officer.person_nbr}
-          </div>
-          <div className={styles.agency}>
-            <div className={styles.agencyName}>
-              {officer.agency_name}
-            </div>
-            <div className={styles.agencyDates}>
-              <div>
-                {formatDate(officer.start_date)}
-              </div>
-              <div>
-                {formatDate(officer.end_date)}
-              </div>
+          <div className={styles.details}>
+            <p className="text-sm text-gray-600">{getText('uid-label', 'UID')}: {officer.person_nbr}</p>
+            <p className="text-sm text-gray-600">{getText('agency-label', 'Agency')}: {officer.agency_name}</p>
+            <p className="text-sm text-gray-600">{getText('position-label', 'Position')}: {officer.position || getText('position-not-specified', 'Not specified')}</p>
+            <div className={styles.dates}>
+              <div>{formatDate(officer.start_date)}</div>
+              <div>{formatDate(officer.end_date)}</div>
             </div>
           </div>
           {more && (
-            <button 
+            <button
               className={styles.more}
               onClick={onMoreClick}
             >

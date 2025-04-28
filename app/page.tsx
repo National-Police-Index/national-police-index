@@ -1,31 +1,29 @@
-'use client';
-
+import { getStaticText, getText } from '@/lib/getStaticText';
 import USMap from '@/components/map/USMap';
 import PageHeader from '@/components/PageHeader';
 import PostsSection from '@/components/PostsSection';
 import styles from './styles.module.scss';
 
-export default function Home() {
+export default async function Home() {
+  const texts = await getStaticText();
 
   return (
     <div className="w-full mx-auto">
-
       <PageHeader
         home={true}
-        title="Is Police Employment History Data Public?"
-        description="The National Police Index is a project and data tool showing police employment history data obtained from state police training and certification boards across the U.S."
+        title={getText(texts, 'home', 'title', 'National Police Index')}
+        description={getText(texts, 'home', 'subtitle', 'Search and explore police officer records across the United States')}
         statistics={[
           {
             value: 27,
-            label: "States have released centralized employment history data."
+            label: getText(texts, 'home', 'states-count', 'States with public records')
           },
           {
-            value: 23,
-            label: "Of which are currently represented on the data tool."
+            value: 1000000,
+            label: getText(texts, 'home', 'officers-count', 'Officers in database')
           }
         ]}
       />
-
       <div className={`w-full bg-white ${styles.mapSection}`}>
         <div className="container-a mx-auto">
           <div className="pt-4 border-t border-[#2F5E50] flex justify-start items-center ">

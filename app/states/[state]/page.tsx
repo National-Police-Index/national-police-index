@@ -1,6 +1,7 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { useParams, useSearchParams, notFound } from 'next/navigation';
+import { useStaticText } from '@/hooks/useStaticText';
 import { use } from 'react';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
@@ -27,9 +28,12 @@ interface StatePageProps {
   }>;
 }
 
-export default function StatePage({ params, searchParams }: StatePageProps) {
-  const { state } = use(params);
-  const resolvedSearchParams = use(searchParams);
+export default function StatePage() {
+  const params = useParams();
+  const state = params.state as string;
+  const { getText } = useStaticText('state');
+  const searchParams = useSearchParams();
+  const resolvedSearchParams = Object.fromEntries(searchParams);
   const stateData = US_STATES.find(
     s => s.reference.toLowerCase() === state.toLowerCase()
   );
@@ -66,16 +70,17 @@ export default function StatePage({ params, searchParams }: StatePageProps) {
   return (
     <div className="w-full mx-auto">
       <PageHeader
-        title={stateData.name}
+        home={false}
+        title={getText('officers-title', 'Officers in {state}').replace('{state}', state.toUpperCase())}
         description={`Searching  and explore police officer records in ${stateData.name}`}
         statistics={[
           {
             value: stats?.total_officers || 0,
-            label: "Total officers"
+            label: getText('total-officers', 'Total Officers')
           },
           {
             value: lastYearAmount || 0,
-            label: `Officers terminated in ${lastYear}`
+            label: getText('officers-title', 'Officers in {state}').replace('{state}', state.toUpperCase())
           },
           {
             value: startYearAmount || 0,

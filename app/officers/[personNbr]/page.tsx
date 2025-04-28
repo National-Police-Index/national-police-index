@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
+import { useStaticText } from '@/hooks/useStaticText';
 import PageHeader from '@/components/PageHeader';
 import { formatDate } from 'date-fns/format';
 import { enGB } from 'date-fns/locale/en-GB';
@@ -10,6 +11,7 @@ import { enGB } from 'date-fns/locale/en-GB';
 export default function OfficerProfilePage() {
   const { personNbr } = useParams();
   const { loading, error, officerData } = useOfficerByPersonNbr(personNbr as string);
+  const { getText } = useStaticText('officer');
 
   if (loading) {
     return (
@@ -48,10 +50,11 @@ export default function OfficerProfilePage() {
   return (
     <div className="w-full mx-auto">
       <PageHeader
+        home={false}
         title={fullName}
         description={
           <>
-            Latest Agency:{' '}
+            {getText('latest-agency')}:{' '}
             <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
               {latestRecord.agency_name}
             </Link>
@@ -79,7 +82,7 @@ export default function OfficerProfilePage() {
               </div>
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
                 <div className="self-stretch py-2 border-t-[0.50px] border-b-[0.50px] border-[#2F5E50] flex justify-center items-center gap-2">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">UID Number</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{getText('uid', 'UID Number')}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
                 <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] flex justify-center items-center gap-2">
@@ -100,7 +103,7 @@ export default function OfficerProfilePage() {
 
             <div className="w-full p-6 lg:p-8 bg-zinc-100 rounded-3xl flex flex-col justify-start items-start gap-6 relative overflow-hidden">
               <div className="self-stretch pb-4 border-b border-emerald-900/10 flex items-center justify-between">
-                <h2 className="text-[#122823] text-xl font-bold">Timeline</h2>
+                <h2 className="text-[#122823] text-xl font-bold">{getText('timeline', 'Timeline')}</h2>
                 {false && <span className="text-sm text-emerald-700">{records.length} Records</span>}
               </div>
 
@@ -130,7 +133,7 @@ export default function OfficerProfilePage() {
                                 </Link>
                               </h3>
                               <p className="mt-1 text-sm text-gray-500">
-                                {record.position || 'Position not specified'}
+                                {record.position || getText('position', 'Position not specified')}
                               </p>
                             </div>
                             <div className="px-4 py-2 rounded-lg outline outline-1 outline-offset-[-1px] outline-slate-500 flex items-center gap-2.5">
