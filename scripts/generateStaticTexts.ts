@@ -1,4 +1,4 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { ServiceAccount } from 'firebase-admin';
 import serviceAccount from '../firebase-service-account.json' assert { type: 'json' };
@@ -6,10 +6,12 @@ import serviceAccount from '../firebase-service-account.json' assert { type: 'js
 // Cast the imported JSON to ServiceAccount type
 const typedServiceAccount = serviceAccount as ServiceAccount;
 
-// Initialize Firebase Admin
-const app = initializeApp({
-  credential: cert(typedServiceAccount)
-});
+// Initialize Firebase Admin if not already initialized
+if (getApps().length === 0) {
+  initializeApp({
+    credential: cert(typedServiceAccount)
+  });
+}
 
 const db = getFirestore();
 

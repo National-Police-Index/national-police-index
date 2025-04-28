@@ -1,14 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { Combobox } from '@headlessui/react';
 import { SearchFilters as SearchFiltersType } from '@/types';
+import { searchAgencies } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
+import debounce from 'lodash/debounce';
 
 export default function SearchFilters() {
   const router = useRouter();
+  const [agencyQuery, setAgencyQuery] = useState('');
+  const [agencies, setAgencies] = useState<string[]>([]);
 
   const [filters, setFilters] = useState<SearchFiltersType>({
     query: '',
@@ -18,6 +23,25 @@ export default function SearchFilters() {
     sortBy: undefined,
     sortOrder: undefined
   });
+
+  // Create a debounced search function
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        console.log('Searching agencies...', query);
+        const results = await searchAgencies(query);
+        console.log('Results', results)
+        setAgencies(results);
+      }, 300),
+    []
+  );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   const handleSelectClick = (e: React.MouseEvent<HTMLSelectElement>) => {
     const selectElement = e.currentTarget;
@@ -29,7 +53,7 @@ export default function SearchFilters() {
     });
   };
 
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -56,8 +80,8 @@ export default function SearchFilters() {
           <div className="relative">
             <div className={`absolute ${styles.searchIcon}`}>
               <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.5 21.5C16.7467 21.5 21 17.2467 21 12C21 6.75329 16.7467 2.5 11.5 2.5C6.25329 2.5 2 6.75329 2 12C2 17.2467 6.25329 21.5 11.5 21.5Z" stroke="#122823" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M22 22.5L20 20.5" stroke="#122823" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M11.5 21.5C16.7467 21.5 21 17.2467 21 12C21 6.75329 16.7467 2.5 11.5 2.5C6.25329 2.5 2 6.75329 2 12C2 17.2467 6.25329 21.5 11.5 21.5Z" stroke="#122823" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M22 22.5L20 20.5" stroke="#122823" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <input
@@ -94,17 +118,43 @@ export default function SearchFilters() {
         </div>
 
         {/* Agency filter */}
-
         <div className={styles.agency}>
-          <select
-            id="agency"
-            name="agency"
+          <Combobox
+            as="div"
             value={filters.agency}
-            onChange={(e) => setFilters({ ...filters, agency: e.target.value })}
+            onChange={(value) => setFilters({ ...filters, agency: value || '' })}
           >
-            <option value="">Select Agency</option>
-            {/* Add agency options dynamically */}
-          </select>
+            <div className="relative">
+              <Combobox.Input
+                className="w-full"
+                placeholder="Search agency..."
+                onChange={(e) => {
+                  setAgencyQuery(e.target.value);
+                  debouncedSearch(e.target.value);
+                }}
+                displayValue={(agency: string) => agency}
+              />
+              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg">
+                {agencies.map((agency) => (
+                  <Combobox.Option
+                    key={agency}
+                    value={agency}
+                    className={({ active }) =>
+                      `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                      }`
+                    }
+                  >
+                    {agency}
+                  </Combobox.Option>
+                ))}
+                {agencyQuery.length >= 3 && agencies.length === 0 && (
+                  <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900">
+                    No agencies found
+                  </div>
+                )}
+              </Combobox.Options>
+            </div>
+          </Combobox>
         </div>
 
         {/* Sort by */}
@@ -148,8 +198,8 @@ export default function SearchFilters() {
             startDate: undefined,
             endDate: undefined,
             agency: '',
-            sortBy: '',
-            sortOrder: ''
+            sortBy: undefined,
+            sortOrder: undefined
           })}
         >
           Clear Filters

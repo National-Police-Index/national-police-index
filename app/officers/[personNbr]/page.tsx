@@ -54,7 +54,7 @@ export default function OfficerProfilePage() {
         title={fullName}
         description={
           <>
-            {getText('latest-agency')}:{' '}
+            {getText('latest-agency', 'Latest Agency')}:{' '}
             <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
               {latestRecord.agency_name}
             </Link>

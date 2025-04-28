@@ -21,6 +21,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "firebase": "^11.5.0",
+    "lodash": "^4.17.21",
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
