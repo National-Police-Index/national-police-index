@@ -7,6 +7,7 @@ interface PostCardProps {
 }
 
 import styles from './styles.module.scss';
+import Image from 'next/image';
 
 export default function PostCard({ title, image, description, date, url }: PostCardProps) {
   return (
@@ -17,10 +18,12 @@ export default function PostCard({ title, image, description, date, url }: PostC
       className={`group flex flex-col justify-center items-center gap-6 cursor-pointer transition-transform duration-300 rounded-3xl ${styles.postCard}`}
     >
       <div className={`relative w-full overflow-hidden rounded-3xl ${styles.imageWrapper}`}>
-        <img
+        <Image
           className="w-full h-96 object-cover transition-transform duration-300 group-hover:scale-105"
           src={image}
           alt={title || description}
+          width={800}
+          height={600}
         />
         <div className="absolute inset-0 bg-[#2F5E50] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
       </div>

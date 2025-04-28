@@ -2,7 +2,6 @@
 
 import { useParams, useSearchParams, notFound } from 'next/navigation';
 import { useStaticText } from '@/hooks/useStaticText';
-import { use } from 'react';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
 import SearchFilters from '@/components/search/SearchFilters';
@@ -11,22 +10,6 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
-
-interface StatePageProps {
-  params: Promise<{
-    state: string;
-  }>;
-  searchParams: Promise<{
-    page?: string;
-    query?: string;
-    agency?: string;
-    startDate?: string;
-    endDate?: string;
-    sortBy?: string;
-    sortOrder?: string;
-    pageSize?: string;
-  }>;
-}
 
 export default function StatePage() {
   const params = useParams();

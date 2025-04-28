@@ -1,8 +1,7 @@
 'use client';
 
-import { useParams, useSearchParams, notFound } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useStaticText } from '@/hooks/useStaticText';
-import Link from 'next/link';
 import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
 import SearchFilters from '@/components/search/SearchFilters';

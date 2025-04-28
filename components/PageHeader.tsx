@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
-import { useStaticText } from '@/hooks/useStaticText';
-import styles from "./styles.module.scss";
+import styles from './styles.module.scss';
 
 interface Statistic {
   value: number;
@@ -9,20 +8,13 @@ interface Statistic {
 }
 
 interface PageHeaderProps {
-  home: boolean;
-  title: string | React.ReactNode;
-  description: string | React.ReactNode;
+  home?: boolean;
+  title: string;
+  description?: string | React.ReactNode;
   statistics?: Statistic[];
-  textPrefix?: string; // For component-specific text keys
 }
 
-interface StatisticProps {
-  value: number;
-  label: string;
-  textPrefix?: string;
-}
-
-export default function PageHeader({ home, title, description, statistics, textPrefix }: PageHeaderProps) {
+export default function PageHeader({ home, title, description, statistics }: PageHeaderProps) {
   return (
     <div className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${styles.pageHeader} ${home && styles.homeHeader}`}>
       <div className='w-full flex flex-col justify-start items-start'>

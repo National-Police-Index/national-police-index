@@ -12,7 +12,7 @@ interface OfficerCardProps {
 
 export default function OfficerCard({ officer }: OfficerCardProps) {
   const { getText } = useStaticText('officer-card');
-  const [expanded, setExpanded] = useState(false);
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'MM/dd/yyyy');

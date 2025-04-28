@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+
 import styles from './Pagination.module.scss';
 
 interface PaginationProps {

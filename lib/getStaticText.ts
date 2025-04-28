@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface StaticText {
