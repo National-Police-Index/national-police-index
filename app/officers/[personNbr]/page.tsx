@@ -2,15 +2,18 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { PoliceOfficer } from '@/types';
 import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
 import { useStaticText } from '@/hooks/useStaticText';
 import PageHeader from '@/components/PageHeader';
-import { format } from 'date-fns';
 import styles from './page.module.scss';
 
 // Extend the PoliceOfficer type to include eventType
 type PoliceOfficerWithEventType = PoliceOfficer & {
   eventType: 'Start' | 'End';
+  startDate?: Date,
+  endDate?: Date,
+  agency?: string
 };
 
 export default function OfficerProfilePage() {
@@ -59,15 +62,15 @@ export default function OfficerProfilePage() {
     const startDate = new Date(record.start_date);
     const endDate = record.end_date ? new Date(record.end_date) : null;
     const eventType: PoliceOfficerWithEventType = {
-      agency: record.agency_name,
+      agency_name: record.agency_name,
       eventType: 'Start',
-      startDate
-    };
+      start_date: startDate.toISOString()
+    } as PoliceOfficerWithEventType;
     const endEventType: PoliceOfficerWithEventType = {
-      agency: record.agency_name,
+      agency_name: record.agency_name,
       eventType: 'End',
-      endDate
-    };
+      end_date: endDate ? endDate.toISOString() : ''
+    } as PoliceOfficerWithEventType;
     if (!acc[startYear]) acc[startYear] = [];
     acc[startYear].push(eventType);
     if (endYear && endYear !== startYear) {
@@ -118,14 +121,14 @@ export default function OfficerProfilePage() {
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Date</div>
-                    <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
-                      {new Date(latestRecord.start_date).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                        timeZone: 'UTC'
-                      })}
-                    </div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
+                    {new Date(latestRecord.start_date).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      timeZone: 'UTC'
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -136,51 +139,51 @@ export default function OfficerProfilePage() {
                 {false && <span className="text-sm text-emerald-700">{records.length} Records</span>}
               </div>
 
-                {Object.entries(timeline)
+              {Object.entries(timeline)
                 .sort((a, b) => Number(b[0]) - Number(a[0]))
                 .map(([year, events]) => (
                   <div key={year} className={`flex flex-col w-full ${styles.timelineYear}`}>
-                  <div className="text-[#122823] font-bold">{year}</div>
-                  <div className={`w-full flex flex-col ${styles.timelineEvents}`}>
-                    {events
-                    .sort((a, b) => {
-                      const dateA = a.eventType === 'Start' ? a.startDate : a.endDate!;
-                      const dateB = b.eventType === 'Start' ? b.startDate : b.endDate!;
-                      return dateB.getTime() - dateA.getTime();
-                    })
-                    .map((event, index) => (
-                      <div key={`${event.agency}-${event.eventType}-${index}`} className="flex flex-col w-full ">
-                      <div className={`w-full flex flex-row justify-between items-center ${styles.timelineItem}`}>
-                        <div className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}>
-                          <span className={styles.timelineDateDesktop}>
-                            {new Date(
-                              event.eventType === 'Start' ? event.startDate : event.endDate!
-                            ).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              timeZone: 'UTC',
-                            })}
-                          </span>
-                          <span className={styles.timelineDateMobile}>
-                            {new Date(
-                              event.eventType === 'Start' ? event.startDate : event.endDate!
-                            ).toLocaleDateString('en-US', {
-                              month: 'numeric',
-                              day: 'numeric',
-                              timeZone: 'UTC',
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter']">
-                          {event.agency}
-                        </div>
-                        <div className={`${styles.timelineType}`}>
-                          {event.eventType === 'Start' ? <>Start<span> Date</span></> : <>End<span> Date</span></>}
-                        </div>
-                      </div>
-                      </div>
-                    ))}
-                  </div>
+                    <div className="text-[#122823] font-bold">{year}</div>
+                    <div className={`w-full flex flex-col ${styles.timelineEvents}`}>
+                      {events
+                        .sort((a, b) => {
+                          const dateA = a.eventType === 'Start' ? new Date(a.start_date) : new Date(a.end_date);
+                          const dateB = b.eventType === 'Start' ? new Date(b.start_date) : new Date(b.end_date);
+                          return dateB.getTime() - dateA.getTime();
+                        })
+                        .map((event, index) => (
+                          <div key={`${event.agency_name}-${event.eventType}-${index}`} className="flex flex-col w-full ">
+                            <div className={`w-full flex flex-row justify-between items-center ${styles.timelineItem}`}>
+                              <div className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}>
+                                <span className={styles.timelineDateDesktop}>
+                                  {new Date(
+                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                  ).toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    day: 'numeric',
+                                    timeZone: 'UTC',
+                                  })}
+                                </span>
+                                <span className={styles.timelineDateMobile}>
+                                  {new Date(
+                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                  ).toLocaleDateString('en-US', {
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    timeZone: 'UTC',
+                                  })}
+                                </span>
+                              </div>
+                              <div className="flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter']">
+                                {event.agency}
+                              </div>
+                              <div className={`${styles.timelineType}`}>
+                                {event.eventType === 'Start' ? <>Start<span> Date</span></> : <>End<span> Date</span></>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 ))}
             </div>

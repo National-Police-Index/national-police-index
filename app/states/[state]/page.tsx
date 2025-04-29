@@ -1,15 +1,12 @@
-import { US_STATES } from '@/constants/states';
+'use client';
 import StatePageClient from './StatePageClient';
 
-export async function generateStaticParams() {
-  // Only generate pages for states that have data
-  return US_STATES
-    .filter(state => state.hasData)
-    .map((state) => ({
-      state: state.reference
-    }));
-}
+import { Suspense } from 'react';
 
 export default function StatePage() {
-  return <StatePageClient />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StatePageClient />
+    </Suspense>
+  );
 }
