@@ -27,7 +27,7 @@ export default function OfficerProfilePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-gray-600">Loading officer profile...</p>
+          <p className="mt-4 ">Loading officer profile...</p>
         </div>
       </div>
     );
@@ -46,7 +46,7 @@ export default function OfficerProfilePage() {
   if (!officerData) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12 text-gray-600">
+        <div className="text-center py-12 ">
           Officer not found
         </div>
       </div>

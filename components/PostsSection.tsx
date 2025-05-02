@@ -35,7 +35,7 @@ export default function PostsSection() {
       {loading && (
         <div className="text-center py-8">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="mt-4 text-gray-600">Loading posts...</p>
+          <p className="mt-4 ">Loading posts...</p>
         </div>
       )}
       {error && <div className="text-center text-red-600 py-8">Error loading posts: {error.message}</div>}

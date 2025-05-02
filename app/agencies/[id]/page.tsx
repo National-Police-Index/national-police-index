@@ -70,14 +70,14 @@ export default function AgencyPage() {
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-                <p className="mt-4 text-gray-600">Loading officers...</p>
+                <p className="mt-4 ">Loading officers...</p>
               </div>
             ) : error ? (
               <div className="text-center py-12 text-red-600">
                 Error loading officers: {error.message}
               </div>
             ) : officerGroups.length === 0 ? (
-              <div className="text-center py-12 text-gray-600">
+              <div className="text-center py-12 ">
                 No officers found matching your search criteria.
               </div>
             ) : (

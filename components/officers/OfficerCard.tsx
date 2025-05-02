@@ -58,10 +58,10 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
           </div>
           <hr />
           <div className={styles.details}>
-            <p className="text-sm text-gray-600">{getText('uid-label', 'UID')}: {officer.person_nbr}</p>
-            <p className="text-sm text-gray-600">{getText('agency-label', 'Agency')}: {officer.agency_name}</p>
-            <p className="text-sm text-gray-600">{getText('position-label', 'Position')}: {officer.position || getText('position-not-specified', 'Not specified')}</p>
-            <div className={styles.dates}>
+            <p className={styles.uidNumber}>{getText('uid-label', 'UID')}: {officer.person_nbr}</p>
+            <p className={styles.agency}>{getText('agency-label', 'Agency')}: {officer.agency_name}</p>
+            {/* <p className="text-sm">{getText('position-label', 'Position')}: {officer.position || getText('position-not-specified', 'Not specified')}</p> */}
+            <div className={styles.agencyDates}>
               <div>{formatDate(officer.start_date)}</div>
               <div>{formatDate(officer.end_date)}</div>
             </div>
