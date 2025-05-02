@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { loadServiceAccount } from '../utils/loadServiceAccount';
+import { loadServiceAccount } from '../utils/loadServiceAccount.js';
 
 async function initializeFirebase() {
   if (!admin.apps.length) {

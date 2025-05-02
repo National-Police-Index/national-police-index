@@ -1,5 +1,14 @@
 import * as admin from 'firebase-admin';
-import { initialPosts } from './seedData';
+import { initialPosts } from './seedData.js';
+
+interface Post {
+  id: string;
+  title: string;
+  image: string;
+  description: string;
+  date: string;
+  url: string;
+}
 import type { ServiceAccount } from 'firebase-admin';
 
 // You'll need to download this from Firebase Console -> Project Settings -> Service Accounts
@@ -21,7 +30,7 @@ async function seedDatabase() {
     const batch = db.batch();
     
     // Add all posts
-    initialPosts.forEach((post) => {
+    initialPosts.forEach((post: Post) => {
       const docRef = db.collection('posts').doc(post.id);
       batch.set(docRef, {
         ...post,

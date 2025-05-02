@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run generate-sitemap",
+    "build:sitemap": "cd scripts && npx tsc && node ../dist/scripts/scripts/generateSitemap.js",
     "start": "next start",
     "lint": "next lint",
     "migrate": "tsx scripts/migrate.ts",
     "generate-stats": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateStateStats.ts",
-    "generate-sitemap": "tsx scripts/generateSitemap.ts",
+    "generate-sitemap": "npm run build:sitemap",
     "seed-officers": "tsx scripts/seedOfficers.ts",
     "seed-team": "tsx scripts/seedTeamData.ts"
   },

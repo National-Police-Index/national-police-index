@@ -15,7 +15,12 @@ import {
   CollectionReference,
   Query
 } from 'firebase/firestore';
-import { US_STATES } from '../constants/states';
+import { US_STATES } from '../constants/states.js';
+
+interface State {
+  name: string;
+  abbreviation: string;
+}
 
 // Configure chunk sizes for memory management
 const BATCH_SIZE = 20; // Number of writes per batch - reduced for memory
@@ -134,8 +139,6 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
           if (documentId) {
             uniqueDocumentIds.add(documentId);
           }
-          // Clear references to help with GC
-          doc.data = null;
         });
 
         if (snapshot.empty || snapshot.size < QUERY_LIMIT) {
@@ -183,8 +186,8 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
       // Reset retry count for next state
       retryCount = 0;
 
-      // Commit batch if it reaches the size limit or if we've processed a lot of records
-      if (batchCount === BATCH_SIZE || totalOfficers % (BATCH_SIZE * QUERY_LIMIT) === 0) {
+      // Commit batch if it reaches the size limit
+      if (batchCount === BATCH_SIZE) {
         await batch.commit();
         console.log(`Committed batch for ${batchCount} states`);
         batch = writeBatch(db); // Create a new batch

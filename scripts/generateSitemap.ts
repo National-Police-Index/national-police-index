@@ -2,8 +2,14 @@ import * as admin from 'firebase-admin';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { US_STATES } from '../constants/states';
-import { loadServiceAccount } from '../utils/loadServiceAccount';
+import { US_STATES } from '../constants/states.js';
+import { loadServiceAccount } from '../utils/loadServiceAccount.js';
+
+interface State {
+  name: string;
+  abbreviation: string;
+  hasData?: boolean;
+}
 
 // Get current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -50,8 +56,8 @@ async function generateSitemap() {
       },
       // State pages
       ...US_STATES
-        .filter(state => state.hasData)
-        .map(state => ({
+        .filter((state: State) => state.hasData)
+        .map((state: State) => ({
           loc: `${baseUrl}/states/${state.abbreviation.toLowerCase()}`,
           lastmod: new Date().toISOString(),
           changefreq: 'weekly',
