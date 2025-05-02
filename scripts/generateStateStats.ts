@@ -1,13 +1,28 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, query, where, getDocs, writeBatch, doc, QueryDocumentSnapshot, limit, startAfter, orderBy, DocumentData, QuerySnapshot } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+  doc,
+  QueryDocumentSnapshot,
+  limit,
+  startAfter,
+  orderBy,
+  DocumentData,
+  CollectionReference,
+  Query
+} from 'firebase/firestore';
 import { US_STATES } from '../constants/states';
 
 // Configure chunk sizes for memory management
-const BATCH_SIZE = 50; // Number of writes per batch
-const QUERY_LIMIT = 250; // Number of documents per query
-const STATE_CHUNK_SIZE = 2; // Number of states to process at once
-const MAX_PAGES_PER_STATE = 400; // Safety limit for pagination to avoid infinite loops
-const GC_INTERVAL = 2; // Run garbage collection every N pages
+const BATCH_SIZE = 20; // Number of writes per batch - reduced for memory
+const QUERY_LIMIT = 100; // Number of documents per query - reduced for memory
+const STATE_CHUNK_SIZE = 1; // Process one state at a time
+const MAX_PAGES_PER_STATE = 20000; // Safety limit for pagination
+const GC_INTERVAL = 1; // Run garbage collection every page
 
 // Load environment variables
 import dotenv from 'dotenv';
@@ -39,12 +54,15 @@ for (const envVar of requiredEnvVars) {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+interface StatItem {
+  label: string;
+  value: string;
+}
+
 interface StateStats {
   title: string;
   description: string;
-  total_officers: number;
-  total_officer_end_date: { [year: string]: number };
-  total_officer_start_date: { [year: string]: number };
+  stats: StatItem[];
   last_updated: Date;
   is_partial?: boolean;
   pages_processed?: number;
@@ -70,7 +88,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
   }
 }
 
-async function processStateChunk(states: typeof US_STATES, statsCollection: ReturnType<typeof collection>) {
+async function processStateChunk(states: typeof US_STATES, statsCollection: CollectionReference) {
   let batch = writeBatch(db);
   let batchCount = 0;
   let retryCount = 0;
@@ -83,22 +101,20 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
     // Query officers for this state with pagination
     const officersRef = collection(db, 'db_launch');
     let lastDoc: QueryDocumentSnapshot | null = null;
-    const endDateStats: { [year: string]: number } = {};
-    const startDateStats: { [year: string]: number } = {};
-    let totalOfficers = 0;
+    let totalProcessed = 0;
+    // Use a Set to track unique document_ids (more memory efficient)
+    const uniqueDocumentIds = new Set<string>();
 
     try {
-      let hasMoreDocs = true;
-      let pageCount = 0;
-      let lastDoc = null;
+      let hasMoreDocs: boolean = true;
+      let pageCount: number = 0;
 
       while (hasMoreDocs && pageCount < MAX_PAGES_PER_STATE) {
         pageCount++;
         // Build query with pagination
-        let q = query(
+        let q: Query = query(
           officersRef,
           where('state', '==', stateRef),
-          orderBy('__name__'), // Use document ID for consistent pagination
           limit(QUERY_LIMIT)
         );
 
@@ -109,7 +125,18 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
         console.log(`Querying officers for ${state.name} (attempt ${retryCount + 1})...`);
         const snapshot = await withTimeout(getDocs(q));
         console.log(`Retrieved ${snapshot.size} officers for ${state.name}`);
-        totalOfficers += snapshot.size;
+        totalProcessed += snapshot.size;
+
+        // Process each document and only store unique document_ids
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const documentId = data.document_id;
+          if (documentId) {
+            uniqueDocumentIds.add(documentId);
+          }
+          // Clear references to help with GC
+          doc.data = null;
+        });
 
         if (snapshot.empty || snapshot.size < QUERY_LIMIT) {
           hasMoreDocs = false;
@@ -118,45 +145,33 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
         }
 
         // Log progress
-        console.log(`Page ${pageCount}/${MAX_PAGES_PER_STATE} for ${state.name}: ${totalOfficers} officers so far`);
+        console.log(`Page ${pageCount}/${MAX_PAGES_PER_STATE} for ${state.name}: ${totalProcessed} processed, ${uniqueDocumentIds.size} unique officers so far`);
 
-        // Run garbage collection periodically
-        if (pageCount % GC_INTERVAL === 0 && global.gc) {
-          console.log('Running garbage collection...');
-          global.gc();
+        // Run garbage collection if available
+        if (pageCount % GC_INTERVAL === 0) {
+          // Clear references and run GC
+          snapshot.docs.length = 0;
+          if (global.gc) {
+            global.gc();
+          }
           // Add a small delay to allow GC to complete
           await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        // Process documents
-        snapshot.forEach((doc: QueryDocumentSnapshot) => {
-          const data = doc.data();
-
-          // Process end dates
-          if (data.end_date) {
-            const endYear = new Date(data.end_date).getFullYear().toString();
-            endDateStats[endYear] = (endDateStats[endYear] || 0) + 1;
-          }
-
-          // Process start dates
-          if (data.start_date) {
-            const startYear = new Date(data.start_date).getFullYear().toString();
-            startDateStats[startYear] = (startDateStats[startYear] || 0) + 1;
-          }
-        });
-
-        // Force garbage collection between chunks
-        if (global.gc) {
-          global.gc();
         }
       }
 
       const stateStats: StateStats = {
         title: state.name,
         description: `Police officer records and history in ${state.name}`,
-        total_officers: totalOfficers,
-        total_officer_end_date: endDateStats,
-        total_officer_start_date: startDateStats,
+        stats: [
+          {
+            label: 'Total Officers',
+            value: uniqueDocumentIds.size.toString()
+          },
+          {
+            label: 'Total Records Processed',
+            value: totalProcessed.toString()
+          }
+        ],
         last_updated: new Date()
       };
 
@@ -176,9 +191,9 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
         batchCount = 0;
       }
 
-      console.log(`Successfully processed ${totalOfficers} officers for ${state.name}`);
-    } catch (error) {
-      console.error(`Error processing state ${state.name}:`, error);
+      console.log(`Successfully processed ${totalProcessed} records (${uniqueDocumentIds.size} unique officers) for ${state.name}`);
+    } catch (error: unknown) {
+      console.error(`Error processing state ${state.name}:`, error instanceof Error ? error.message : 'Unknown error');
 
       // Retry logic
       if (retryCount < MAX_RETRIES) {
@@ -189,14 +204,17 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
       }
 
       // If all retries failed, store partial results if we have any
-      if (totalOfficers > 0) {
-        console.log(`Storing partial results for ${state.name} with ${totalOfficers} officers`);
+      if (uniqueDocumentIds.size > 0) {
+        console.log(`Storing partial results for ${state.name} with ${uniqueDocumentIds.size} unique officers`);
         const stateStats: StateStats = {
           title: state.name,
           description: `Partial police officer records and history in ${state.name}`,
-          total_officers: totalOfficers,
-          total_officer_end_date: endDateStats,
-          total_officer_start_date: startDateStats,
+          stats: [
+            {
+              label: 'Total Officers',
+              value: uniqueDocumentIds.size.toString()
+            }
+          ],
           last_updated: new Date(),
           is_partial: true
         };
@@ -213,8 +231,8 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
             batch = writeBatch(db); // Create a new batch
             batchCount = 0;
           }
-        } catch (writeError) {
-          console.error(`Error storing partial results for ${state.name}:`, writeError);
+        } catch (writeError: unknown) {
+          console.error(`Error storing partial results for ${state.name}:`, writeError instanceof Error ? writeError.message : 'Unknown error');
         }
       }
     }
@@ -228,18 +246,30 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Retu
       batch = writeBatch(db); // Create a new batch for any subsequent operations
       batchCount = 0;
     } catch (error) {
-      console.error('Error committing batch:', error);
+      console.error('Error committing batch:', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
 }
 
-async function generateStateStats() {
+async function generateStateStats(startFromState?: string) {
   console.log('Starting state statistics generation...');
-  const statsCollection = collection(db, 'state_statistics');
+  const statsCollection = collection(db, 'statistics_per_state');
+  
+  // Find the starting index if a state is specified
+  let startIndex = 0;
+  if (startFromState) {
+    startIndex = US_STATES.findIndex(state => state.name.toLowerCase() === startFromState.toLowerCase());
+    if (startIndex === -1) {
+      console.error(`State ${startFromState} not found. Starting from the beginning.`);
+      startIndex = 0;
+    } else {
+      console.log(`Resuming from state: ${US_STATES[startIndex].name}`);
+    }
+  }
 
   // Process states in chunks
-  for (let i = 0; i < US_STATES.length; i += STATE_CHUNK_SIZE) {
+  for (let i = startIndex; i < US_STATES.length; i += STATE_CHUNK_SIZE) {
     const stateChunk = US_STATES.slice(i, i + STATE_CHUNK_SIZE);
     console.log(`Processing states ${i + 1} to ${Math.min(i + STATE_CHUNK_SIZE, US_STATES.length)}`);
     await processStateChunk(stateChunk, statsCollection);
@@ -254,22 +284,23 @@ async function generateStateStats() {
 }
 
 // Function to be called monthly
-export async function updateStateStatistics() {
+export async function updateStateStatistics(startFromState?: string) {
   try {
-    await generateStateStats();
+    await generateStateStats(startFromState);
     console.log('State statistics update completed successfully');
   } catch (error) {
-    console.error('Error updating state statistics:', error);
+    console.error('Error updating state statistics:', error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }
 
 // Allow running directly from command line
-if (require.main === module) {
-  updateStateStatistics()
+if (import.meta.url === new URL(process.argv[1], 'file:').href) {
+  const startFromState = process.argv[2];
+  updateStateStatistics(startFromState)
     .then(() => process.exit(0))
     .catch((error) => {
-      console.error('Script failed:', error);
+      console.error('Script failed:', error instanceof Error ? error.message : 'Unknown error');
       process.exit(1);
     });
 }

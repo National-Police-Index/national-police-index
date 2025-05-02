@@ -14,7 +14,7 @@ export function useOfficerByPersonNbr(personNbr: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerData, setOfficerData] = useState<OfficerData | null>(null);
-console.log('personNbr', personNbr);
+  console.log('personNbr', personNbr);
   useEffect(() => {
     async function fetchOfficer() {
       try {
@@ -23,10 +23,11 @@ console.log('personNbr', personNbr);
 
         // Query all records for this officer using collection group
         const officersRef = collectionGroup(db, 'db_launch');
-        const q = query(officersRef, where('person_nbr', '==', personNbr));
+        const q = query(officersRef, where('document_id', '==', personNbr));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
+          console.log('Officer not found');
           throw new Error('Officer not found');
         }
 
@@ -38,11 +39,13 @@ console.log('personNbr', personNbr);
             return dateB - dateA; // Sort by most recent first
           });
 
+        console.log('Records', records);
         setOfficerData({
           records,
           latestRecord: records[0]
         });
       } catch (err) {
+        console.log('Error fetching officer', err);
         setError(err instanceof Error ? err : new Error('Failed to fetch officer'));
       } finally {
         setLoading(false);

@@ -1,9 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { US_STATES } from '@/constants/states';
 import styles from './styles.module.scss';
 import { useStaticText } from '@/hooks/useStaticText';
+import { US_STATES } from '@/constants/states';
 
 export default function Header() {
   const { getText } = useStaticText('header');
@@ -63,7 +63,7 @@ export default function Header() {
     } else {
       body.style.overflow = 'auto';
     }
-  }, [isMobileMenuOpen]);  
+  }, [isMobileMenuOpen]);
 
   const stateColumns = useMemo(() => {
     const statesWithData = US_STATES.filter(state => state.hasData);
@@ -82,7 +82,7 @@ export default function Header() {
       <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ''}`}>
 
         <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] p-2 m-[-8px] ${styles.siteTitle}`}>
-              {getText('site-name', 'National Police Index')}
+          {getText('site-name', 'National Police Index')}
         </Link>
 
         {/* Desktop Navigation */}
@@ -105,7 +105,7 @@ export default function Header() {
               {getText('nav-states', 'State Data')}
             </span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
-              <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           <Link href="/about" className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]">
@@ -194,7 +194,7 @@ export default function Header() {
                 >
                   <span>State Data</span>
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
-                    <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
 

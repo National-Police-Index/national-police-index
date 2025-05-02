@@ -43,13 +43,7 @@ export default function StatePageClient() {
   // Calculate total pages based on unique officer groups instead of total records
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  const lastYearIndex = Object.keys(stats?.total_officer_end_date || {}).length;
-  const lastYear = lastYearIndex > 0 ? Object.keys(stats?.total_officer_end_date || {})[lastYearIndex - 1] : '';
-  const lastYearAmount = lastYearIndex > 0 ? (stats?.total_officer_end_date?.[lastYear]) : 0;
-
-  const startYearIndex = Object.keys(stats?.total_officer_start_date || {}).length;
-  const startYear = startYearIndex > 0 ? Object.keys(stats?.total_officer_start_date || {})[startYearIndex - 1] : '';
-  const startYearAmount = startYearIndex > 0 ? (stats?.total_officer_start_date?.[startYear]) : 0;
+  console.log('STATS', stats);
 
   return (
     <div className="w-full mx-auto">
@@ -57,20 +51,10 @@ export default function StatePageClient() {
         home={false}
         title={getText('officers-title', 'Officers in {state}').replace('{state}', state.toUpperCase())}
         description={`Searching  and explore police officer records in ${stateData.name}`}
-        statistics={[
-          {
-            value: stats?.total_officers || 0,
-            label: getText('total-officers', 'Total Officers')
-          },
-          {
-            value: lastYearAmount || 0,
-            label: getText('officers-title', 'Officers in {state}').replace('{state}', state.toUpperCase())
-          },
-          {
-            value: startYearAmount || 0,
-            label: `Officers started in ${startYear}`
-          },
-        ]}
+        statistics={stats?.stats.filter(stat => stat.value !== '0').map(stat => ({
+          value: parseInt(stat.value),
+          label: stat.label
+        }))}
       />
 
       <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>

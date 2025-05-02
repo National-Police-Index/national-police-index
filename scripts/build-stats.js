@@ -1,14 +1,5 @@
-require('dotenv').config({ path: '.env.local' });
-
-require('ts-node').register({
-  compilerOptions: {
-    module: 'commonjs',
-    moduleResolution: 'node'
-  }
-});
-
-const { updateStateStatistics } = require('./generateStateStats.ts');
-const { updateAgencyStatistics } = require('./generateAgencyStats.ts');
+import { updateStateStatistics } from 'generateStateStats';
+import { updateAgencyStatistics } from 'generateAgencyStats';
 
 async function generateAllStats() {
   try {
@@ -17,7 +8,7 @@ async function generateAllStats() {
     console.log('Successfully generated state statistics');
 
     console.log('\nStarting agency statistics generation...');
-    await updateAgencyStatistics();
+    // await updateAgencyStatistics();
     console.log('Successfully generated agency statistics');
   } catch (error) {
     console.error('Error generating statistics:', error);

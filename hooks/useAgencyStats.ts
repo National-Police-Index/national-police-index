@@ -4,14 +4,19 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
+interface StatItem {
+  label: string;
+  value: string;
+}
+
 interface AgencyStats {
   name: string;
   description: string;
-  total_officers: number;
-  total_officer_end_date: { [year: string]: number };
-  total_officer_start_date: { [year: string]: number };
+  stats: StatItem[];
   state: string;
   last_updated: Date;
+  is_partial?: boolean;
+  pages_processed?: number;
 }
 
 export function useAgencyStats(agencyName: string) {

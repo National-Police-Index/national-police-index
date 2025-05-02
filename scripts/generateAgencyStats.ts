@@ -14,14 +14,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+interface StatItem {
+  label: string;
+  value: string;
+}
+
 interface AgencyStats {
   name: string;
   description: string;
-  total_officers: number;
-  total_officer_end_date: { [year: string]: number };
-  total_officer_start_date: { [year: string]: number };
+  stats: StatItem[];
   state: string;
   last_updated: Date;
+  is_partial?: boolean;
+  pages_processed?: number;
 }
 
 async function generateAgencyStats() {
@@ -82,9 +87,12 @@ async function generateAgencyStats() {
     const agencyStats: AgencyStats = {
       name: stats.name,
       description: `Police officer records and history in ${stats.name}`,
-      total_officers: stats.officers.size,
-      total_officer_end_date: stats.endDateStats,
-      total_officer_start_date: stats.startDateStats,
+      stats: [
+        {
+          label: 'Total Officers',
+          value: stats.officers.size.toString()
+        }
+      ],
       state: stats.state,
       last_updated: new Date()
     };

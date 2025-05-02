@@ -20,6 +20,7 @@ export default function OfficerProfilePage() {
   const { personNbr } = useParams();
   const { loading, error, officerData } = useOfficerByPersonNbr(personNbr as string);
   const { getText } = useStaticText('officer');
+  console.log('Officer data', officerData);
 
   if (loading) {
     return (

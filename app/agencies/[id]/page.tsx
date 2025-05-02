@@ -54,16 +54,11 @@ export default function AgencyPage() {
         home={false}
         title={getText('officers-title', 'Officers in {state}').replace('{state}', stats?.name || '')}
         description={`Searching  and explore police officer records in ${stats?.name || ''}`}
-        statistics={[
-          {
-            value: Object.values(stats?.total_officer_start_date || {}).reduce((a, b) => a + b, 0),
-            label: getText('active-records', 'Active Records')
-          },
-          {
-            value: stats?.total_officers || 0,
-            label: getText('total-officers', 'Total Officers')
-          },
-        ]}
+
+        statistics={stats?.stats?.filter(stat => stat.value !== '0').map(stat => ({
+          value: parseInt(stat.value),
+          label: stat.label
+        }))}
       />
 
       <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
