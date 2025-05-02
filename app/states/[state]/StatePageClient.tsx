@@ -40,10 +40,17 @@ export default function StatePageClient() {
 
   const loading = statsLoading || officersLoading;
   const error = statsError || officersError;
-  // Calculate total pages based on unique officer groups instead of total records
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  console.log('STATS', stats);
+  // Debug logging
+  console.log('Pagination Debug:', {
+    totalGroups,
+    pageSize,
+    totalPages,
+    currentPage,
+    officerGroupsLength: officerGroups?.length || 0,
+    shouldShowPagination: totalPages > 1
+  });
 
   return (
     <div className="w-full mx-auto">
