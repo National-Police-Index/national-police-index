@@ -10,6 +10,7 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
+import { useEffect } from 'react';
 
 export default function StatePageClient() {
   const params = useParams();
@@ -26,21 +27,27 @@ export default function StatePageClient() {
   }
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
-  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10);
+  const pageSize = 16; // Fixed page size
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByUid({
     state,
     searchParams: {
       ...resolvedSearchParams,
-      pageSize,
-      pageToken: undefined // We're not using infinite scroll anymore
+      pageSize: pageSize.toString(),
+      page: currentPage.toString()
     }
   });
 
   const loading = statsLoading || officersLoading;
   const error = statsError || officersError;
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
+
+  useEffect(() => {
+    if (!loading && currentPage > totalPages && totalPages > 0) {
+      window.location.href = `/states/${state}?page=${totalPages}`;
+    }
+  }, [loading, currentPage, totalPages, state]);
 
   // Debug logging
   console.log('Pagination Debug:', {
@@ -49,7 +56,9 @@ export default function StatePageClient() {
     totalPages,
     currentPage,
     officerGroupsLength: officerGroups?.length || 0,
-    shouldShowPagination: totalPages > 1
+    shouldShowPagination: totalPages > 1,
+    isLastPage: currentPage === totalPages,
+    expectedPageSize: currentPage === totalPages ? undefined : pageSize
   });
 
   return (
