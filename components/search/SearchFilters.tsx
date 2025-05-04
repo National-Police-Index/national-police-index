@@ -174,7 +174,7 @@ export default function SearchFilters() {
         </div>
 
         {/* Sort order */}
-        <div>
+        {false && <div>
           <select
             id="sort-order"
             name="sort-order"
@@ -186,7 +186,7 @@ export default function SearchFilters() {
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
-        </div>
+        </div>}
       </div>
 
       <div className={`flex justify-end ${styles.buttonGroup}`}>
