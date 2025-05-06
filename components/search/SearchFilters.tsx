@@ -9,8 +9,13 @@ import { SearchFilters as SearchFiltersType } from '@/types';
 import { searchAgencies } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
 import debounce from 'lodash/debounce';
+import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 
-export default function SearchFilters() {
+interface SearchFiltersProps {
+  state?: string;
+}
+
+export default function SearchFilters({ state }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<string[]>([]);
@@ -51,6 +56,81 @@ export default function SearchFilters() {
         option.disabled = true;
       }
     });
+  };
+
+  const downloadEntireCSV = async () => {
+    if (!state) return;
+
+    try {
+      const storage = getStorage();
+      const csvFileName = `${state.toLowerCase()}-processed.csv`;
+      const csvRef = ref(storage, csvFileName);
+
+      const downloadURL = await getDownloadURL(csvRef);
+
+      console.log('download url', downloadURL);
+      // Create a temporary link and trigger the download
+      window.open(downloadURL);
+      /*
+      const link = document.createElement('a');
+      link.href = downloadURL;
+      link.download = csvFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      */
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('Error downloading CSV. Please try again later.');
+    }
+  };
+
+  const downloadFilteredCSV = async () => {
+    if (!state) return;
+
+    try {
+      // Generate query params based on current filters
+      const params = new URLSearchParams();
+      if (filters.query) params.set('query', filters.query);
+      if (filters.agency) params.set('agency', filters.agency);
+      if (filters.startDate) params.set('startDate', filters.startDate.toISOString());
+      if (filters.endDate) params.set('endDate', filters.endDate.toISOString());
+      if (filters.sortBy) params.set('sortBy', filters.sortBy);
+      // Add state parameter
+      params.set('state', state.toLowerCase());
+
+      // Call the API endpoint to generate the filtered CSV
+      const response = await fetch(`/api/download/csv?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to generate CSV');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      /*
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${state.toLowerCase()}-filtered.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      */
+      window.open(url);
+    } catch (error) {
+      console.error('Error generating filtered CSV:', error);
+      alert('Error generating filtered CSV. Please try again later.');
+    }
+  };
+
+  const handleDownloadOption = (option: string) => {
+    if (option === 'entire') {
+      downloadEntireCSV();
+    } else if (option === 'filtered') {
+      downloadFilteredCSV();
+    }
   };
 
 
@@ -118,7 +198,7 @@ export default function SearchFilters() {
         </div>
 
         {/* Agency filter */}
-        <div className={styles.agency}>
+        {state && <div className={styles.agency}>
           <Combobox
             as="div"
             value={filters.agency}
@@ -156,6 +236,7 @@ export default function SearchFilters() {
             </div>
           </Combobox>
         </div>
+        }
 
         {/* Sort by */}
         <div>
@@ -169,7 +250,7 @@ export default function SearchFilters() {
             <option value="">Sort by</option>
             <option value="name">Name</option>
             <option value="date">Date</option>
-            <option value="agency">Agency</option>
+            {state && <option value="agency">Agency</option>}
           </select>
         </div>
 
@@ -187,6 +268,24 @@ export default function SearchFilters() {
             <option value="desc">Descending</option>
           </select>
         </div>}
+
+        {/* Download options */}
+        {state && (
+          <div>
+            <select
+              id="download-options"
+              name="download-options"
+              defaultValue=""
+              onChange={(e) => handleDownloadOption(e.target.value)}
+              onClick={handleSelectClick}
+              className={styles.downloadSelect}
+            >
+              <option value="">Download CSV</option>
+              <option value="entire">Entire CSV</option>
+              <option value="filtered">Filtered CSV</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className={`flex justify-end ${styles.buttonGroup}`}>

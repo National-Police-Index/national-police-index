@@ -29,6 +29,7 @@ const STATS_COLLECTION = 'statistics_per_agency'; // Final stats collection
 
 // Load environment variables
 import dotenv from 'dotenv';
+import { US_STATES } from '@/constants/states';
 dotenv.config({ path: '.env.local' });
 
 const firebaseConfig = {
@@ -114,7 +115,7 @@ async function saveDiscoveredAgency(agencyName: string, state: string) {
   await setDoc(agencyDoc, { name: agencyName, state, discovered_at: new Date() });
 }
 
-async function generateAgencyStats() {
+async function generateAgencyStats(state: string) {
   console.log('Starting agency statistics generation...');
   const statsCollection = collection(db, STATS_COLLECTION);
   const officersRef = collectionGroup(db, 'db_launch');
@@ -128,7 +129,7 @@ async function generateAgencyStats() {
   let agencyPageCount = 0;
 
   console.log('Discovering unique agencies...');
-  while (hasMoreAgencies && agencyPageCount < MAX_PAGES_PER_AGENCY) {
+  while (false && hasMoreAgencies && agencyPageCount < MAX_PAGES_PER_AGENCY) {
     agencyPageCount++;
     let agencyQuery = query(officersRef, limit(QUERY_LIMIT));
 
@@ -136,8 +137,10 @@ async function generateAgencyStats() {
       agencyQuery = query(agencyQuery, startAfter(lastAgencyDoc));
     }
 
+    agencyQuery = query(agencyQuery, where('state', '==', state));
+
     try {
-      const agencySnapshot = await withTimeout(getDocs(agencyQuery), 60000); // 60 second timeout for initial query
+      const agencySnapshot = await withTimeout(getDocs(agencyQuery), 30000); // 60 second timeout for initial query
       const docsSize = agencySnapshot.size;
 
       for (const doc of agencySnapshot.docs) {
@@ -289,10 +292,14 @@ async function generateAgencyStats() {
 // Function to be called monthly
 export async function updateAgencyStatistics() {
   try {
-    await generateAgencyStats();
+    await Promise.all(US_STATES.filter(item => item.hasData).map(async (item) => {
+      console.log(`Generating agency statistics for ${item.reference}...`);
+      await generateAgencyStats(item.reference);
+    }));
     console.log('Agency statistics update completed successfully');
 
     // Clean up temporary collection after successful run
+    /*
     console.log('Cleaning up temporary collection...');
     const tempCollection = collection(db, TEMP_COLLECTION);
     const snapshot = await getDocs(tempCollection);
@@ -317,6 +324,7 @@ export async function updateAgencyStatistics() {
     }
 
     console.log('Temporary collection cleanup completed');
+    */
   } catch (error) {
     console.error('Error updating agency statistics:', error);
     throw error;

@@ -76,7 +76,7 @@ export default function StatePageClient() {
       <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
         <div className="container-a mx-auto">
 
-          <SearchFilters />
+          <SearchFilters state={state} />
 
           <div className={styles.cardsWrapper}>
             {loading ? (
