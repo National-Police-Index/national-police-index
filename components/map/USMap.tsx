@@ -51,7 +51,6 @@ export default function USMap() {
 
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
-    console.log(stateReference, stateData);
     if (stateData?.hasData) {
       router.push(`/states/${stateReference.toLowerCase()}`);
     } else {
@@ -65,14 +64,14 @@ export default function USMap() {
     const stateData = US_STATES.find(s => s.reference.toLowerCase() === stateReference.toLowerCase());
 
     if (stateData) {
-      const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';      
+      const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';
 
-      const eTarget = (e.target as HTMLElement).getBoundingClientRect();      
+      const eTarget = (e.target as HTMLElement).getBoundingClientRect();
       const wrapperRect = mapWrapperRef.current?.getBoundingClientRect();
-      const relativeX = wrapperRect 
+      const relativeX = wrapperRect
         ? eTarget.left - wrapperRect.left + (eTarget.width * .2)
         : eTarget.left + (eTarget.width * .2)
-      const relativeY = wrapperRect 
+      const relativeY = wrapperRect
         ? eTarget.top - wrapperRect.top + eTarget.height - (eTarget.height * .1)
         : eTarget.top + eTarget.height - (eTarget.height * .1)
 
@@ -81,7 +80,7 @@ export default function USMap() {
       if (relativeX > mapWrapperWidth * 0.7) {
         direction = 'right';
       }
-      
+
       setTooltip({
         visible: true,
         x: relativeX,
@@ -98,7 +97,7 @@ export default function USMap() {
   };
 
   return (
-    <div 
+    <div
       className={`w-full flex flex-column mx-auto flex-col ${styles.mapWrapper}`}
       ref={mapWrapperRef}
     >
@@ -107,14 +106,12 @@ export default function USMap() {
           <div>
             {US_STATES.map((state, index) => {
               const mapEntry = (US_STATES_MAP as unknown as StatesMap)[state.key];
-              
+
               if (!mapEntry) return null;
-              
+
               // Get the original SVG
               const originalSvg = mapEntry.renderSvg(state, handleStateClick);
 
-              console.log(state.dataFlag)
-          
               return (
                 <div
                   key={index}
@@ -126,13 +123,13 @@ export default function USMap() {
                   }}
                   tabIndex={0}
                 >
-                  <div 
+                  <div
                     onMouseEnter={(e) => handleMouseEnter(e, state.reference)}
                     onMouseLeave={handleMouseLeave}
                   >
                     {originalSvg}
                   </div>
-                  {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`] && 
+                  {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`] &&
                     (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
                 </div>
               );
@@ -163,7 +160,7 @@ export default function USMap() {
         </div>
       </div>
 
-      <div 
+      <div
         className={`absolute z-10 ${styles.tooltip} ${tooltip.direction === 'right' && styles.tooltipRight} ${tooltip.visible && styles.tooltipVisible}`}
         style={{
           left: tooltip.x,

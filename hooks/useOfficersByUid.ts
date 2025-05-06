@@ -75,7 +75,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
       }
 
       const snapshot = await getDocs(q);
-      
+
       // Count unique person_nbr values
       const uniquePersonNbrs = new Set();
       snapshot.docs.forEach(doc => {
@@ -95,26 +95,24 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
     try {
       const statsRef = doc(db, 'statistics_per_state', state.toLowerCase());
       const statsDoc = await getDoc(statsRef);
-      
+
       if (statsDoc.exists()) {
         const data = statsDoc.data();
         // Try to get total_officers first
         if (data.total_officers) {
           const count = parseInt(data.total_officers, 10);
-          console.log('Using total_officers:', count);
           return count;
         }
         // Fallback to stats array
         if (data.stats) {
-          const officerStats = data.stats.find((stat: any) => stat.label === 'Officers');
+          const officerStats = data.stats.find((stat: any) => stat.label === 'Total Officers');
           if (officerStats) {
             const count = parseInt(officerStats.value, 10);
-            console.log('Using stats array:', count);
             return count;
           }
         }
       }
-      
+
       // If no stats found, use a reasonable default
       console.log('No stats found, using default');
       return 11713; // Known count for California
@@ -130,7 +128,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
     // Get total count first
     getTotalCount().then(count => {
       if (isMounted) {
-        console.log('Setting initial total count:', count);
         setTotalCount(count);
       }
     });
@@ -178,37 +175,55 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           setTotalCount(total);
         }
 
-        // Optimize the fetch size
-        q = query(q, limit(pageSize * 2));
+        // Fetch more records to ensure we get enough unique officers
+        q = query(q, limit(pageSize * 4)); // Increased multiplier to handle more duplicates
 
         // Handle pagination
         if (page > 1 && lastDoc) {
           q = query(q, startAfter(lastDoc));
         }
 
-        const snapshot = await getDocs(q);
+        let snapshot = await getDocs(q);
         if (!isMounted) return;
 
         // Process results efficiently
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
         let uniqueCount = 0;
         let lastDocIndex = -1;
+        let attempts = 0;
+        const maxAttempts = 3;
 
-        for (let i = 0; i < snapshot.docs.length && uniqueCount < pageSize; i++) {
-          const doc = snapshot.docs[i];
-          const officer = doc.data() as PoliceOfficer;
-          if (!groupedOfficers.has(officer.person_nbr)) {
-            groupedOfficers.set(officer.person_nbr, [officer]);
-            uniqueCount++;
-            lastDocIndex = i;
+        // Keep fetching until we get pageSize unique officers or hit the last record
+        while (uniqueCount < pageSize && attempts < maxAttempts && snapshot.docs.length > 0) {
+          for (let i = 0; i < snapshot.docs.length && uniqueCount < pageSize; i++) {
+            const doc = snapshot.docs[i];
+            const officer = doc.data() as PoliceOfficer;
+            if (!groupedOfficers.has(officer.person_nbr)) {
+              groupedOfficers.set(officer.person_nbr, [officer]);
+              uniqueCount++;
+              lastDocIndex = i;
+            } else {
+              groupedOfficers.get(officer.person_nbr)?.push(officer);
+            }
+          }
+
+          // If we still need more officers and there are more records
+          if (uniqueCount < pageSize && snapshot.docs.length === pageSize * 4) {
+            const lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+            q = query(q, startAfter(lastVisibleDoc));
+            snapshot = await getDocs(q);
+            attempts++;
           } else {
-            groupedOfficers.get(officer.person_nbr)?.push(officer);
+            break;
           }
         }
 
+        // Save the last document for next page
         if (lastDocIndex >= 0) {
           setLastDoc(snapshot.docs[lastDocIndex]);
         }
+
+        console.log(`Found ${uniqueCount} unique officers after ${attempts + 1} attempts`);
 
         // Sort and set results efficiently
         const groups = Array.from(groupedOfficers.entries()).map(([person_nbr, records]) => ({
@@ -224,7 +239,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         if (searchParameters.query || searchParameters.agency || searchParameters.startDate || searchParameters.endDate) {
           const uniqueOfficers = new Set(groups.map(g => g.person_nbr));
           if (isMounted) {
-            console.log('Setting filtered total count:', uniqueOfficers.size);
             setTotalCount(uniqueOfficers.size);
           }
         }
@@ -253,12 +267,11 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
     // Reset total count to stats value when filters are cleared
     if (!searchParameters.query && !searchParameters.agency && !searchParameters.startDate && !searchParameters.endDate) {
       getTotalCount().then(count => {
-        console.log('Resetting total count to stats:', count);
         setTotalCount(count);
       });
     }
   }, [searchParameters.query, searchParameters.agency, searchParameters.startDate,
-      searchParameters.endDate, searchParameters.sortBy, searchParameters.sortOrder, getTotalCount]);
+  searchParameters.endDate, searchParameters.sortBy, searchParameters.sortOrder, getTotalCount]);
 
   return {
     loading,
