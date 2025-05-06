@@ -1,3 +1,6 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .pagination {
   ul {
     gap: fluid(4px, 20px);

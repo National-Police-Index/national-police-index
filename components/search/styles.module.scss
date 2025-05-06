@@ -1,3 +1,6 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .formFilters {
   display: flex;
   flex-direction: column;

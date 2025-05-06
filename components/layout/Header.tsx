@@ -102,7 +102,7 @@ export default function Header() {
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
-              {getText('nav-states', 'State Data')}
+              {getText('nav-states', 'States')}
             </span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
               <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />

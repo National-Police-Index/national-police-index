@@ -1,3 +1,6 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .pageHeader {
   gap: fluid(32px, 100px);
   //position: sticky;
@@ -15,6 +18,7 @@
     .title {
       color: $greenC;
       font-size: fluid(32px, 48px);
+      max-width: 600px;
     }
 
     .description {
