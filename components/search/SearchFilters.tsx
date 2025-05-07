@@ -4,12 +4,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Combobox } from '@headlessui/react';
+import { Combobox, Transition } from '@headlessui/react';
 import { SearchFilters as SearchFiltersType } from '@/types';
-import { searchAgencies } from '@/lib/searchAgencies';
+import { searchAgencies, getAllAgencies } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
 import debounce from 'lodash/debounce';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
+import { Fragment } from 'react';
 
 interface SearchFiltersProps {
   state?: string;
@@ -18,7 +19,9 @@ interface SearchFiltersProps {
 export default function SearchFilters({ state }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
-  const [agencies, setAgencies] = useState<string[]>([]);
+  const [agencies, setAgencies] = useState<{name: string, count: number}[]>([]);
+  const [filteredAgencies, setFilteredAgencies] = useState<{name: string, count: number}[]>([]);
+  const [isLoadingAgencies, setIsLoadingAgencies] = useState(false);
 
   const [filters, setFilters] = useState<SearchFiltersType>({
     query: '',
@@ -29,24 +32,49 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     sortOrder: undefined
   });
 
-  // Create a debounced search function
-  const debouncedSearch = useMemo(
-    () =>
-      debounce(async (query: string) => {
-        console.log('Searching agencies...', query);
-        const results = await searchAgencies(query);
-        console.log('Results', results)
-        setAgencies(results);
-      }, 300),
-    []
+  // Fetch all agencies for the current state when component mounts
+  useEffect(() => {
+    if (state) {
+      setIsLoadingAgencies(true);
+      getAllAgencies(state)
+        .then(results => {
+          setAgencies(results);
+          setFilteredAgencies(results);
+          setIsLoadingAgencies(false);
+        })
+        .catch(error => {
+          console.error('Error loading agencies:', error);
+          setIsLoadingAgencies(false);
+        });
+    }
+  }, [state]);
+
+  // Filter agencies based on query
+  const filterAgencies = (query: string) => {
+    if (!query.trim()) {
+      setFilteredAgencies(agencies);
+      return;
+    }
+    
+    const lowerQuery = query.toLowerCase();
+    const filtered = agencies.filter(agency => 
+      agency.name.toLowerCase().includes(lowerQuery)
+    );
+    setFilteredAgencies(filtered);
+  };
+
+  // Create a debounced filter function
+  const debouncedFilter = useMemo(
+    () => debounce(filterAgencies, 200),
+    [agencies]
   );
 
   // Cleanup debounced function on unmount
   useEffect(() => {
     return () => {
-      debouncedSearch.cancel();
+      debouncedFilter.cancel();
     };
-  }, [debouncedSearch]);
+  }, [debouncedFilter]);
 
   const handleSelectClick = (e: React.MouseEvent<HTMLSelectElement>) => {
     const selectElement = e.currentTarget;
@@ -133,7 +161,6 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     }
   };
 
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -198,45 +225,70 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
         </div>
 
         {/* Agency filter */}
-        {state && <div className={styles.agency}>
+        <div className={styles.agency}>
           <Combobox
             as="div"
             value={filters.agency}
             onChange={(value) => setFilters({ ...filters, agency: value || '' })}
           >
             <div className="relative">
-              <Combobox.Input
-                className="w-full"
-                placeholder="Search agency..."
-                onChange={(e) => {
-                  setAgencyQuery(e.target.value);
-                  debouncedSearch(e.target.value);
-                }}
-                displayValue={(agency: string) => agency}
-              />
-              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg">
-                {agencies.map((agency) => (
-                  <Combobox.Option
-                    key={agency}
-                    value={agency}
-                    className={({ active }) =>
-                      `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-blue-600 text-white' : 'text-gray-900'
-                      }`
-                    }
-                  >
-                    {agency}
-                  </Combobox.Option>
-                ))}
-                {agencyQuery.length >= 3 && agencies.length === 0 && (
-                  <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900">
-                    No agencies found
+              <div className="relative w-full">
+                {isLoadingAgencies && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent" />
                   </div>
                 )}
-              </Combobox.Options>
+                <Combobox.Input
+                  className="w-full"
+                  placeholder="Search agency..."
+                  onChange={(e) => {
+                    setAgencyQuery(e.target.value);
+                    debouncedFilter(e.target.value);
+                  }}
+                  displayValue={(agency: string) => agency}
+                />
+              </div>
+              <Transition
+                as={Fragment}
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+                afterLeave={() => setAgencyQuery('')}
+              >
+                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg">
+                  {filteredAgencies.length === 0 && agencyQuery.length > 0 ? (
+                    <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
+                      No agencies found.
+                    </div>
+                  ) : (
+                    filteredAgencies.map((agency) => (
+                      <Combobox.Option
+                        key={agency.name}
+                        value={agency.name}
+                        className={({ active }) =>
+                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-blue-600 text-white' : 'text-gray-900'}`
+                        }
+                      >
+                        {({ selected, active }) => (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                {agency.name}
+                              </span>
+                              <span className={`ml-2 inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
+                                {agency.count} officers
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </Combobox.Option>
+                    ))
+                  )}
+                </Combobox.Options>
+              </Transition>
             </div>
           </Combobox>
         </div>
-        }
 
         {/* Sort by */}
         <div>
