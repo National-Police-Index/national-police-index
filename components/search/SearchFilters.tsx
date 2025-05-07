@@ -19,8 +19,8 @@ interface SearchFiltersProps {
 export default function SearchFilters({ state }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
-  const [agencies, setAgencies] = useState<{name: string, count: number}[]>([]);
-  const [filteredAgencies, setFilteredAgencies] = useState<{name: string, count: number}[]>([]);
+  const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
+  const [filteredAgencies, setFilteredAgencies] = useState<{ name: string, count: number }[]>([]);
   const [isLoadingAgencies, setIsLoadingAgencies] = useState(false);
 
   const [filters, setFilters] = useState<SearchFiltersType>({
@@ -55,9 +55,9 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
       setFilteredAgencies(agencies);
       return;
     }
-    
+
     const lowerQuery = query.toLowerCase();
-    const filtered = agencies.filter(agency => 
+    const filtered = agencies.filter(agency =>
       agency.name.toLowerCase().includes(lowerQuery)
     );
     setFilteredAgencies(filtered);
@@ -230,6 +230,11 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
             as="div"
             value={filters.agency}
             onChange={(value) => setFilters({ ...filters, agency: value || '' })}
+            disabled={!state}
+            style={{
+              opacity: !state ? 0.5 : 1,
+              pointerEvents: !state ? 'none' : 'auto'
+            }}
           >
             <div className="relative">
               <div className="relative w-full">

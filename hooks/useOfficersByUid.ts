@@ -31,7 +31,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
   // Memoize search parameters to prevent unnecessary re-renders
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
-    agency: searchParams.agency?.toLowerCase() || '',
+    agency: searchParams.agency || '',
     startDate: searchParams.startDate || '',
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'full_name',
@@ -63,7 +63,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
       }
 
       if (searchParameters.agency) {
-        q = query(q, where('agency_name_lower', '==', searchParameters.agency));
+        q = query(q, where('agency_name', '==', searchParameters.agency));
       }
 
       if (searchParameters.startDate) {
@@ -157,7 +157,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         }
 
         if (searchParameters.agency) {
-          q = query(q, where('agency_name_lower', '==', searchParameters.agency));
+          q = query(q, where('agency_name', '==', searchParameters.agency));
         }
 
         if (searchParameters.startDate) {

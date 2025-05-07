@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import { useStaticText } from '@/hooks/useStaticText';
 import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
@@ -28,7 +29,7 @@ export default function AgencyPage() {
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
-  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10);
+  const pageSize = 16; // Fixed page size, matches state page
 
   // Get agency statistics
   const { loading: statsLoading, error: statsError, stats } = useAgencyStats(decodeURIComponent(id) as string);
@@ -36,9 +37,11 @@ export default function AgencyPage() {
   // Get officers for this agency
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',
+    agencyId: decodeURIComponent(id),
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
+      page: currentPage.toString()
     }
   });
 
@@ -47,7 +50,25 @@ export default function AgencyPage() {
   // Calculate total pages based on unique officer groups instead of total records
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  console.log('STATS', decodeURIComponent(id), stats);
+  // Debug logging similar to state page
+  console.log('Pagination Debug:', {
+    agency: stats?.name,
+    totalGroups,
+    pageSize,
+    totalPages,
+    currentPage,
+    officerGroupsLength: officerGroups?.length || 0,
+    shouldShowPagination: totalPages > 1,
+    isLastPage: currentPage === totalPages,
+    expectedPageSize: currentPage === totalPages ? undefined : pageSize
+  });
+  
+  // Redirect if user is on a page that doesn't exist
+  useEffect(() => {
+    if (!loading && currentPage > totalPages && totalPages > 0) {
+      window.location.href = `/agencies/${encodeURIComponent(id)}?page=${totalPages}`;
+    }
+  }, [loading, currentPage, totalPages, id]);
   return (
     <div className="w-full mx-auto">
       <PageHeader
