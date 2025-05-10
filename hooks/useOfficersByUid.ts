@@ -31,10 +31,10 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
   // Memoize search parameters to prevent unnecessary re-renders
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
-    agency: searchParams.agency?.toLowerCase() || '',
+    agency: searchParams.agency || '',
     startDate: searchParams.startDate || '',
     endDate: searchParams.endDate || '',
-    sortBy: searchParams.sortBy || 'last_name',
+    sortBy: searchParams.sortBy || 'full_name',
     sortOrder: searchParams.sortOrder || 'asc',
     pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : (searchParams.page || 1)
@@ -63,7 +63,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
       }
 
       if (searchParameters.agency) {
-        q = query(q, where('agency_name_lower', '==', searchParameters.agency));
+        q = query(q, where('agency_name', '==', searchParameters.agency));
       }
 
       if (searchParameters.startDate) {
@@ -148,12 +148,16 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         if (searchParameters.query) {
           q = query(q,
             where('full_name', '>=', searchParameters.query.toUpperCase()),
-            where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
+            where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
+            where('agency_name', '>=', searchParameters.query.toUpperCase()),
+            where('agency_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
+            where('last_name', '>=', searchParameters.query.toUpperCase()),
+            where('last_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
           );
         }
 
         if (searchParameters.agency) {
-          q = query(q, where('agency_name_lower', '==', searchParameters.agency));
+          q = query(q, where('agency_name', '==', searchParameters.agency));
         }
 
         if (searchParameters.startDate) {
@@ -166,7 +170,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Add sorting
         const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
-          searchParameters.sortBy === 'agency' ? 'agency_name' : 'last_name';
+          searchParameters.sortBy === 'agency' ? 'agency_name' : 'full_name';
         q = query(q, orderBy(sortField, searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
 
         // Get total count efficiently

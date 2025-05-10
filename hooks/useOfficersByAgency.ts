@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collectionGroup, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collectionGroup, query, where, getDocs, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PoliceOfficer } from '@/types';
 
@@ -12,6 +12,7 @@ interface OfficerGroup {
 
 interface UseOfficersByAgencyProps {
   agencyName: string;
+  agencyId?: string;
   searchParams?: {
     query?: string;
     startDate?: string;
@@ -23,7 +24,7 @@ interface UseOfficersByAgencyProps {
   };
 }
 
-export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '16' } }: UseOfficersByAgencyProps) {
+export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pageSize: '16' } }: UseOfficersByAgencyProps) {
   console.log('Agency Name:', agencyName);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
@@ -35,17 +36,59 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '16
     page: parseInt(searchParams.page || '1', 10)
   }), [searchParams.query, searchParams.startDate, searchParams.endDate, 
       searchParams.sortBy, searchParams.sortOrder, searchParams.pageSize, searchParams.page]);
+      
+  // Get the actual agency ID from the name if not provided
+  const normalizedAgencyId = useMemo(() => {
+    return agencyId || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  }, [agencyId, agencyName]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
   const [sortedGroups, setSortedGroups] = useState<OfficerGroup[]>([]);
+  const [totalOfficers, setTotalOfficers] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchOfficers() {
       try {
         setLoading(true);
         setError(null);
+        
+        // First, try to get the total_officers count from stats
+        let officerCount = null;
+        try {
+          const statsRef = doc(db, 'statistics_per_agency', normalizedAgencyId);
+          const statsDoc = await getDoc(statsRef);
+          
+          if (statsDoc.exists()) {
+            const statsData = statsDoc.data();
+            if (statsData.total_officers !== undefined) {
+              officerCount = statsData.total_officers;
+              setTotalOfficers(officerCount);
+              console.log(`Using total_officers (${officerCount}) from statistics_per_agency`);
+            }
+          }
+          
+          // If not found in new collection, try the old one
+          if (officerCount === null) {
+            const oldStatsRef = doc(db, 'agency_statistics', normalizedAgencyId);
+            const oldStatsDoc = await getDoc(oldStatsRef);
+            
+            if (oldStatsDoc.exists()) {
+              const statsData = oldStatsDoc.data();
+              const totalOfficersStat = statsData.stats?.find((stat: any) => stat.label === 'Total Officers');
+              
+              if (totalOfficersStat) {
+                officerCount = parseInt(totalOfficersStat.value, 10);
+                setTotalOfficers(officerCount);
+                console.log(`Using Total Officers (${officerCount}) from agency_statistics`);
+              }
+            }
+          }
+        } catch (statsError) {
+          console.error('Error fetching agency stats:', statsError);
+          // Continue fetching officers even if stats retrieval fails
+        }
 
         const officersRef = collectionGroup(db, 'db_launch');
         
@@ -75,10 +118,35 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '16
           q = query(q, where('end_date', '<=', searchParameters.endDate));
         }
 
-        // Remove Firestore pagination; fetch a large enough batch to ensure enough groups for the requested page
+        // Determine how many officers to fetch
         const pageSize = searchParameters.pageSize || 16;
         const page = searchParameters.page || 1;
-        const officerFetchLimit = pageSize * 10; // Fetch up to 10x the page size to increase likelihood of filling the group page
+        
+        // Fetch approach depends on whether we have a total count
+        let officerFetchLimit = pageSize * 4; // Default multiplier
+        
+        // If we have total_officers and are requesting a specific page, we can be smarter
+        if (officerCount !== null) {
+          // Calculate the ideal limit based on total officers and current page
+          // We'll fetch enough for the current page, but not too many
+          const totalPages = Math.ceil(officerCount / pageSize);
+          const isLastPage = page >= totalPages;
+          
+          if (isLastPage) {
+            // For the last page, we just need the remainder
+            const remainingOfficers = officerCount % pageSize || pageSize;
+            // Still fetch a bit more to account for duplicates
+            officerFetchLimit = remainingOfficers * 2;
+          } else {
+            // For normal pages, fetch 4x to handle duplicates
+            officerFetchLimit = pageSize * 4;
+          }
+          
+          console.log(`Fetching ${officerFetchLimit} officers for page ${page}/${totalPages} (pageSize: ${pageSize})`);
+        } else {
+          console.log(`No total_officers count available, fetching ${officerFetchLimit} officers`);
+        }
+        
         const qWithLimit = query(q, limit(officerFetchLimit));
         
         const snapshot = await getDocs(qWithLimit);
@@ -131,6 +199,6 @@ export function useOfficersByAgency({ agencyName, searchParams = { pageSize: '16
     loading,
     error,
     officerGroups,
-    totalGroups: sortedGroups?.length || 0
+    totalGroups: totalOfficers !== null ? totalOfficers : (sortedGroups?.length || 0)
   };
 }
