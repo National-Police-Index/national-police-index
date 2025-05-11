@@ -260,7 +260,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                 leaveTo="opacity-0"
                 afterLeave={() => setAgencyQuery('')}
               >
-                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg">
+                <Combobox.Options className={`absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ${styles.agencyOptions}`}>
                   {filteredAgencies.length === 0 && agencyQuery.length > 0 ? (
                     <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
                       No agencies found.
@@ -271,7 +271,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                         key={agency.name}
                         value={agency.name}
                         className={({ active }) =>
-                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-blue-600 text-white' : 'text-gray-900'}`
+                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? styles.active : 'text-gray-900'}`
                         }
                       >
                         {({ selected, active }) => (
