@@ -50,7 +50,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
       href={`/officers/${officer.document_id}`}
       className={`group flex w-full max-w-sm ${styles.officerCard} ${moreActive ? styles.moreActive : ''}`}
     >
-      <div className="w-[5%] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />
+      <div className="w-[24px] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />
       <div className={`flex-1 flex flex-col justify-start items-start ${styles.cardContent}`}>
         <div ref={cardContent}>
           <div className={styles.name}>
@@ -72,7 +72,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
             className={styles.more}
             onClick={onMoreClick}
           >
-            <div>More</div>
+            <div>{moreActive ? 'Less' : 'More'}</div>
             <div data-svg-wrapper>
               <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11 0.759521L6.88384 4.87568C6.39773 5.36179 5.60227 5.36179 5.11616 4.87568L1 0.759521" stroke="#4F8C7E" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />

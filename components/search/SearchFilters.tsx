@@ -86,6 +86,20 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     });
   };
 
+  // submit form whenever the filters state is updated
+  useEffect(() => {
+    const params = new URLSearchParams();
+    // if (filters.query) params.set('query', filters.query);
+    // if (filters.agency) params.set('agency', filters.agency);
+    if (filters.startDate) params.set('startDate', filters.startDate.toISOString());
+    if (filters.endDate) params.set('endDate', filters.endDate.toISOString());
+    if (filters.sortBy) params.set('sortBy', filters.sortBy);
+    if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
+
+    // Update URL with search parameters
+    router.push(`?${params.toString()}`);
+  }, [filters, router]);
+
   const downloadEntireCSV = async () => {
     if (!state) return;
 
@@ -199,6 +213,12 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
               value={filters.query}
               onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             />
+            <button
+              type="submit"
+              className={styles.searchButton}
+            >
+              Search
+            </button>
           </div>
         </div>
 
@@ -212,6 +232,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
             selected={filters.startDate}
             onChange={(date) => setFilters({ ...filters, startDate: date || undefined })}
             placeholderText="Start date"
+            popperPlacement="bottom-start"
           />
         </div>
 
@@ -221,10 +242,12 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
             selected={filters.endDate}
             onChange={(date) => setFilters({ ...filters, endDate: date || undefined })}
             placeholderText="End date"
+            popperPlacement="bottom-start"
           />
         </div>
 
         {/* Agency filter */}
+        {state &&
         <div className={styles.agency}>
           <Combobox
             as="div"
@@ -252,6 +275,12 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                   }}
                   displayValue={(agency: string) => agency}
                 />
+                <button
+                  type="submit"
+                  className={styles.searchButton}
+                >
+                  Select
+                </button>
               </div>
               <Transition
                 as={Fragment}
@@ -260,7 +289,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                 leaveTo="opacity-0"
                 afterLeave={() => setAgencyQuery('')}
               >
-                <Combobox.Options className={`absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ${styles.agencyOptions}`}>
+                <Combobox.Options className={`absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg ${styles.agencyOptions}`}>
                   {filteredAgencies.length === 0 && agencyQuery.length > 0 ? (
                     <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
                       No agencies found.
@@ -280,7 +309,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                               <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                 {agency.name}
                               </span>
-                              <span className={`ml-2 inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
+                              <span className={`inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
                                 {agency.count} officers
                               </span>
                             </div>
@@ -294,6 +323,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
             </div>
           </Combobox>
         </div>
+        }
 
         {/* Sort by */}
         <div>
@@ -345,7 +375,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
         )}
       </div>
 
-      <div className={`flex justify-end ${styles.buttonGroup}`}>
+      {/* <div className={`flex justify-end ${styles.buttonGroup}`}>
         <button
           type="button"
           className={styles.clearButton}
@@ -366,7 +396,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
         >
           Apply Filters
         </button>
-      </div>
+      </div> */}
     </form>
   );
 }

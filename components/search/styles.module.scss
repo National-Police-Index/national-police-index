@@ -13,6 +13,20 @@
     left: 16px;
   }
 
+  .searchButton {
+    background-color: $greenA;
+    border-radius: 6px;
+    bottom: 0;
+    color: white;
+    cursor: pointer;
+    font-weight: 400;
+    height: fluid(32px, 37px);
+    padding: 0 10px;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+  }
+
   .filtersRow {
     justify-content: space-between;
     gap: fluid(16px, 22px);
@@ -22,15 +36,15 @@
     }
 
     >div {
-      flex: 0 1 184px;
+      flex: 1 1 184px;
     }
 
     .agency {
-      flex: 1;
+      flex: 400px;
       min-width: 200px;
 
       @media screen and (max-width: 1023px) {
-        min-width: unset;
+        flex: 0 0 100%;
       }
 
       .agencyOptions {
@@ -41,6 +55,7 @@
           padding: 10px;
           > div {
             display: flex;
+            gap: 10px;
             justify-content: space-between;
             max-width: 100%;
             width: 100%;
@@ -66,12 +81,19 @@
     }
 
     .datePicker {
+      >div {
+        width: 100%;
+      }
       @media screen and (max-width: 1023px) {
         flex: 0 0 calc(50% - fluid(16px, 22px)/2);
 
         >div {
           width: 100%;
         }
+      }
+
+      @media screen and (max-width: 479px) {
+        flex: 0 0 100%;
       }
 
       input {
@@ -84,16 +106,14 @@
 
     @media screen and (max-width: 1023px) {
 
-      :nth-last-child(3),
       :nth-last-child(2),
       :last-child {
-        flex: 0 0 calc(33% - fluid(16px, 22px)*(2/3));
+        flex: 0 0 calc(50% - fluid(16px, 22px)/2);
       }
     }
 
-    @media screen and (max-width: 679px) {
+    @media screen and (max-width: 479px) {
 
-      :nth-last-child(3),
       :nth-last-child(2),
       :last-child {
         flex: 0 0 100%;
@@ -106,6 +126,7 @@
     background-position: calc(100% - 16px) center;
     background-repeat: no-repeat;
     background-size: 12px 7px;
+    padding-right: 40px!important;
   }
 
   input,
@@ -120,8 +141,16 @@
     padding: 8px 16px;
     width: 100%;
 
+    &[placeholder*="Search"] {
+      padding-right: 80px;
+    }
+
+    &[placeholder*="date"] {
+      padding-right: 40px;
+    }
+
     &[id=search] {
-      padding-left: 64px;
+      padding-left: fluid(48px, 64px);
     }
 
     &::placeholder {

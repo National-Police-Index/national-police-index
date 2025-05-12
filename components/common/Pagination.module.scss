@@ -11,12 +11,16 @@
       flex: 1;
       height: fluid(40px, 64px);
       justify-content: center;
-      width: fluid(24px, 64px);
+      min-width: fluid(24px, 64px);
+      
       &.arrow {
         width: fluid(24px, 40px);
       }
       &.ellipsis {
         width: 20px;
+      }
+      span[class*=underline] {
+        text-underline-offset: 4px;
       }
       a, span {
         font-size: fluid(14px, 18px);

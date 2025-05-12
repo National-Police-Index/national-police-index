@@ -113,7 +113,7 @@ export default function OfficerProfilePage() {
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency Name</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
                     <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
                       {latestRecord.agency_name}
