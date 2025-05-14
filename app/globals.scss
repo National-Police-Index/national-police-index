@@ -57,3 +57,96 @@ h2 {
   letter-spacing: .01em;
   line-height: 1.4;
 }
+
+.react-datepicker {
+  color: $greenC;
+  padding: 20px;
+  @media screen and (max-width: 479px) {
+    padding: 0px;
+  }
+  button {
+    top: 24px;
+    &.react-datepicker__navigation--previous {
+      left: 24px;
+      @media screen and (max-width: 479px) {
+        left: 0;
+        top: 4px;
+      }
+      span {
+        &:before {
+          right: -2px;
+          @media screen and (max-width: 479px) {
+            right: 7px;
+          }
+        }
+      }
+    }
+    &.react-datepicker__navigation--next {
+      right: 24px;
+      @media screen and (max-width: 479px) {
+        right: 0;
+        top: 4px;
+      }
+      span {
+        &:before {
+          left: -2px;
+          @media screen and (max-width: 479px) {
+            left: 7px;
+          }
+        }
+      }
+    }
+    &:hover {
+      span {
+        &:before {
+          border-color: $greenB;
+        }
+      }
+    }
+    span {
+      &:before {
+        border-color: $greenC;
+      }
+    }
+  }
+  svg.react-datepicker__triangle {
+    display: none;
+  }
+  .react-datepicker__header {
+    background-color: transparent;
+    border: none;
+  }
+  h2.react-datepicker__current-month {
+    margin-bottom: 16px;
+  }
+  div[class*="react-datepicker__header__dropdown"] {
+    padding: 0;
+  }
+  div.react-datepicker__day {
+    border-radius: 50%;
+    color: $greenB;
+    font-weight: 500;
+    &:hover {
+      background-color: $greenA;
+      border-radius: 50%;
+      color: white;
+    }
+  }
+  div.react-datepicker__day--selected {
+    color: white;
+    background-color: $greenA;
+    border-radius: 50%;
+  }
+  div.react-datepicker__day--today {
+    background-color: transparent;
+    color: $greenC;
+    font-weight: bold;
+  }
+  .react-datepicker__current-month {
+    color: $greenC;
+  }
+  .react-datepicker__day-name {
+    font-weight: 500;
+  }
+}
+

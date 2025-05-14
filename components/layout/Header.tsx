@@ -77,6 +77,30 @@ export default function Header() {
     return columns;
   }, []);
 
+  // can you use getBoundingClientRect() to check if the header is overlapping/intersecting the div element matching the class*="_mapSection_" and add/remove the class styles.noBorderBottom to the header and NOT the intersection observer
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (headerRef.current) {
+        const headerRect = headerRef.current.getBoundingClientRect();
+        const mapSection = document.querySelector('div[class*="_mapSection_"]');
+        if (mapSection) {
+          const mapSectionRect = mapSection.getBoundingClientRect();
+          if (headerRect.bottom > mapSectionRect.top) {
+            headerRef.current.classList.add(styles.noBorderBottom);
+          } else {
+            headerRef.current.classList.remove(styles.noBorderBottom);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <header ref={headerRef} className={`mx-auto ${styles.header} ${isMobileMenuOpen ? styles.headerOpen : ''}`}>
       <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ''}`}>

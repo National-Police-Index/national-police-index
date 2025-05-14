@@ -13,6 +13,13 @@
   &.headerOpen {
     z-index: 2;
   }
+  &.noBorderBottom {
+    .headerContent {
+      &:before {
+        display: none;
+      }
+    }
+  }
 }
 
 .headerContent {
