@@ -1,3 +1,6 @@
+@use "app/_variables" as *;
+@use "app/_functions" as *;
+
 .card {
   width: 288px;
 }

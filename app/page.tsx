@@ -19,7 +19,7 @@ export default async function Home() {
             label: getText(texts, 'home', 'states-count', 'States with public records')
           },
           {
-            value: 1000000,
+            value: 999999,
             label: getText(texts, 'home', 'officers-count', 'Officers in database')
           }
         ]}

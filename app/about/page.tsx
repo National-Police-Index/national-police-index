@@ -73,7 +73,7 @@ export default function AboutPage() {
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-                  <p className="ml-4 text-gray-600">Loading team members...</p>
+                  <p className="ml-4 ">Loading team members...</p>
                 </div>
               ) : error ? (
                 <div className="text-red-600 text-center py-12">{error.message}</div>

@@ -77,6 +77,30 @@ export default function Header() {
     return columns;
   }, []);
 
+  // can you use getBoundingClientRect() to check if the header is overlapping/intersecting the div element matching the class*="_mapSection_" and add/remove the class styles.noBorderBottom to the header and NOT the intersection observer
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (headerRef.current) {
+        const headerRect = headerRef.current.getBoundingClientRect();
+        const mapSection = document.querySelector('div[class*="_mapSection_"]');
+        if (mapSection) {
+          const mapSectionRect = mapSection.getBoundingClientRect();
+          if (headerRect.bottom > mapSectionRect.top) {
+            headerRef.current.classList.add(styles.noBorderBottom);
+          } else {
+            headerRef.current.classList.remove(styles.noBorderBottom);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <header ref={headerRef} className={`mx-auto ${styles.header} ${isMobileMenuOpen ? styles.headerOpen : ''}`}>
       <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ''}`}>
@@ -102,7 +126,7 @@ export default function Header() {
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
-              {getText('nav-states', 'State Data')}
+              {getText('nav-states', 'States')}
             </span>
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
               <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />

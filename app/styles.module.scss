@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@use "app/_variables" as *;
+@use "app/_functions" as *;
 
 .mapSection {
   background-color: white;
