@@ -1,23 +1,23 @@
-import { collection, query, where, getDocs, orderBy, limit, getCountFromServer } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 /**
  * Get all agencies for a specific state
  */
-export async function getAllAgencies(state: string): Promise<{name: string, count: number}[]> {
+export async function getAllAgencies(state: string): Promise<{ name: string, count: number }[]> {
   if (!state) return [];
-  
+
   try {
     const agenciesRef = collection(db, 'statistics_per_agency');
     const q = query(
       agenciesRef,
       where('state', '==', state.toLowerCase()),
       orderBy('name'),
-      limit(100) // Limit to prevent loading too many agencies
+      limit(200) // Limit to prevent loading too many agencies
     );
 
     const snapshot = await getDocs(q);
-    const agencies: {name: string, count: number}[] = [];
+    const agencies: { name: string, count: number }[] = [];
 
     snapshot.forEach((doc) => {
       const data = doc.data();
@@ -29,6 +29,7 @@ export async function getAllAgencies(state: string): Promise<{name: string, coun
       }
     });
 
+    console.log('Agencies', agencies.length, agencies);
     return agencies;
   } catch (error) {
     console.error('Error fetching agencies:', error);
@@ -44,7 +45,7 @@ export async function searchAgencies(searchTerm: string, state?: string): Promis
 
   try {
     const agenciesRef = collection(db, 'statistics_per_agency');
-    
+
     // Build query based on whether state is provided
     let q;
     if (state) {
@@ -72,6 +73,7 @@ export async function searchAgencies(searchTerm: string, state?: string): Promis
         agencies.add(data.name);
       }
     });
+    console.log('Agencies', agencies);
 
     return Array.from(agencies);
   } catch (error) {

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Combobox, Transition } from '@headlessui/react';
 import { SearchFilters as SearchFiltersType } from '@/types';
-import { searchAgencies, getAllAgencies } from '@/lib/searchAgencies';
+import { getAllAgencies } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
 import debounce from 'lodash/debounce';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
@@ -50,7 +50,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
   }, [state]);
 
   // Filter agencies based on query
-  const filterAgencies = (query: string) => {
+  const filterAgencies = useCallback((query: string) => {
     if (!query.trim()) {
       setFilteredAgencies(agencies);
       return;
@@ -61,12 +61,12 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
       agency.name.toLowerCase().includes(lowerQuery)
     );
     setFilteredAgencies(filtered);
-  };
+  }, [agencies]);
 
   // Create a debounced filter function
   const debouncedFilter = useMemo(
     () => debounce(filterAgencies, 200),
-    [agencies]
+    [filterAgencies] // filterAgencies is the only function we need to track
   );
 
   // Cleanup debounced function on unmount
@@ -271,7 +271,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                         key={agency.name}
                         value={agency.name}
                         className={({ active }) =>
-                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-blue-600 text-white' : 'text-gray-900'}`
+                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-[#2F5E50] text-white' : 'text-gray-900'}`
                         }
                       >
                         {({ selected, active }) => (
@@ -280,7 +280,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                               <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                 {agency.name}
                               </span>
-                              <span className={`ml-2 inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
+                              <span className={`ml-2 inline-block text-xs ${active ? 'text-[#2F5E50]' : 'text-gray-500'}`}>
                                 {agency.count} officers
                               </span>
                             </div>

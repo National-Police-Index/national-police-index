@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { collectionGroup, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, doc, getDoc } from 'firebase/firestore';
-import { use } from 'react';
 
 import { db } from '@/lib/firebase';
 import { PoliceOfficer } from '@/types';
@@ -47,49 +46,8 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
   const [totalCount, setTotalCount] = useState(0);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
 
-  console.log('search parameters', searchParameters);
 
   // Separate function to get total count
-  const fetchTotalCount = useCallback(async () => {
-    try {
-      const officersRef = collectionGroup(db, 'db_launch');
-      let q = query(officersRef, where('state', '==', state.toLowerCase()));
-
-      if (searchParameters.query) {
-        q = query(q,
-          where('full_name', '>=', searchParameters.query.toUpperCase()),
-          where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
-        );
-      }
-
-      if (searchParameters.agency) {
-        q = query(q, where('agency_name', '==', searchParameters.agency));
-      }
-
-      if (searchParameters.startDate) {
-        q = query(q, where('start_date', '>=', searchParameters.startDate));
-      }
-
-      if (searchParameters.endDate) {
-        q = query(q, where('end_date', '<=', searchParameters.endDate));
-      }
-
-      const snapshot = await getDocs(q);
-
-      // Count unique person_nbr values
-      const uniquePersonNbrs = new Set();
-      snapshot.docs.forEach(doc => {
-        const officer = doc.data() as PoliceOfficer;
-        uniquePersonNbrs.add(officer.person_nbr);
-      });
-
-      return uniquePersonNbrs.size;
-    } catch (err) {
-      console.error('Error fetching total count:', err);
-      return 0;
-    }
-  }, [state, searchParameters]);
-
   // Function to get total count from stats
   const getTotalCount = useCallback(async () => {
     try {
@@ -113,7 +71,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         }
       }
 
-      // If no stats found, use a reasonable default
       console.log('No stats found, using default');
       return 11713; // Known count for California
     } catch (err) {
@@ -143,6 +100,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Build the optimized query
         let q = query(officersRef, where('state', '==', state.toLowerCase()));
+        if (false && ['georgia', 'florida'].includes(state.toLowerCase())) {
+          q = query(q, where('state', '==', `${state.toLowerCase()}-discipline`));
+        }
 
         // Add filters efficiently
         if (searchParameters.query) {

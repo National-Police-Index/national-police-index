@@ -129,7 +129,7 @@ async function generateAgencyStats(state: string) {
   let agencyPageCount = 0;
 
   console.log('Discovering unique agencies...');
-  while (false && hasMoreAgencies && agencyPageCount < MAX_PAGES_PER_AGENCY) {
+  while (hasMoreAgencies && agencyPageCount < MAX_PAGES_PER_AGENCY) {
     agencyPageCount++;
     let agencyQuery = query(officersRef, limit(QUERY_LIMIT));
 
@@ -167,7 +167,7 @@ async function generateAgencyStats(state: string) {
       console.log(`Discovered ${uniqueAgencies.size} unique agencies so far... (page ${agencyPageCount})`);
 
       // Run garbage collection if needed
-      if (agencyPageCount % GC_INTERVAL === 0 && global.gc) {
+      if (agencyPageCount % GC_INTERVAL === 0 && typeof global.gc === 'function') {
         global.gc();
       }
 
@@ -226,7 +226,7 @@ async function generateAgencyStats(state: string) {
         hasMoreDocs = docsSize === QUERY_LIMIT;
 
         // Run garbage collection if needed
-        if (pageCount % GC_INTERVAL === 0 && global.gc) {
+        if (pageCount % GC_INTERVAL === 0 && typeof global.gc === 'function') {
           global.gc();
         }
       }
