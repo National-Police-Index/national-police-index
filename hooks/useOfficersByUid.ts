@@ -106,13 +106,17 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Add filters efficiently
         if (searchParameters.query) {
+          const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
+
           q = query(q,
             where('full_name', '>=', searchParameters.query.toUpperCase()),
             where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
+            /*
             where('agency_name', '>=', searchParameters.query.toUpperCase()),
-            where('agency_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
-            where('last_name', '>=', searchParameters.query.toUpperCase()),
-            where('last_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
+            where('agency_name', '<', searchParameters.query.toUpperCase() + '\uf8ff'),
+            */
+            where('last_name', '>=', capitalizeQuery.toUpperCase()),
+            where('last_name', '<=', capitalizeQuery.toUpperCase() + '\uf8ff')
           );
         }
 
@@ -140,13 +144,14 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         }
 
         // Fetch more records to ensure we get enough unique officers
-        q = query(q, limit(pageSize * 4)); // Increased multiplier to handle more duplicates
+        q = query(q, limit(pageSize * 10)); // Increased multiplier to handle more duplicates
 
         // Handle pagination
         if (page > 1 && lastDoc) {
           q = query(q, startAfter(lastDoc));
         }
 
+        console.log('Query', q);
         let snapshot = await getDocs(q);
         if (!isMounted) return;
 
@@ -155,7 +160,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         let uniqueCount = 0;
         let lastDocIndex = -1;
         let attempts = 0;
-        const maxAttempts = 3;
+        const maxAttempts = 10; // Increased to ensure we get enough unique officers
 
         // Keep fetching until we get pageSize unique officers or hit the last record
         while (uniqueCount < pageSize && attempts < maxAttempts && snapshot.docs.length > 0) {
@@ -172,7 +177,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           }
 
           // If we still need more officers and there are more records
-          if (uniqueCount < pageSize && snapshot.docs.length === pageSize * 4) {
+          if (uniqueCount < pageSize && snapshot.docs.length === pageSize * 10) {
             const lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
             q = query(q, startAfter(lastVisibleDoc));
             snapshot = await getDocs(q);
@@ -201,9 +206,56 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Update total count for filtered results
         if (searchParameters.query || searchParameters.agency || searchParameters.startDate || searchParameters.endDate) {
-          const uniqueOfficers = new Set(groups.map(g => g.person_nbr));
-          if (isMounted) {
-            setTotalCount(uniqueOfficers.size);
+          // For filtered results, we need to make a separate count query to get the total
+          // This ensures pagination works correctly with filters
+          try {
+            // Build a count query with the same filters but no pagination
+            let countQuery = query(officersRef, where('state', '==', state.toLowerCase()));
+            
+            // Apply the same filters as the main query
+            if (searchParameters.query) {
+              const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
+              countQuery = query(countQuery,
+                where('full_name', '>=', searchParameters.query.toUpperCase()),
+                where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
+              );
+            }
+            
+            if (searchParameters.agency) {
+              countQuery = query(countQuery, where('agency_name', '==', searchParameters.agency));
+            }
+            
+            if (searchParameters.startDate) {
+              const startDate = new Date(searchParameters.startDate);
+              countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
+            }
+            
+            if (searchParameters.endDate) {
+              const endDate = new Date(searchParameters.endDate);
+              countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
+            }
+            
+            // Execute the count query
+            const countSnapshot = await getDocs(countQuery);
+            
+            // Count unique person_nbr values
+            const uniqueOfficers = new Set();
+            countSnapshot.docs.forEach(doc => {
+              const officer = doc.data() as PoliceOfficer;
+              uniqueOfficers.add(officer.person_nbr);
+            });
+            
+            if (isMounted) {
+              setTotalCount(uniqueOfficers.size);
+              console.log(`Total unique officers with filters: ${uniqueOfficers.size}`);
+            }
+          } catch (countErr) {
+            console.error('Error counting filtered results:', countErr);
+            // Fallback to the current page count
+            const uniqueOfficers = new Set(groups.map(g => g.person_nbr));
+            if (isMounted) {
+              setTotalCount(uniqueOfficers.size);
+            }
           }
         }
       } catch (err) {

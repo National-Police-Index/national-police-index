@@ -12,7 +12,7 @@ import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 import { useEffect } from 'react';
 
-function toTitleCase(str) {
+function toTitleCase(str: string) {
   return str.replace(
     /\w\S*/g,
     text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
@@ -56,7 +56,7 @@ export default function StatePageClient() {
     }
   }, [loading, currentPage, totalPages, state]);
 
-  // Debug logging
+  // Enhanced debug logging
   console.log('Pagination Debug:', {
     totalGroups,
     pageSize,
@@ -65,8 +65,17 @@ export default function StatePageClient() {
     officerGroupsLength: officerGroups?.length || 0,
     shouldShowPagination: totalPages > 1,
     isLastPage: currentPage === totalPages,
-    expectedPageSize: currentPage === totalPages ? undefined : pageSize
+    expectedPageSize: currentPage === totalPages ? undefined : pageSize,
+    officerGroupsPersonNbrs: officerGroups?.map(g => g.person_nbr).join(', '),
+    hasMultiplePages: totalGroups > pageSize,
+    currentPageStart: (currentPage - 1) * pageSize + 1,
+    currentPageEnd: Math.min(currentPage * pageSize, totalGroups || 0)
   });
+  
+  // Log a warning if we don't have the expected number of officers
+  if (!loading && !error && officerGroups.length < pageSize && currentPage < totalPages) {
+    console.warn('Warning: Expected', pageSize, 'officers but only got', officerGroups.length);
+  }
 
   return (
     <div className="w-full mx-auto">
@@ -107,11 +116,11 @@ export default function StatePageClient() {
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
-                  {totalPages > 1 && (
+                  {totalPages > 0 && (
                     <div>
                       <Pagination
                         currentPage={currentPage}
-                        totalPages={totalPages}
+                        totalPages={Math.max(1, totalPages)}
                         baseUrl={`/states/${state}`}
                       />
                     </div>
