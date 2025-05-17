@@ -23,6 +23,7 @@ export interface SearchFilters {
   agency?: string;
   sortBy?: 'name' | 'date' | 'agency';
   sortOrder?: 'asc' | 'desc';
+  page?: string;
 }
 
 export interface StateData {

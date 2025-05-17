@@ -26,14 +26,19 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
   // Initialize filters from URL params
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState<SearchFiltersType>({
+  const [filters, setRawFilters] = useState<SearchFiltersType>({
     query: searchParams.get('query') || '',
     startDate: searchParams.get('startDate') ? new Date(searchParams.get('startDate') as string) : undefined,
     endDate: searchParams.get('endDate') ? new Date(searchParams.get('endDate') as string) : undefined,
     agency: searchParams.get('agency') || '',
     sortBy: (searchParams.get('sortBy') as 'name' | 'date' | 'agency' | undefined) || undefined,
-    sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc' | undefined) || undefined
+    sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc' | undefined) || undefined,
+    page: searchParams.get('page') || '1',
   });
+
+  const setFilters = (filters: SearchFiltersType) => {
+    setRawFilters({ ...filters, page: '1' });
+  };
 
   // Fetch all agencies for the current state when component mounts
   useEffect(() => {
@@ -131,7 +136,11 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
       params.delete('sortOrder');
     }
 
-    // Preserve the current page
+    if (filters.page) {
+      params.set('page', filters.page);
+      delete filters.page;
+    }
+
     if (!params.has('page')) {
       params.set('page', '1');
     }
