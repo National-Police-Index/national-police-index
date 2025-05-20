@@ -114,7 +114,7 @@ export default function OfficerProfilePage() {
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency</div>
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
+                  <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>
                     <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
                       {latestRecord.agency_name}
                     </Link>
@@ -175,8 +175,10 @@ export default function OfficerProfilePage() {
                                   })}
                                 </span>
                               </div>
-                              <div className="flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter']">
-                                {event.agency}
+                              <div className={`flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineAgency}`}>
+                                <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="">
+                                  {event.agency_name}
+                                </Link>
                               </div>
                               <div className={`${styles.timelineType}`}>
                                 {event.eventType === 'Start' ? <>Start<span> Date</span></> : <>End<span> Date</span></>}
