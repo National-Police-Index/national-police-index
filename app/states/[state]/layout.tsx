@@ -1,20 +1,19 @@
 import { Metadata } from 'next';
 import { US_STATES } from '@/constants/states';
 
-type Props = {
-  children: React.ReactNode;
-  params: { state: string };
-};
+type Props = Promise<{ children: React.ReactNode; state: string }>;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Props }): Promise<Metadata> {
   // Find the state data from the constants
+
+  const { state } = await params;
   const stateData = US_STATES.find(
-    s => s.reference.toLowerCase() === params.state.toLowerCase()
+    s => s.reference.toLowerCase() === state.toLowerCase()
   );
 
   // Format the state name properly
-  const stateName = stateData?.name || 
-    params.state.replace(
+  const stateName = stateData?.name ||
+    state.replace(
       /\w\S*/g,
       text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
     );
@@ -33,6 +32,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function StateLayout({ children }: Props) {
+export default function StateLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
