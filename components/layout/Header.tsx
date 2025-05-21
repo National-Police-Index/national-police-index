@@ -19,21 +19,18 @@ export default function Header() {
     setIsStatesOpen(false);
     setIsMobileMenuOpen(false);
 
-    // Close mobile menu on resize to desktop
     const handleResize = () => {
       if (window.innerWidth >= 768) {
         setIsMobileMenuOpen(false);
       }
     };
 
-    // Close menu on escape key
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsMobileMenuOpen(false);
       }
     };
 
-    // Close menu when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (
         menuRef.current &&
@@ -77,8 +74,6 @@ export default function Header() {
     return columns;
   }, []);
 
-  // can you use getBoundingClientRect() to check if the header is overlapping/intersecting the div element matching the class*="_mapSection_" and add/remove the class styles.noBorderBottom to the header and NOT the intersection observer
-
   useEffect(() => {
     const handleScroll = () => {
       if (headerRef.current) {
@@ -98,6 +93,28 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        headerRef.current &&
+        buttonRef.current &&
+        !headerRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        headerRef.current?.classList.remove(styles.showMenu);
+        setTimeout(() => {
+          setIsStatesOpen(false);
+          setIsMobileMenuOpen(false);
+        }, 100)
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 

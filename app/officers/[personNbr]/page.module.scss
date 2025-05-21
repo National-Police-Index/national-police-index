@@ -24,6 +24,13 @@
   }
 }
 
+.agencyName > a{
+  color: $greenB;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .timeline {
   background-color: $grayA;
   gap: 16px;
@@ -44,8 +51,14 @@
         > div {
           font-size: fluid(14px, 16px);
         }
+        .timelineAgency {
+          color: $greenB;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
         .timelineDate {
-          flex: 0 0 34px;
+          flex: 0 0 100px;
           @media screen and (max-width: 1023px) {
             flex: 0 0 20%;
             min-width: 80px;
