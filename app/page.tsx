@@ -15,11 +15,11 @@ export default async function Home() {
         description={getText(texts, 'home', 'subtitle', 'Search and explore police officer records across the United States')}
         statistics={[
           {
-            value: 27,
+            value: parseInt(getText(texts, 'home', 'states-count-value', '27')),
             label: getText(texts, 'home', 'states-count', 'States with public records')
           },
           {
-            value: 999999,
+            value: parseInt(getText(texts, 'home', 'officers-count-value', '999999')),
             label: getText(texts, 'home', 'officers-count', 'Officers in database')
           }
         ]}
