@@ -115,9 +115,9 @@ export default function OfficerProfilePage() {
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency</div>
                   <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>
-                    <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500">
+                    {/* <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500"> */}
                       {latestRecord.agency_name}
-                    </Link>
+                    {/* </Link> */}
                   </div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">

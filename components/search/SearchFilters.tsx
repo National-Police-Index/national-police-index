@@ -273,7 +273,7 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
 
       </div>
 
-      <div className={`flex ${styles.filtersRow}`}>
+      <div className={`flex ${styles.filtersRow} ${state ? styles.stateFilters : ''}`}>
         {/* Date range pickers */}
         <div className={styles.datePicker}>
           <DatePicker
