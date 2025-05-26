@@ -46,6 +46,23 @@
       flex: 1 1 184px;
     }
 
+    &:not(.stateFilters) {
+      >div {
+        @media screen and (max-width: 1023px) {
+          flex: 0 0 calc(100%/3 - fluid(16px, 22px)/(3/2));
+        }
+
+        @media screen and (max-width: 767px) {
+          &[class*="datePicker"] {
+            flex: 0 0 calc(100%/2 - fluid(16px, 22px)/2);
+          }
+          &:not([class*="datePicker"]) {
+            flex: 0 0 100%;
+          }
+        }
+      }
+    }
+
     .agency {
       flex: 400px;
       min-width: 200px;
