@@ -15,7 +15,7 @@
     "generate-sitemap": "npm run build:sitemap",
     "seed-officers": "tsx scripts/seedOfficers.ts",
     "seed-team": "tsx scripts/seedTeamData.ts",
-    "prepare-fulltext": "tsx scripts/addSearchQueriesAdvanced.ts"
+    "prepare-fulltext": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/addSearchQueriesByState.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

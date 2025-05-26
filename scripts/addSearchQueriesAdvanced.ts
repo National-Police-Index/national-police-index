@@ -43,7 +43,7 @@ interface OfficerDocument extends DocumentData {
 const CONFIG = {
   batchSize: 500,         // Maximum batch size for Firestore
   queryLimit: 1000,       // Number of documents to process in each query
-  dryRun: true,          // Set to true to simulate without making changes
+  dryRun: false,          // Set to true to simulate without making changes
   includeFirstLast: false, // Include first and last name separately
   logFrequency: 100,      // Log progress every N documents
 };
