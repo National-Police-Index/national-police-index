@@ -13,9 +13,9 @@ import styles from './styles.module.scss';
 import { useEffect } from 'react';
 
 function toTitleCase(str: string) {
-  return str.replace(
+  return str.replace(/-+/g, ' ').replace(
     /\w\S*/g,
-    text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    (text: string) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
   );
 }
 
@@ -71,7 +71,7 @@ export default function StatePageClient() {
     currentPageStart: (currentPage - 1) * pageSize + 1,
     currentPageEnd: Math.min(currentPage * pageSize, totalGroups || 0)
   });
-  
+
   // Log a warning if we don't have the expected number of officers
   if (!loading && !error && officerGroups.length < pageSize && currentPage < totalPages) {
     console.warn('Warning: Expected', pageSize, 'officers but only got', officerGroups.length);

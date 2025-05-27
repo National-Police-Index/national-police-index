@@ -5,7 +5,7 @@
 //    "georgia-discipline"
 export const US_STATES = [
     { name: 'Alabama', reference: 'alabama', abbreviation: 'AL', hasData: false, key: 'a38', dataFlag: 'no_data_lb', url: 'https://www.al.com/news/2024/09/police-employment-history-is-usually-a-public-record-in-alabama-its-a-state-secret.html' },
-    { name: 'Alaska', reference: 'alaska', abbreviation: 'AK', hasData: true, key: 'a47', dataFlag: 'full' },
+    { name: 'Alaska', reference: 'alaska', abbreviation: 'AK', hasData: true, key: 'a47', dataFlag: 'coming_soon' },
     { name: 'Arizona', reference: 'arizona', abbreviation: 'AZ', hasData: true, key: 'a27', dataFlag: 'full' },
     { name: 'Arkansas', reference: 'arkansas', abbreviation: 'AR', hasData: false, key: 'a30', dataFlag: 'no_data_lb', url: 'https://arkansasadvocate.com/2023/11/27/arkansas-declines-to-release-police-officer-database-preventing-public-oversight-of-problem-cops/' },
     { name: 'California', reference: 'california', abbreviation: 'CA', hasData: true, key: 'a17', dataFlag: 'full' },
@@ -15,7 +15,7 @@ export const US_STATES = [
     { name: 'District of Columbia', reference: 'columbia', abbreviation: 'DC', hasData: true, key: 'a34', dataFlag: 'full' },
     { name: 'Florida', reference: 'florida', abbreviation: 'FL', hasData: true, key: 'a50', dataFlag: 'full' },
     { name: 'Georgia', reference: 'georgia', abbreviation: 'GA', hasData: true, key: 'a39', dataFlag: 'full' },
-    { name: 'Hawaii', reference: 'hawaii', abbreviation: 'HI', hasData: true, key: 'a48', dataFlag: 'full' },
+    { name: 'Hawaii', reference: 'hawaii', abbreviation: 'HI', hasData: true, key: 'a48', dataFlag: 'coming_soon' },
     { name: 'Idaho', reference: 'idaho', abbreviation: 'ID', hasData: true, key: 'a1', dataFlag: 'coming_soon' },
     { name: 'Illinois', reference: 'illinois', abbreviation: 'IL', hasData: true, key: 'a5', dataFlag: 'full' },
     { name: 'Indiana', reference: 'indiana', abbreviation: 'IN', hasData: true, key: 'a12', dataFlag: 'full' },

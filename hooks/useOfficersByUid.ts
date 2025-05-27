@@ -140,8 +140,11 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Add sorting
         const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
-          searchParameters.sortBy === 'agency' ? 'agency_name' : 'full_name';
+          searchParameters.sortBy === 'agency' ? 'agency_name' : 'last_name';
         q = query(q, orderBy(sortField, searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
+        if (false && sortField === 'last_name') {
+          q = query(q, orderBy('first_name', searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
+        }
 
         // Get total count efficiently
         const total = await getTotalCount();
