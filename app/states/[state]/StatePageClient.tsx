@@ -37,6 +37,7 @@ export default function StatePageClient() {
   const pageSize = 16; // Fixed page size
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
+  console.log('STATS', stats);
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByUid({
     state,
     searchParams: {
@@ -81,11 +82,12 @@ export default function StatePageClient() {
     <div className="w-full mx-auto">
       <PageHeader
         home={false}
-        title={getText('officers-title', '{state}').replace('{state}', toTitleCase(state))}
+        title={getText('officers-title', '{state}').replace('{state}', toTitleCase(stateData.name))}
         description={`Searching  and explore police officer records in ${stateData.name}`}
         statistics={stats?.stats.filter(stat => stat.value !== '0').map(stat => ({
           value: parseInt(stat.value),
-          label: stat.label
+          label: stat.label,
+          literal: stat.literal
         }))}
       />
 

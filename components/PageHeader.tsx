@@ -3,8 +3,9 @@ import React from 'react';
 import styles from './styles.module.scss';
 
 interface Statistic {
-  value: number;
+  value: string | number;
   label: string;
+  literal?: boolean;
 }
 
 interface PageHeaderProps {
@@ -31,7 +32,7 @@ export default function PageHeader({ home, title, description, statistics }: Pag
           {statistics.filter(stat => stat.value !== 0 && stat.value).map((stat, index) => (
             <div key={index} className='flex flex-col justify-start items-start gap-2'>
               <div className={'justify-start text-[#2F5E50] font-bold font-["Inter"] tracking-[.01em] leading-[1.2] ' + styles.statValue}>
-                {typeof stat.value === 'number'
+                {typeof stat.value === 'number' && !stat.literal
                   ? stat.value.toLocaleString('en-US')
                   : stat.value
                 }
