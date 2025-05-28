@@ -170,18 +170,18 @@ export default function OfficerProfilePage() {
                               <div className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}>
                                 <span className={styles.timelineDateDesktop}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
                                   ).toLocaleDateString('en-US', {
-                                    month: 'long',
+                                    month: 'short',
                                     day: 'numeric',
                                     timeZone: 'UTC',
                                   })}
                                 </span>
                                 <span className={styles.timelineDateMobile}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
                                   ).toLocaleDateString('en-US', {
-                                    month: 'numeric',
+                                    month: 'short',
                                     day: 'numeric',
                                     timeZone: 'UTC',
                                   })}
