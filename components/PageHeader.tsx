@@ -6,6 +6,7 @@ interface Statistic {
   value: string | number;
   label: string;
   literal?: boolean;
+  tooltip?: string;
 }
 
 interface PageHeaderProps {
@@ -40,6 +41,9 @@ export default function PageHeader({ home, title, description, statistics }: Pag
               <div className={'self-stretch justify-start text-emerald-700 font-semibold font-["Inter"] tracking-[-.01em] leading-[1.5] ' + styles.statLabel}>
                 {stat.label}
               </div>
+              {stat.tooltip && <div className={styles.tooltip}>
+                {stat.tooltip}
+              </div>}
             </div>
           ))}
         </div>
