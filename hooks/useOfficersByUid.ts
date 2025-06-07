@@ -109,15 +109,21 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
 
           q = query(q,
-            where('full_name', '>=', searchParameters.query.toUpperCase()),
-            where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
+            // where('full_name', '>=', searchParameters.query.toUpperCase()),
+            //  where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
+            where(
+              'searchQueries',
+              'array-contains-any',
+              searchParameters.query.toLowerCase().split(' ').slice(0, 20), // firestore limit is 30, 20 to be safe
+            )
             /*
             where('agency_name', '>=', searchParameters.query.toUpperCase()),
             where('agency_name', '<', searchParameters.query.toUpperCase() + '\uf8ff'),
-            */
             where('last_name', '>=', capitalizeQuery.toUpperCase()),
             where('last_name', '<=', capitalizeQuery.toUpperCase() + '\uf8ff')
+            */
           );
+          // console.log('Query', q);
         }
 
         if (searchParameters.agency) {
@@ -134,8 +140,11 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Add sorting
         const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
-          searchParameters.sortBy === 'agency' ? 'agency_name' : 'full_name';
+          searchParameters.sortBy === 'agency' ? 'agency_name' : 'last_name';
         q = query(q, orderBy(sortField, searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
+        if (false && sortField === 'last_name') {
+          q = query(q, orderBy('first_name', searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
+        }
 
         // Get total count efficiently
         const total = await getTotalCount();
@@ -211,7 +220,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           try {
             // Build a count query with the same filters but no pagination
             let countQuery = query(officersRef, where('state', '==', state.toLowerCase()));
-            
+
             // Apply the same filters as the main query
             if (searchParameters.query) {
               const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
@@ -220,31 +229,31 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
                 where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
               );
             }
-            
+
             if (searchParameters.agency) {
               countQuery = query(countQuery, where('agency_name', '==', searchParameters.agency));
             }
-            
+
             if (searchParameters.startDate) {
               const startDate = new Date(searchParameters.startDate);
               countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
             }
-            
+
             if (searchParameters.endDate) {
               const endDate = new Date(searchParameters.endDate);
               countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
             }
-            
+
             // Execute the count query
             const countSnapshot = await getDocs(countQuery);
-            
+
             // Count unique person_nbr values
             const uniqueOfficers = new Set();
             countSnapshot.docs.forEach(doc => {
               const officer = doc.data() as PoliceOfficer;
               uniqueOfficers.add(officer.person_nbr);
             });
-            
+
             if (isMounted) {
               setTotalCount(uniqueOfficers.size);
               console.log(`Total unique officers with filters: ${uniqueOfficers.size}`);

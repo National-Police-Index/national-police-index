@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 interface StatItem {
   label: string;
   value: string;
+  literal?: boolean;
 }
 
 interface StateStats {
@@ -23,6 +24,7 @@ export function useStateStats(stateRef: string) {
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState<StateStats | null>(null);
 
+  console.log('STATS', stats);
   useEffect(() => {
     async function fetchStats() {
       try {

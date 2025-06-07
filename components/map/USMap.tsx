@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { US_STATES } from '@/constants/states';
 import { State, US_STATES_MAP } from '@/constants/states-map';
 import styles from './USMap.module.scss';
@@ -31,7 +30,6 @@ export const DATA_FLAG_MESSAGES = {
 };
 
 export default function USMap() {
-  const router = useRouter();
   const mapWrapperRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
@@ -52,7 +50,8 @@ export default function USMap() {
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
     if (stateData?.hasData) {
-      router.push(`/states/${stateReference.toLowerCase()}`);
+      // Use window.location.href instead of router.push for proper history handling
+      window.location.href = `/states/${stateReference.toLowerCase()}`;
     } else {
       if (stateData?.url) {
         window.open(stateData.url, '_blank');

@@ -14,6 +14,7 @@ type PoliceOfficerWithEventType = PoliceOfficer & {
   startDate?: Date,
   endDate?: Date,
   agency?: string
+  rank?: string
 };
 
 export default function OfficerProfilePage() {
@@ -55,7 +56,7 @@ export default function OfficerProfilePage() {
 
   const { latestRecord, records } = officerData;
   console.log('Officer data', officerData);
-  const fullName = latestRecord.full_name || latestRecord.first_name + ' ' + latestRecord.last_name;
+  const fullName = latestRecord.full_name || latestRecord.last_name || latestRecord.middle_name + ', ' + latestRecord.first_name;
 
   const timeline = records.reduce((acc, record) => {
     const startYear = new Date(record.start_date).getFullYear();
@@ -65,12 +66,14 @@ export default function OfficerProfilePage() {
     const eventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
       eventType: 'Start',
-      start_date: startDate.toISOString()
+      start_date: startDate.toISOString(),
+      rank: record.rank
     } as PoliceOfficerWithEventType;
     const endEventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
       eventType: 'End',
-      end_date: endDate ? endDate.toISOString() : ''
+      end_date: endDate ? endDate.toISOString() : '',
+      rank: record.rank
     } as PoliceOfficerWithEventType;
     if (!acc[startYear]) acc[startYear] = [];
     acc[startYear].push(eventType);
@@ -91,7 +94,8 @@ export default function OfficerProfilePage() {
         statistics={[
           {
             value: records.length,
-            label: "Departments the officer has worked at over their career"
+            label: "Departments the officer has worked at over their career",
+            tooltip: records.length > 1 ? "Officers sometimes work at multiple departments at one time" : ""
           }
         ]}
       />
@@ -113,15 +117,15 @@ export default function OfficerProfilePage() {
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Last Agency</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Latest Agency' : 'Current Agency'}</div>
                   <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>
                     {/* <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500"> */}
-                      {latestRecord.agency_name}
+                    {latestRecord.agency_name}
                     {/* </Link> */}
                   </div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">Date</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Period' : 'Start Date'}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
                     {new Date(latestRecord.start_date).toLocaleDateString('en-US', {
                       month: 'long',
@@ -129,6 +133,14 @@ export default function OfficerProfilePage() {
                       year: 'numeric',
                       timeZone: 'UTC'
                     })}
+                    {latestRecord.end_date && (
+                      <span className="text-[#122823] text-base font-normal font-['Inter'] leading-normal"> - {new Date(latestRecord.end_date).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        timeZone: 'UTC'
+                      })}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -158,18 +170,18 @@ export default function OfficerProfilePage() {
                               <div className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}>
                                 <span className={styles.timelineDateDesktop}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
                                   ).toLocaleDateString('en-US', {
-                                    month: 'long',
+                                    month: 'short',
                                     day: 'numeric',
                                     timeZone: 'UTC',
                                   })}
                                 </span>
                                 <span className={styles.timelineDateMobile}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.startDate || new Date() : event.endDate || new Date()
+                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
                                   ).toLocaleDateString('en-US', {
-                                    month: 'numeric',
+                                    month: 'short',
                                     day: 'numeric',
                                     timeZone: 'UTC',
                                   })}
@@ -177,7 +189,7 @@ export default function OfficerProfilePage() {
                               </div>
                               <div className={`flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineAgency}`}>
                                 <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="">
-                                  {event.agency_name}
+                                  {event.agency_name} {event.rank ? <small>({event.rank})</small> : ''}
                                 </Link>
                               </div>
                               <div className={`${styles.timelineType}`}>

@@ -258,7 +258,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
 async function generateStateStats(startFromState?: string) {
   console.log('Starting state statistics generation...');
   const statsCollection = collection(db, 'statistics_per_state');
-  
+
   // Find the starting index if a state is specified
   let startIndex = 0;
   if (startFromState) {
@@ -272,7 +272,7 @@ async function generateStateStats(startFromState?: string) {
   }
 
   // Process states in chunks
-  for (let i = startIndex; i < US_STATES.length; i += STATE_CHUNK_SIZE) {
+  for (let i = startIndex; i < startIndex + 1 /*&& i < US_STATES.length*/; i += STATE_CHUNK_SIZE) {
     const stateChunk = US_STATES.slice(i, i + STATE_CHUNK_SIZE);
     console.log(`Processing states ${i + 1} to ${Math.min(i + STATE_CHUNK_SIZE, US_STATES.length)}`);
     await processStateChunk(stateChunk, statsCollection);
@@ -300,6 +300,7 @@ export async function updateStateStatistics(startFromState?: string) {
 // Allow running directly from command line
 if (import.meta.url === new URL(process.argv[1], 'file:').href) {
   const startFromState = process.argv[2];
+  console.log(`Starting state statistics update from ${startFromState}`);
   updateStateStatistics(startFromState)
     .then(() => process.exit(0))
     .catch((error) => {

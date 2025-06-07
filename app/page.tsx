@@ -6,6 +6,7 @@ import styles from './styles.module.scss';
 
 export default async function Home() {
   const texts = await getStaticText();
+  console.log('STATICS TEXT', texts);
 
   return (
     <div className="w-full mx-auto">
@@ -19,8 +20,9 @@ export default async function Home() {
             label: getText(texts, 'home', 'states-count', 'States with public records')
           },
           {
-            value: parseInt(getText(texts, 'home', 'officers-count-value', '999999')),
-            label: getText(texts, 'home', 'officers-count', 'Officers in database')
+            value: getText(texts, 'home', 'officers-count-value', '999999'),
+            label: getText(texts, 'home', 'officers-count', 'Officers in database'),
+            literal: true
           }
         ]}
       />

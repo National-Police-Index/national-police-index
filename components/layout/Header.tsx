@@ -195,7 +195,11 @@ export default function Header() {
                       key={state.reference}
                       href={`/states/${state.reference.toLowerCase()}`}
                       className="text-[#122823] text-base font-normal font-['Inter'] leading-[1.5] hover:text-[#2F5E50] hover:underline"
-                      onClick={() => setIsStatesOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsStatesOpen(false);
+                        window.location.href = `/states/${state.reference.toLowerCase()}`;
+                      }}
                     >
                       {state.name}
                     </Link>
@@ -246,9 +250,11 @@ export default function Header() {
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
                         className="text-[#122823] text-[14px] font-normal font-['Inter'] leading-[1.5] hover:text-[#2F5E50]"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
                           setIsStatesOpen(false);
                           setIsMobileMenuOpen(false);
+                          window.location.href = `/states/${state.reference.toLowerCase()}`;
                         }}
                       >
                         {state.name}
