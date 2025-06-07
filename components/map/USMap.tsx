@@ -54,7 +54,7 @@ export default function USMap() {
       window.location.href = `/states/${stateReference.toLowerCase()}`;
     } else {
       if (stateData?.url) {
-        window.open(stateData.url, '_blank');
+        window.open(stateData.url, '_self');
       }
     }
   };
