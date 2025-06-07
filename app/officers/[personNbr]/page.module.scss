@@ -32,7 +32,8 @@
 }
 
 .timeline {
-  background-color: $grayA;
+  //background-color: $grayA;
+  background: linear-gradient(to bottom, $grayA, rgba($grayA, .1));
   gap: 16px;
   padding: 32px fluid(16px, 32px);
   > div:first-child {
@@ -45,16 +46,26 @@
   .timelineYear {
     gap: 8px;
     .timelineEvents {
-      gap: 10px;
+      gap: 16px;
       .timelineItem {
+        align-items: flex-start;
         gap: fluid(16px, 24px);
         > div {
           font-size: fluid(14px, 16px);
         }
         .timelineAgency {
-          color: $greenB;
-          &:hover {
-            text-decoration: underline;
+          a {
+            color: $greenC;
+            display: flex;
+            flex-direction: column;
+            text-transform: capitalize;
+            transition: all .1s ease-in-out;
+            &:hover {
+              color: $greenB;
+            }
+            span {
+              font-weight: 600;
+            }
           }
         }
         .timelineDate {
@@ -80,7 +91,7 @@
           }
         }
         .timelineType {
-          border: 1px solid $greenA;
+          border: 1px solid $greenB;
           border-radius: 8px;
           color: $greenB;
           flex: 0 0 fluid(100px, 132px);

@@ -16,7 +16,7 @@ $dataNoLB: #FAD2D2;
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    height: 646px;
+    height: 620px;
     overflow: visible;
     @media screen and (max-width: 1199px) {
       height: 544px;
@@ -42,7 +42,7 @@ $dataNoLB: #FAD2D2;
       left: 50%;
       width: 1000px;
       height: 680px;
-      transform: translate(-50%, -50%) scale(.95);
+      transform: translate(-50%, -50%) scale(0.9);
       transform-origin: center center;
       @media screen and (max-width: 1199px) {
         transform: translate(-50%, -50%) scale(0.8);

@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "./_variables";
-@import "./_functions";
+@use "tailwindcss";
+@use "./_variables" as *;
+@use "./_functions" as *;
 
 :root {
   --background: #F3F3F3;
@@ -40,7 +40,7 @@ main {
 h2 {
   font-size: fluid(20px, 40px);
   line-height: 1.2;
-  letter-spacing: .01em;
+  letter-spacing: .005em;
 }
 
 .container-a {
@@ -54,7 +54,7 @@ h2 {
 .h4 {
   font-size: fluid(16px, 20px);
   font-weight: bold;
-  letter-spacing: .01em;
+  letter-spacing: .005em;
   line-height: 1.4;
 }
 

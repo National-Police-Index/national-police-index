@@ -95,7 +95,7 @@ export default function OfficerProfilePage() {
           {
             value: records.length,
             label: "Departments the officer has worked at over their career",
-            tooltip: records.length > 1 ? "Officers sometimes work at multiple departments at one time" : ""
+            tooltip: records.length > 1 ? "†Officers sometimes work at multiple departments at one time" : ""
           }
         ]}
       />
@@ -187,9 +187,10 @@ export default function OfficerProfilePage() {
                                   })}
                                 </span>
                               </div>
-                              <div className={`flex-1 justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineAgency}`}>
+                              <div className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineAgency}`}>
                                 <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="">
-                                  {event.agency_name} {event.rank ? <small>({event.rank})</small> : ''}
+                                  {event.rank ? <span>{event.rank.toLowerCase()}</span> : ''}
+                                  <small>{event.agency_name}</small>
                                 </Link>
                               </div>
                               <div className={`${styles.timelineType}`}>

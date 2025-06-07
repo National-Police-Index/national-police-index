@@ -1,5 +1,6 @@
 @use "app/_variables" as *;
 @use "app/_functions" as *;
+@use 'sass:color' as c;
 
 .formFilters {
   display: flex;
@@ -223,7 +224,7 @@
         color: white;
 
         &:hover {
-          background-color: lighten($greenA, 5%);
+          background-color: c.adjust($greenA, $lightness: 5%);
           border: 2px solid $greenA;
           color: white;
         }

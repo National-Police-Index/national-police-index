@@ -1,5 +1,6 @@
 @use "app/_variables" as *;
 @use "app/_functions" as *;
+@use 'sass:color' as c;
 
 .officerCard {
   flex: 1 0 288px;
@@ -20,12 +21,12 @@
 
   &:hover {
     >div:first-child {
-      background-color: lighten($greenA, 5%);
+      background-color: c.adjust($greenA, $lightness: 5%);
     }
 
     .cardContent,
     .more {
-      background-color: darken($grayA, 5%) !important;
+      background-color: c.adjust($grayA, $lightness: -5%);
     }
   }
 
@@ -73,7 +74,7 @@
       .name {
         font-size: 16px;
         font-weight: 600;
-        letter-spacing: -.01em;
+        letter-spacing: -.005em;
         line-height: 1.5;
       }
 
@@ -87,7 +88,7 @@
         .uidNumber {
           font-size: 14px;
           font-weight: 400;
-          letter-spacing: -.01em;
+          letter-spacing: -.005em;
           line-height: 1.5;
           margin-bottom: 8px;
         }
@@ -108,7 +109,7 @@
           >div {
             font-size: 12px;
             font-weight: 400;
-            letter-spacing: -.01em;
+            letter-spacing: -.005em;
             line-height: 1.5;
           }
         }

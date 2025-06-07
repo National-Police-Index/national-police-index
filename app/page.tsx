@@ -6,7 +6,7 @@ import styles from './styles.module.scss';
 
 export default async function Home() {
   const texts = await getStaticText();
-  console.log('STATICS TEXT', texts);
+  //console.log('STATICS TEXT', texts);
 
   return (
     <div className="w-full mx-auto">
