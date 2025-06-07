@@ -114,7 +114,7 @@ export default function USMap() {
               return (
                 <div
                   key={index}
-                  className={`${styles.stateItem} ${styles[state.dataFlag]}`}
+                  className={`${styles.stateItem} ${styles[state.dataFlag]} ${state.url || state.hasData ? styles.clickable : ''}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       handleStateClick(state.reference);
@@ -166,7 +166,7 @@ export default function USMap() {
           top: tooltip.y,
         }}
       >
-        <p>{tooltip.stateName}</p>
+        <p className={styles.stateName}>{tooltip.stateName}</p>
         <hr />
         <p>{tooltip.message}</p>
       </div>

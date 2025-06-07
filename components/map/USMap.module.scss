@@ -67,8 +67,11 @@ $dataNoLB: #FAD2D2;
 }
 
 .stateItem {
+  cursor: default;
   position: absolute;
-  cursor: pointer;
+  &.clickable {
+    cursor: pointer;
+  }
   &:focus {
     > div > div > :first-child {
       outline: 2px solid $greenB;
@@ -105,10 +108,10 @@ $dataNoLB: #FAD2D2;
     }
     > :first-child {
       //border: 1.5px solid white;
-      border-radius: 10px
+      border-radius: 10px;
     }
     > :nth-child(2) {
-      transform: translate(-4px, -1px);
+      transform: translate(-8px, -2px) scale(0.9);
       svg {
         height: 18px;
       }
@@ -140,14 +143,14 @@ $dataNoLB: #FAD2D2;
 
 .tooltip {
   background: #F3F3F3;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  color: $greenC;
-  padding: fluid(8px, 16px);
   border-radius: fluid(12px, 16px);
   border-top-left-radius: 0;
-  font-size: fluid(12px, 16px);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  color: $greenC;
+  font-size: fluid(12px, 14px);
   max-width: 200px;
   opacity: 0;
+  padding: fluid(8px, 12px);
   position: absolute;
   text-align: start;
   transition: opacity .1s ease-in-out, visibility .1s ease-in-out;
@@ -169,7 +172,10 @@ $dataNoLB: #FAD2D2;
     transform: translateX(-100%);
   }
   hr {
-    margin: fluid(4px, 8px) 0;
-    border-top: 1px solid $greenC;
+    margin: fluid(4px, 6px) 0;
+    border-top: 1px solid $grayB;
+  }
+  .stateName {
+    font-weight: 600;
   }
 }
