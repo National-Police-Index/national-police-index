@@ -22,10 +22,10 @@
   margin-right: auto;
   padding-top: 40px;
   @media screen and (max-width: 1303px) {
-    max-width: calc(288px*3 + 24px*2);
+    //max-width: calc(288px*3 + 24px*2);
   }
   @media screen and (max-width: 991px) {
-    max-width: calc(288px*2 + 24px);
+    //max-width: calc(288px*2 + 24px);
   }
   @media screen and (max-width: 679px) {
     justify-content: center;

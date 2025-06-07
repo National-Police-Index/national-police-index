@@ -2,7 +2,19 @@
 @use "app/_functions" as *;
 
 .card {
-  width: 288px;
+  flex: 1 0 288px;
+  @media screen and (min-width: 1304px) {
+    max-width: calc(100% / 4 - 24px);
+  }
+  @media screen and (max-width: 1303px) {
+    max-width: calc(100% / 3 - 24px);
+  }
+  @media screen and (max-width: 991px) {
+    max-width: calc(100% / 2 - 24px);
+  }
+  @media screen and (max-width: 679px) {
+    max-width: 100%;
+  }
 }
 
 .description {
