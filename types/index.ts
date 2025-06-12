@@ -14,6 +14,11 @@ export interface PoliceOfficer {
   position?: string;
   status?: string;
   notes?: string;
+  offense?: string,
+  sanction?: string,
+  violation?: string,
+  sanction_date?: Date,
+  separation_reason?: string,
 }
 
 export interface SearchFilters {

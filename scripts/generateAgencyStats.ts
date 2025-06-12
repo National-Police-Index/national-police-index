@@ -292,7 +292,7 @@ async function generateAgencyStats(state: string) {
 // Function to be called monthly
 export async function updateAgencyStatistics() {
   try {
-    await Promise.all(US_STATES.filter(item => item.hasData).map(async (item) => {
+    await Promise.all(US_STATES.filter(item => item.hasData && item.reference === 'texas').map(async (item) => {
       console.log(`Generating agency statistics for ${item.reference}...`);
       await generateAgencyStats(item.reference);
     }));

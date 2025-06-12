@@ -23,21 +23,22 @@ interface SearchParams {
 
 export default function AgencyPage() {
   const params = useParams();
-  const id = params.id as string;
+  const id = decodeURIComponent(decodeURIComponent(params.id as string));
   const { getText } = useStaticText('agency');
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
+  console.log('PARAMS', params, id);
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
   const pageSize = 16; // Fixed page size, matches state page
 
   // Get agency statistics
-  const { loading: statsLoading, error: statsError, stats } = useAgencyStats(decodeURIComponent(id) as string);
+  const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id);
 
   // Get officers for this agency
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',
-    agencyId: decodeURIComponent(id),
+    agencyId: id,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
@@ -51,18 +52,7 @@ export default function AgencyPage() {
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
   // Debug logging similar to state page
-  console.log('Pagination Debug:', {
-    agency: stats?.name,
-    totalGroups,
-    pageSize,
-    totalPages,
-    currentPage,
-    officerGroupsLength: officerGroups?.length || 0,
-    shouldShowPagination: totalPages > 1,
-    isLastPage: currentPage === totalPages,
-    expectedPageSize: currentPage === totalPages ? undefined : pageSize
-  });
-  
+
   // Redirect if user is on a page that doesn't exist
   useEffect(() => {
     if (!loading && currentPage > totalPages && totalPages > 0) {

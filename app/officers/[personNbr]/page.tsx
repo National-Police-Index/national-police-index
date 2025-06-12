@@ -10,10 +10,12 @@ import styles from './page.module.scss';
 
 // Extend the PoliceOfficer type to include eventType
 type PoliceOfficerWithEventType = PoliceOfficer & {
-  eventType: 'Start' | 'End';
+  eventType: 'Start' | 'End' | 'Discipline';
   startDate?: Date,
   endDate?: Date,
-  agency?: string
+  agency?: string,
+  offense?: string,
+  separation_reason?: string,
   rank?: string
 };
 
@@ -56,8 +58,9 @@ export default function OfficerProfilePage() {
 
   const { latestRecord, records } = officerData;
   console.log('Officer data', officerData);
-  const fullName = latestRecord.full_name || latestRecord.last_name || latestRecord.middle_name + ', ' + latestRecord.first_name;
+  const fullName = latestRecord.full_name || ((latestRecord.last_name || latestRecord.middle_name) + ', ' + latestRecord.first_name);
 
+  const officerRecords = {} as { [key: string]: PoliceOfficerWithEventType };
   const timeline = records.reduce((acc, record) => {
     const startYear = new Date(record.start_date).getFullYear();
     const endYear = record.end_date ? new Date(record.end_date).getFullYear() : null;
@@ -67,19 +70,33 @@ export default function OfficerProfilePage() {
       agency_name: record.agency_name,
       eventType: 'Start',
       start_date: startDate.toISOString(),
-      rank: record.rank
+      rank: record.rank,
     } as PoliceOfficerWithEventType;
     const endEventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
-      eventType: 'End',
+      eventType: (record.offense || record.sanction) ? 'Discipline' : 'End',
       end_date: endDate ? endDate.toISOString() : '',
-      rank: record.rank
+      rank: record.rank,
+      offense: record.offense || record.sanction,
+      separation_reason: record.separation_reason,
+      sanction_date: record.sanction_date,
+      violation: record.violation || record.violation
     } as PoliceOfficerWithEventType;
     if (!acc[startYear]) acc[startYear] = [];
-    acc[startYear].push(eventType);
     if (endYear && endYear !== startYear) {
       if (!acc[endYear]) acc[endYear] = [];
-      acc[endYear].push(endEventType);
+    }
+    if (officerRecords[endEventType.end_date]) {
+      const index = (acc[endEventType.end_date] || []).findIndex((item) => item.end_date === endEventType.end_date);
+      if (index > -1 && endEventType.eventType === 'Discipline') {
+        acc[endEventType.end_date][index] = { ...acc[endEventType.end_date][index], ...{ offense: `${acc[endEventType.end_date][index].offense || ''}, ${endEventType.offense}` } };
+      }
+    } else {
+      officerRecords[endEventType.end_date] = endEventType;
+      acc[startYear].push(eventType);
+      if (endYear && endYear !== startYear) {
+        acc[endYear].push(endEventType);
+      }
     }
     return acc;
   }, {} as { [key: string]: PoliceOfficerWithEventType[] });
@@ -93,7 +110,12 @@ export default function OfficerProfilePage() {
         //description={`Latest Agency: ${latestRecord.agency_name}`}
         statistics={[
           {
-            value: records.length,
+            value: Object.keys((records || []).reduce((acc, record) => {
+              const start_date = record.start_date;
+              if (!acc[start_date]) acc[start_date] = 0;
+              acc[start_date]++;
+              return acc;
+            }, {} as { [key: string]: number })).length,
             label: "Departments the officer has worked at over their career",
             tooltip: records.length > 1 ? "†Officers sometimes work at multiple departments at one time" : ""
           }
@@ -192,9 +214,10 @@ export default function OfficerProfilePage() {
                                   {event.rank ? <span>{event.rank.toLowerCase()}</span> : ''}
                                   <small>{event.agency_name}</small>
                                 </Link>
+                                {event.offense ? <b><small>{event.offense}</small></b> : ''}
                               </div>
                               <div className={`${styles.timelineType}`}>
-                                {event.eventType === 'Start' ? <>Start<span> Date</span></> : <>End<span> Date</span></>}
+                                {event.eventType === 'Start' ? <>Start<span> Date</span></> : event.eventType === 'End' ? <>End<span> Date</span></> : <>Discipline</>}
                               </div>
                             </div>
                           </div>

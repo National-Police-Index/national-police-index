@@ -100,8 +100,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
 
         // Build the optimized query
         let q = query(officersRef, where('state', '==', state.toLowerCase()));
+        // if (false && ['georgia', 'florida'].includes(state.toLowerCase())) {
         if (false && ['georgia', 'florida'].includes(state.toLowerCase())) {
-          q = query(q, where('state', '==', `${state.toLowerCase()}-discipline`));
+          q = query(officersRef, where('state', '==', `${state.toLowerCase()}-discipline`));
         }
 
         // Add filters efficiently

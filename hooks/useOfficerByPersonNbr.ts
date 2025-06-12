@@ -23,7 +23,14 @@ export function useOfficerByPersonNbr(personNbr: string) {
 
         // Query all records for this officer using collection group
         const officersRef = collectionGroup(db, 'db_launch');
-        const q = query(officersRef, where('document_id', '==', personNbr));
+        let q = query(officersRef, where('document_id', '==', personNbr));
+        console.log('personNbr.includes("discipline")', personNbr, personNbr.includes('discipline'));
+        if (personNbr.includes('georgia') || personNbr.includes('florida')) {
+          const documentId = personNbr.replace("florida-discipline_", "").replace("georgia-discipline_", "").replace("florida_", "").replace("georgia_", "");
+          const state = personNbr.includes('florida') ? 'florida' : 'georgia';
+          console.log('DocumentId', documentId, state);
+          q = query(officersRef, where('person_nbr', '==', documentId), where('state', 'in', [state, `${state}-discipline`]));
+        }
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
