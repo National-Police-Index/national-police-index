@@ -100,7 +100,6 @@ export default function OfficerProfilePage() {
     }
     return acc;
   }, {} as { [key: string]: PoliceOfficerWithEventType[] });
-  console.log('Timeline', timeline);
 
   return (
     <div className="w-full mx-auto">
@@ -120,6 +119,7 @@ export default function OfficerProfilePage() {
             tooltip: records.length > 1 ? "†Officers sometimes work at multiple departments at one time" : ""
           }
         ]}
+        titleCapitalize
       />
 
       <div className={`w-full relative bg-white rounded-tl-3xl rounded-tr-3xl ${styles.contentSection} `}>

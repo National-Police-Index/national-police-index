@@ -21,6 +21,14 @@
       max-width: 600px;
     }
 
+    .titleCapitalize {
+      color: $greenC;
+      font-size: fluid(32px, 48px);
+      max-width: 600px;
+      text-transform: capitalize;
+    }
+
+
     .description {
       color: $greenC;
       font-size: fluid(16px, 18px);
@@ -55,6 +63,13 @@
       color: $greenC;
       font-size: 40px;
     }
+
+    .titleCapitalize {
+      color: $greenC;
+      font-size: 40px;
+      text-transform: capitalize;
+    }
+
 
     .description {
       color: $greenC;
