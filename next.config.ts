@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   },
   sassOptions: {
     prependData: `@import "app/_functions.scss"; @import "app/_variables.scss";`,
+    implementation: 'sass-embedded',
   },
 };
 

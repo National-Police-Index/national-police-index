@@ -5,7 +5,7 @@ import { useStaticText } from '@/hooks/useStaticText';
 import { useOfficersByUid } from '@/hooks/useOfficersByUid';
 import { useStateStats } from '@/hooks/useStateStats';
 import SearchFilters from '@/components/search/SearchFilters';
-import { US_STATES } from '@/constants/states';
+import { US_STATES, STATE_DESCRIPTIONS } from '@/constants/states';
 import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
@@ -83,7 +83,7 @@ export default function StatePageClient() {
       <PageHeader
         home={false}
         title={getText('officers-title', '{state}').replace('{state}', toTitleCase(stateData.name))}
-        description={`Searching  and explore police officer records in ${stateData.name}`}
+        description={STATE_DESCRIPTIONS[state as keyof typeof STATE_DESCRIPTIONS] || `Searching  and explore police officer records in ${stateData.name}`}
         statistics={stats?.stats.filter(stat => stat.value !== '0').map(stat => ({
           value: parseInt(stat.value),
           label: stat.label,
