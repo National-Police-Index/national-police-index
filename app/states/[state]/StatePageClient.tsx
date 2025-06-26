@@ -11,11 +11,47 @@ import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 import { useEffect } from 'react';
+import React from 'react';
 
 function toTitleCase(str: string) {
   return str.replace(/-+/g, ' ').replace(
     /\w\S*/g,
     (text: string) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+  );
+}
+
+// Function to convert URLs in text to clickable links
+function parseDescription(text: string | undefined): React.ReactNode {
+  if (!text) return null;
+  
+  // Regular expression to find URLs
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  
+  // Split the text by URLs
+  const parts = text.split(urlRegex);
+  
+  // Map through parts and convert URLs to anchor tags
+  return (
+    <>
+      {parts.map((part, i) => {
+        // Check if this part is a URL
+        if (part.match(urlRegex)) {
+          return (
+            <a 
+              key={i} 
+              href={part} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-emerald-700 hover:underline"
+            >
+              {part}
+            </a>
+          );
+        }
+        // Return regular text
+        return part;
+      })}
+    </>
   );
 }
 
@@ -83,7 +119,7 @@ export default function StatePageClient() {
       <PageHeader
         home={false}
         title={getText('officers-title', '{state}').replace('{state}', toTitleCase(stateData.name))}
-        description={STATE_DESCRIPTIONS[state as keyof typeof STATE_DESCRIPTIONS] || `Searching  and explore police officer records in ${stateData.name}`}
+        description={parseDescription(STATE_DESCRIPTIONS[state as keyof typeof STATE_DESCRIPTIONS]) || `Search and explore police officer records in ${stateData.name}`}
         statistics={stats?.stats.filter(stat => stat.value !== '0').map(stat => ({
           value: parseInt(stat.value),
           label: stat.label,
