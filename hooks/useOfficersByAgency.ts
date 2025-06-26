@@ -39,8 +39,9 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
 
   // Get the actual agency ID from the name if not provided
   const normalizedAgencyId = useMemo(() => {
-    return agencyId || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return agencyId?.replace(/\//g, '-slash-') || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/\//g, '-slash-');
   }, [agencyId, agencyName]);
+  console.log('normalizedAgencyId', normalizedAgencyId);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -56,6 +57,7 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
 
         // First, try to get the total_officers count from stats
         let officerCount = null;
+
         try {
           const statsRef = doc(db, 'statistics_per_agency', normalizedAgencyId);
           const statsDoc = await getDoc(statsRef);

@@ -43,7 +43,13 @@ export function useAgencyStats(agencyName: string) {
         setLoading(true);
         setError(null);
 
-        const agencyId = agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        // Sanitize agency name to create a valid Firebase document ID
+        // First, specifically handle forward and back slashes as they cause path issues in Firebase
+        // Then replace all other non-alphanumeric characters with hyphens
+        const agencyId = agencyName
+          .toLowerCase()
+          .replace(/[/\\]/g, '-slash-') // Replace slashes with a descriptive replacement
+          .replace(/[^a-z0-9-]/g, '-');
         console.log('Agency ID:', agencyId);
         // Check the new collection first
         const statsRef = doc(db, 'statistics_per_agency', agencyId);
