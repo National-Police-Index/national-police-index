@@ -39,7 +39,7 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
 
   // Get the actual agency ID from the name if not provided
   const normalizedAgencyId = useMemo(() => {
-    return agencyId?.replace(/\//g, '-slash-') || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/\//g, '-slash-');
+    return agencyId?.replace(/\//g, '%2F') || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/\//g, '-slash-');
   }, [agencyId, agencyName]);
   console.log('normalizedAgencyId', normalizedAgencyId);
 

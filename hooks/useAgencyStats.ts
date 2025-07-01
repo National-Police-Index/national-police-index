@@ -48,7 +48,7 @@ export function useAgencyStats(agencyName: string) {
         // Then replace all other non-alphanumeric characters with hyphens
         const agencyId = agencyName
           .toLowerCase()
-          .replace(/[/\\]/g, '-slash-') // Replace slashes with a descriptive replacement
+          .replace(/[/\\]/g, '%2F') // Replace slashes with a descriptive replacement
           .replace(/[^a-z0-9-]/g, '-');
         console.log('Agency ID:', agencyId);
         // Check the new collection first
