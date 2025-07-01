@@ -10,6 +10,7 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
+import { US_STATES } from '@/constants/states';
 
 interface SearchParams {
   page?: string;
@@ -35,6 +36,10 @@ export default function AgencyPage() {
   // Get agency statistics
   const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id);
 
+  const stateData = US_STATES.find(
+    s => s.reference.toLowerCase() === stats?.state.toLowerCase()
+  );
+  console.log(stateData);
   // Get officers for this agency
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',
@@ -63,7 +68,7 @@ export default function AgencyPage() {
     <div className="w-full mx-auto">
       <PageHeader
         home={false}
-        title={getText('officers-title', 'Officers in {state}').replace('{state}', stats?.name || '')}
+        title={getText('officers-title', `Officers in {state}`).replace('{state}', stats?.name || '') + (stateData ? ` - ${stateData?.name}` : '')}
         description={`Searching  and explore police officer records in ${stats?.name || ''}`}
 
         statistics={stats?.stats?.filter(stat => stat.value !== '0').map(stat => ({

@@ -7,6 +7,7 @@ import { useOfficerByPersonNbr } from '@/hooks/useOfficerByPersonNbr';
 import { useStaticText } from '@/hooks/useStaticText';
 import PageHeader from '@/components/PageHeader';
 import styles from './page.module.scss';
+import { US_STATES } from '@/constants/states';
 
 // Extend the PoliceOfficer type to include eventType
 type PoliceOfficerWithEventType = PoliceOfficer & {
@@ -23,6 +24,7 @@ export default function OfficerProfilePage() {
   const { personNbr } = useParams();
   const { loading, error, officerData } = useOfficerByPersonNbr(personNbr as string);
   const { getText } = useStaticText('officer');
+  const stateData = US_STATES.find(s => s.reference.toLowerCase() === officerData?.latestRecord.state.toLowerCase());
   console.log('Officer data', officerData);
 
   if (loading) {
@@ -138,6 +140,11 @@ export default function OfficerProfilePage() {
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{getText('uid', 'UID Number')}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
+                {stateData && (
+                  <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
+                    <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{getText('state', 'State')}</div>
+                    <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal capital-text">{stateData.name}</div>
+                  </div>)}
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Latest Agency' : 'Current Agency'}</div>
                   <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>

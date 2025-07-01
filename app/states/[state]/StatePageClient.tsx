@@ -12,6 +12,7 @@ import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 import { useEffect } from 'react';
 import React from 'react';
+import parse from 'html-react-parser';
 
 function toTitleCase(str: string) {
   return str.replace(/-+/g, ' ').replace(
@@ -20,16 +21,45 @@ function toTitleCase(str: string) {
   );
 }
 
-// Function to convert URLs in text to clickable links
+// Function to render state descriptions with HTML content and make URLs clickable
 function parseDescription(text: string | undefined): React.ReactNode {
   if (!text) return null;
-  
+
+  // Check if the description contains HTML tags
+  if (text.includes('<a href=')) {
+    // Use the html-react-parser library to render HTML content
+    return parse(text, {
+      replace: (domNode: any) => {
+        if (domNode.type === 'tag' && domNode.name === 'a') {
+          // Apply consistent styling to all anchor tags
+          const props = domNode.attribs || {};
+          // Extract link text safely
+          let linkText = props.href;
+          if (domNode.children && domNode.children[0] && 'data' in domNode.children[0]) {
+            linkText = domNode.children[0].data;
+          }
+
+          return (
+            <a
+              {...props}
+              className="text-emerald-700 hover:underline"
+            >
+              {linkText}
+            </a>
+          );
+        }
+        return domNode;
+      }
+    });
+  }
+
+  // For plain text descriptions with URLs, use the previous implementation
   // Regular expression to find URLs
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  
+
   // Split the text by URLs
   const parts = text.split(urlRegex);
-  
+
   // Map through parts and convert URLs to anchor tags
   return (
     <>
@@ -37,10 +67,10 @@ function parseDescription(text: string | undefined): React.ReactNode {
         // Check if this part is a URL
         if (part.match(urlRegex)) {
           return (
-            <a 
-              key={i} 
-              href={part} 
-              target="_blank" 
+            <a
+              key={i}
+              href={part}
+              target="_blank"
               rel="noopener noreferrer"
               className="text-emerald-700 hover:underline"
             >
@@ -92,22 +122,6 @@ export default function StatePageClient() {
       window.location.href = `/states/${state}?page=${totalPages}`;
     }
   }, [loading, currentPage, totalPages, state]);
-
-  // Enhanced debug logging
-  console.log('Pagination Debug:', {
-    totalGroups,
-    pageSize,
-    totalPages,
-    currentPage,
-    officerGroupsLength: officerGroups?.length || 0,
-    shouldShowPagination: totalPages > 1,
-    isLastPage: currentPage === totalPages,
-    expectedPageSize: currentPage === totalPages ? undefined : pageSize,
-    officerGroupsPersonNbrs: officerGroups?.map(g => g.person_nbr).join(', '),
-    hasMultiplePages: totalGroups > pageSize,
-    currentPageStart: (currentPage - 1) * pageSize + 1,
-    currentPageEnd: Math.min(currentPage * pageSize, totalGroups || 0)
-  });
 
   // Log a warning if we don't have the expected number of officers
   if (!loading && !error && officerGroups.length < pageSize && currentPage < totalPages) {

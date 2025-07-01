@@ -25,6 +25,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "firebase": "^11.5.0",
+    "html-react-parser": "^5.2.5",
     "json2csv": "^6.0.0-alpha.2",
     "lodash": "^4.17.21",
     "mongodb": "^6.16.0",

@@ -31,7 +31,7 @@ export default function PageHeader({ home, title, description, statistics, title
 
       {statistics && statistics.length > 0 && (
         <div className={`flex flex-col justify-center items-start gap-8 ${styles.statistics}`}>
-          {statistics.filter(stat => stat.value !== 0 && stat.value).map((stat, index) => (
+          {statistics.filter(stat => stat.label !== 'Total Records Processed').filter(stat => stat.value !== 0 && stat.value).map((stat, index) => (
             <div key={index} className='flex flex-col justify-start items-start gap-2'>
               <div className={'justify-start text-[#2F5E50] font-bold font-["Inter"] leading-[1.2] ' + styles.statValue}>
                 {typeof stat.value === 'number' && !stat.literal
@@ -40,7 +40,7 @@ export default function PageHeader({ home, title, description, statistics, title
                 }
               </div>
               <div className={'self-stretch justify-start text-emerald-700 font-semibold font-["Inter"] tracking-[-.005em] leading-[1.5] ' + styles.statLabel}>
-                {stat.label}
+                {stat.label.replace('Total Officers', 'Current and Former Officers')}
               </div>
               {stat.tooltip && <small className={styles.tooltip}>
                 {stat.tooltip}
