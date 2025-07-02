@@ -28,7 +28,7 @@ export default function AgencyPage() {
   const { getText } = useStaticText('agency');
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
-  console.log('PARAMS', params, id);
+  console.log('PARAMS', params, searchParams, id);
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
   const pageSize = 16; // Fixed page size, matches state page
@@ -39,7 +39,6 @@ export default function AgencyPage() {
   const stateData = US_STATES.find(
     s => s.reference.toLowerCase() === stats?.state.toLowerCase()
   );
-  console.log(stateData);
   // Get officers for this agency
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
     agencyName: stats?.name || '',

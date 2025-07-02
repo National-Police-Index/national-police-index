@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Combobox, Transition } from '@headlessui/react';
+import { Checkbox } from '../ui/Checkbox';
 import { SearchFilters as SearchFiltersType } from '@/types';
 import { getAllAgencies } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
@@ -34,9 +35,11 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     sortBy: (searchParams.get('sortBy') as 'name' | 'date' | 'agency' | undefined) || undefined,
     sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc' | undefined) || undefined,
     page: searchParams.get('page') || '1',
+    activeOnly: searchParams.get('activeOnly') || 'false'
   });
 
   const setFilters = (filters: SearchFiltersType) => {
+    console.log('setFilters', filters);
     setRawFilters({ ...filters, page: '1' });
   };
 
@@ -129,6 +132,13 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     } else {
       params.delete('sortBy');
     }
+
+    if (filters.activeOnly) {
+      params.set('activeOnly', filters.activeOnly);
+    } else {
+      params.delete('activeOnly');
+    }
+
 
     if (filters.sortOrder) {
       params.set('sortOrder', filters.sortOrder);
@@ -373,6 +383,16 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
             </Combobox>
           </div>
         }
+
+        {/* Active Officers Filter */}
+        {!state && (
+          <Checkbox
+            id="active-only"
+            checked={filters.activeOnly === 'true'}
+            onChange={(checked) => setFilters({ ...filters, activeOnly: checked ? 'true' : 'false' })}
+            label="Show only active officers"
+          />
+        )}
 
         {/* Sort by */}
         <div>

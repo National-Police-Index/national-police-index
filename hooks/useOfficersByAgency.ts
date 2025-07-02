@@ -17,6 +17,7 @@ interface UseOfficersByAgencyProps {
     query?: string;
     startDate?: string;
     endDate?: string;
+    activeOnly?: string;
     sortBy?: string;
     sortOrder?: string;
     pageSize?: string;
@@ -25,11 +26,12 @@ interface UseOfficersByAgencyProps {
 }
 
 export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pageSize: '16' } }: UseOfficersByAgencyProps) {
-  console.log('Agency Name:', agencyName);
+  console.log('Agency Name:', agencyName, searchParams);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
     startDate: searchParams.startDate || '',
     endDate: searchParams.endDate || '',
+    activeOnly: searchParams.activeOnly || 'false',
     sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
     pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
@@ -124,6 +126,10 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
 
         if (searchParameters.endDate) {
           q = query(q, where('end_date', '<=', searchParameters.endDate));
+        }
+
+        if (searchParameters.activeOnly === 'true') {
+          q = query(q, where('end_date', '==', null));
         }
 
         // Determine how many officers to fetch

@@ -28,6 +28,7 @@
     right: 4px;
     transition: all .1s ease-in-out;
     top: 4px;
+
     &:hover {
       background-color: $greenA;
       border: 1px solid $greenA;
@@ -57,6 +58,7 @@
           &[class*="datePicker"] {
             flex: 0 0 calc(100%/2 - fluid(16px, 22px)/2);
           }
+
           &:not([class*="datePicker"]) {
             flex: 0 0 100%;
           }
@@ -75,22 +77,25 @@
       .agencyOptions {
         border: 1px solid #aeaeae;
 
-        > div {
+        >div {
           display: flex;
           padding: 10px;
-          > div {
+
+          >div {
             display: flex;
             gap: 10px;
             justify-content: space-between;
             max-width: 100%;
             width: 100%;
-            > span {
+
+            >span {
               &:first-child {
                 display: flex;
                 flex: 1;
                 flex-wrap: wrap;
                 font-size: fluid(14px, 16px);
               }
+
               &:last-child {
                 flex-basis: 70px;
               }
@@ -109,6 +114,7 @@
       >div {
         width: 100%;
       }
+
       @media screen and (max-width: 1023px) {
         flex: 0 0 calc(50% - fluid(16px, 22px)/2);
 
@@ -151,10 +157,17 @@
     background-position: calc(100% - 16px) center;
     background-repeat: no-repeat;
     background-size: 12px 7px;
-    padding-right: 40px!important;
+    padding-right: 40px !important;
   }
 
-  input,
+  input[type='checkbox'] {
+    background-color: $grayA;
+    color: $greenC;
+    font-size: 16px;
+    padding: 8px 16px;
+  }
+
+  input:not([type='checkbox']),
   select {
     appearance: none;
     background-color: $grayA;
