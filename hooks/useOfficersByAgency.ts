@@ -26,7 +26,6 @@ interface UseOfficersByAgencyProps {
 }
 
 export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pageSize: '16' } }: UseOfficersByAgencyProps) {
-  console.log('Agency Name:', agencyName, searchParams);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
     startDate: searchParams.startDate || '',
@@ -37,13 +36,12 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
     pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: parseInt(searchParams.page || '1', 10)
   }), [searchParams.query, searchParams.startDate, searchParams.endDate,
-  searchParams.sortBy, searchParams.sortOrder, searchParams.pageSize, searchParams.page]);
+  searchParams.sortBy, searchParams.sortOrder, searchParams.pageSize, searchParams.page, searchParams.activeOnly]);
 
   // Get the actual agency ID from the name if not provided
   const normalizedAgencyId = useMemo(() => {
     return agencyId?.replace(/\//g, '%2F') || agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/\//g, '-slash-');
   }, [agencyId, agencyName]);
-  console.log('normalizedAgencyId', normalizedAgencyId);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -69,7 +67,6 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
             if (statsData.total_officers !== undefined) {
               officerCount = statsData.total_officers;
               setTotalOfficers(officerCount);
-              console.log(`Using total_officers (${officerCount}) from statistics_per_agency`);
             }
           }
 
@@ -85,7 +82,6 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
               if (totalOfficersStat) {
                 officerCount = parseInt(totalOfficersStat.value, 10);
                 setTotalOfficers(officerCount);
-                console.log(`Using Total Officers (${officerCount}) from agency_statistics`);
               }
             }
           }
@@ -129,7 +125,7 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
         }
 
         if (searchParameters.activeOnly === 'true') {
-          q = query(q, where('end_date', '==', null));
+          q = query(q, where('end_date', '==', ''));
         }
 
         // Determine how many officers to fetch
@@ -156,7 +152,6 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
             officerFetchLimit = pageSize * 4;
           }
 
-          console.log(`Fetching ${officerFetchLimit} officers for page ${page}/${totalPages} (pageSize: ${pageSize})`);
         } else {
           console.log(`No total_officers count available, fetching ${officerFetchLimit} officers`);
         }
@@ -196,7 +191,6 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
         const startIdx = (page - 1) * pageSize;
         const endIdx = startIdx + pageSize;
         const paginatedGroups = sortedGroups.slice(startIdx, endIdx);
-        console.log('paginated groups', paginatedGroups);
 
         setOfficerGroups(paginatedGroups);
       } catch (err) {
