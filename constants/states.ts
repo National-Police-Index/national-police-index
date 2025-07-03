@@ -352,6 +352,13 @@ export const US_STATES: USState[] = [
     key: "a14",
     dataFlag: "no_data_lb",
     url: "https://www.spotlightpa.org/news/2023/08/pennsylvania-police-officer-data-denied/",
+  }, {
+    name: "Puerto Rico",
+    reference: "puerto-rico",
+    abbreviation: "PR",
+    hasData: false,
+    key: "a51",
+    dataFlag: "coming_soon",
   },
   {
     name: "Rhode Island",
