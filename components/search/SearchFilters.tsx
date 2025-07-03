@@ -384,16 +384,6 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
           </div>
         }
 
-        {/* Active Officers Filter */}
-        {!state && (
-          <Checkbox
-            id="active-only"
-            checked={filters.activeOnly === 'true'}
-            onChange={(checked) => setFilters({ ...filters, activeOnly: checked ? 'true' : 'false' })}
-            label="Show only active officers"
-          />
-        )}
-
         {/* Sort by */}
         <div>
           <select
@@ -443,6 +433,16 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
           </div>
         )}
       </div>
+
+      {/* Active Officers Filter */}
+      {!state && (
+        <Checkbox
+          id="active-only"
+          checked={filters.activeOnly === 'true'}
+          onChange={(checked) => setFilters({ ...filters, activeOnly: checked ? 'true' : 'false' })}
+          label="Show only active officers"
+        />
+      )}
 
       {/* <div className={`flex justify-end ${styles.buttonGroup}`}>
         <button

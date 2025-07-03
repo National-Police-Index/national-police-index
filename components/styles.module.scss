@@ -2,7 +2,7 @@
 @use "../app/_functions" as *;
 
 .pageHeader {
-  gap: fluid(32px, 100px);
+  gap: fluid(32px, 132px);
   //position: sticky;
   position: relative;
 
@@ -73,14 +73,20 @@
 
     .description {
       color: $greenC;
-      font-size: 16px
+      font-size: 16px;
+      p {
+        margin-bottom: 24px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
     }
 
     .statistics {
       gap: 24px;
 
       @media screen and (min-width: 1024px) {
-        flex: 0 0 288px;
+        flex: 0 0 392px;
       }
     }
 

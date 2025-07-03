@@ -135,7 +135,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           {isNotFirstPage ? 
             (<Link
               href={isFirstPage ? '#' : createPageUrl(1)}
-              className={`block text-emerald-900 ${isFirstPage
+              className={`block ${isFirstPage
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:bg-gray-100 hover:text-gray-700'
                 }`}
@@ -153,7 +153,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           {isNotFirstPage ? 
             (<Link
               href={isFirstPage ? '#' : createPageUrl(prevPage)}
-              className={`block text-emerald-900 ${isFirstPage
+              className={`block ${isFirstPage
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:bg-gray-100 hover:text-gray-700'
                 }`}
@@ -223,7 +223,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           {isNotLastPage ?
             (<Link
               href={isLastPage ? '#' : createPageUrl(totalPages)}
-              className={`block text-emerald-900 ${isLastPage
+              className={`block ${isLastPage
                 ? 'cursor-not-allowed opacity-50'
                 : 'hover:bg-gray-100 hover:text-gray-700'
                 }`}

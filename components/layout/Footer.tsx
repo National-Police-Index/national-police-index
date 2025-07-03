@@ -35,7 +35,7 @@ export default function Footer() {
                 key={item.name}
                 href={item.href}
                 target={item.target}
-                className="text-[#122823] hover:text-emerald-700 text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
+                className="text-[#122823] hover:text-[#4F8C7E] text-base sm:text-lg font-normal font-['Inter'] transition-colors duration-200"
               >
                 {getText(item.name.toLowerCase(), item.name)}
               </Link>

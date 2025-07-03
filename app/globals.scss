@@ -122,10 +122,6 @@ h2 {
     }
   }
 
-  svg.react-datepicker__triangle {
-    display: none;
-  }
-
   .react-datepicker__header {
     background-color: transparent;
     border: none;
@@ -169,5 +165,12 @@ h2 {
 
   .react-datepicker__day-name {
     font-weight: 500;
+  }
+}
+
+svg.react-datepicker__triangle {
+  path {
+    fill: white;
+    border: white;
   }
 }

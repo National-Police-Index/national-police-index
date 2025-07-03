@@ -39,7 +39,7 @@ export default function PageHeader({ home, title, description, statistics, title
                   : stat.value
                 }
               </div>
-              <div className={'self-stretch justify-start text-emerald-700 font-semibold font-["Inter"] tracking-[-.005em] leading-[1.5] ' + styles.statLabel}>
+              <div className={'self-stretch justify-start font-semibold font-["Inter"] tracking-[-.005em] leading-[1.5] ' + styles.statLabel}>
                 {stat.label.replace('Total Officers', 'Current and Former Officers')}
               </div>
               {stat.tooltip && <small className={styles.tooltip}>

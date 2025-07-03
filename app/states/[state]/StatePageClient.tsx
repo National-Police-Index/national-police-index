@@ -39,10 +39,12 @@ function parseDescription(text: string | undefined): React.ReactNode {
             linkText = domNode.children[0].data;
           }
 
+          delete props.class;
+
           return (
             <a
               {...props}
-              className="text-emerald-700 hover:underline"
+              className={styles.descriptionLink}
             >
               {linkText}
             </a>
@@ -72,7 +74,6 @@ function parseDescription(text: string | undefined): React.ReactNode {
               href={part}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-700 hover:underline"
             >
               {part}
             </a>

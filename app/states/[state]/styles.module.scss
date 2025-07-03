@@ -33,3 +33,10 @@
 .paginationWrapper {
   //margin-top: fluid(32px, 56px);
 }
+
+.descriptionLink {
+  text-decoration: underline;
+  &:hover {
+    color: $greenB;
+  }
+}

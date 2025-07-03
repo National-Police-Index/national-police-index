@@ -91,7 +91,6 @@
           }
         }
         .timelineType {
-          border: 1px solid $greenB;
           border-radius: 8px;
           color: $greenB;
           flex: 0 0 fluid(100px, 132px);
@@ -105,6 +104,18 @@
             span {
               display: none;
             }
+          }
+          &.Discipline {
+            background-color: #FAD2D2;
+            color: darken(#FAD2D2, 60%);
+          }
+          &.Start {
+            background-color: #D7F4CE;
+            color: darken(#D7F4CE, 60%);
+          }
+          &.End {
+            background-color: #A1D1C1;
+            color: darken(#A1D1C1, 60%);
           }
         }
       }

@@ -148,9 +148,7 @@ export default function OfficerProfilePage() {
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Latest Agency' : 'Current Agency'}</div>
                   <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>
-                    {/* <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="text-emerald-600 hover:text-emerald-500"> */}
                     {latestRecord.agency_name}
-                    {/* </Link> */}
                   </div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">
@@ -178,7 +176,7 @@ export default function OfficerProfilePage() {
             <div className={`w-full rounded-3xl flex flex-col justify-start items-start relative overflow-hidden ${styles.timeline}`}>
               <div className="self-stretch flex items-center justify-between">
                 <h2 className="text-[#122823] h4">Timeline</h2>
-                {false && <span className="text-sm text-emerald-700">{records.length} Records</span>}
+                {false && <span className="text-sm">{records.length} Records</span>}
               </div>
 
               {Object.entries(timeline)
@@ -223,7 +221,7 @@ export default function OfficerProfilePage() {
                                 </Link>
                                 {event.offense ? <b><small>{event.offense}</small></b> : ''}
                               </div>
-                              <div className={`${styles.timelineType}`}>
+                              <div className={`${styles.timelineType} ${styles[event.eventType]}`}>
                                 {event.eventType === 'Start' ? <>Start<span> Date</span></> : event.eventType === 'End' ? <>End<span> Date</span></> : <>Discipline</>}
                               </div>
                             </div>

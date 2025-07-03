@@ -161,10 +161,35 @@
   }
 
   input[type='checkbox'] {
+    appearance: none;
     background-color: $grayA;
-    color: $greenC;
-    font-size: 16px;
-    padding: 8px 16px;
+    border: 1px solid #aeaeae;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 20px;
+    position: relative;
+    width: 20px;
+    &:checked {
+      &:before {
+        background-color: $greenA;
+        border-radius: 3px;
+        color: white;
+        content: '✓';
+        font-size: 18px;
+        font-weight: bolder;
+        height: 18px;
+        line-height: 1;
+        position: absolute;
+        text-align: center;
+        top: 0;
+        width: 18px;
+      }
+    }
+    + label {
+      cursor: pointer;
+      margin: -8px -8px -8px 0;
+      padding: 8px;
+    }
   }
 
   input:not([type='checkbox']),
