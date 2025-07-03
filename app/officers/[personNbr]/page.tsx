@@ -71,7 +71,8 @@ export default function OfficerProfilePage() {
     let endDateString = '';
     try {
       endDateString = endDate ? endDate.toISOString() : '';
-    } catch (e) {
+    } catch (exception) {
+      console.error('Error converting end date to ISO string:', exception);
       endDateString = '';
     }
     const eventType: PoliceOfficerWithEventType = {
