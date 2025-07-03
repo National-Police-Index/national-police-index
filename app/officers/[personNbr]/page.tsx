@@ -68,6 +68,12 @@ export default function OfficerProfilePage() {
     const endYear = record.end_date ? new Date(record.end_date).getFullYear() : null;
     const startDate = new Date(record.start_date);
     const endDate = record.end_date ? new Date(record.end_date) : null;
+    let endDateString = '';
+    try {
+      endDateString = endDate ? endDate.toISOString() : '';
+    } catch (e) {
+      endDateString = '';
+    }
     const eventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
       eventType: 'Start',
@@ -77,7 +83,7 @@ export default function OfficerProfilePage() {
     const endEventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
       eventType: (record.offense || record.sanction) ? 'Discipline' : 'End',
-      end_date: endDate ? endDate.toISOString() : '',
+      end_date: endDateString,
       rank: record.rank,
       offense: record.offense || record.sanction,
       separation_reason: record.separation_reason,
@@ -154,7 +160,7 @@ export default function OfficerProfilePage() {
                   </div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Period' : 'Start Date'}</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date && latestRecord.end_date !== '0000-00-00' ? 'Period' : 'Start Date'}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
                     {new Date(latestRecord.start_date).toLocaleDateString('en-US', {
                       month: 'long',
@@ -162,7 +168,7 @@ export default function OfficerProfilePage() {
                       year: 'numeric',
                       timeZone: 'UTC'
                     })}
-                    {latestRecord.end_date && (
+                    {latestRecord.end_date && latestRecord.end_date !== '0000-00-00' && (
                       <span className="text-[#122823] text-base font-normal font-['Inter'] leading-normal"> - {new Date(latestRecord.end_date).toLocaleDateString('en-US', {
                         month: 'long',
                         day: 'numeric',
