@@ -26,27 +26,30 @@ function parseDescription(text: string | undefined): React.ReactNode {
   if (!text) return null;
 
   // Check if the description contains HTML tags
-  if (text.includes('<a href=')) {
+  if (text.includes('<')) {
     // Use the html-react-parser library to render HTML content
     return parse(text, {
       replace: (domNode: any) => {
-        if (domNode.type === 'tag' && domNode.name === 'a') {
-          // Apply consistent styling to all anchor tags
-          const props = domNode.attribs || {};
-          // Extract link text safely
-          let linkText = props.href;
-          if (domNode.children && domNode.children[0] && 'data' in domNode.children[0]) {
-            linkText = domNode.children[0].data;
-          }
+        if (domNode.type === 'tag') {
+          if (domNode.name === 'a') {
+            // Apply consistent styling to all anchor tags
+            const props = domNode.attribs || {};
+            // Extract link text safely
+            let linkText = props.href;
+            if (domNode.children && domNode.children[0] && 'data' in domNode.children[0]) {
+              linkText = domNode.children[0].data;
+            }
 
-          return (
-            <a
-              {...props}
-              className="text-emerald-700 hover:underline"
-            >
-              {linkText}
-            </a>
-          );
+            return (
+              <a
+                {...props}
+                className="text-emerald-700 hover:underline"
+              >
+                {linkText}
+              </a>
+            );
+          }
+          // Allow all other HTML tags to be rendered normally
         }
         return domNode;
       }
