@@ -175,10 +175,10 @@
         border-radius: 3px;
         color: white;
         content: '✓';
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bolder;
         height: 18px;
-        line-height: 1;
+        line-height: 18px;
         position: absolute;
         text-align: center;
         top: 0;
@@ -222,7 +222,7 @@
     }
 
     &:focus {
-      outline: 2px solid $greenC;
+      outline: 2px solid $greenA;
       outline-offset: -2px;
     }
   }

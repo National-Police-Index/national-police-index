@@ -12,8 +12,8 @@ import styles from './styles.module.scss';
 
 const navigation = {
   main: [
-    { name: 'Contact', href: 'https://invisible.institute/contact' },
-    { name: 'Github', href: 'https://github.com/ayyubibrahimi/us-post-data' },
+    { name: 'Contact', href: 'https://invisible.institute/contact', target: '_blank' },
+    { name: 'Github', href: 'https://github.com/ayyubibrahimi/us-post-data', target: '_blank' },
     { name: 'About', href: '/about', target: '_self' },
   ],
 };
@@ -44,19 +44,19 @@ export default function Footer() {
         </div>
 
         <div className={`flex flex-wrap justify-start items-center ${styles.logosContainer}`}>
-          <a className="relative" href="https://invisible.institute/national-police-index">
+          <a className="relative" href="https://invisible.institute/national-police-index" target="_blank" rel="noopener noreferrer">
             <Image
               src={invist}
               alt="Invisible Institute logo"
               />
           </a>
-          <a className="relative" href="https://ip-no.org">
+          <a className="relative" href="https://ip-no.org" target="_blank" rel="noopener noreferrer">
             <Image
               src={ipno}
               alt="Innocence Project New Orleans logo"
             />
           </a>
-          <a className="relative" href="https://hrdag.org">
+          <a className="relative" href="https://hrdag.org" target="_blank" rel="noopener noreferrer">
             <Image
               src={hrdag}
               alt="Human Rights Data Analysis Group logo"

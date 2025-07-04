@@ -13,7 +13,7 @@ export default function PostCard({ title, image, description, date, url }: PostC
   return (
     <a
       href={url}
-      //target="_blank"
+      target="_blank"
       rel="noopener noreferrer"
       className={`group flex flex-col justify-center items-center gap-6 cursor-pointer transition-transform duration-300 ${styles.postCard}`}
     >
