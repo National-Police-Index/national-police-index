@@ -91,8 +91,17 @@ export default function USMap() {
     }
   };
 
-  const handleMouseLeave = () => {
-    setTooltip(prev => ({ ...prev, visible: false }));
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    setTooltip(prev => {
+      const relatedTarget = e.relatedTarget as HTMLElement;
+      const tooltipElement = document.querySelector(`.${styles.tooltip}`);
+      
+      if (relatedTarget && tooltipElement && relatedTarget instanceof Node && tooltipElement?.contains(relatedTarget)) {
+        return prev;
+      }
+      
+      return { ...prev, visible: false };
+    });
   };
 
   return (
@@ -165,6 +174,7 @@ export default function USMap() {
           left: tooltip.x,
           top: tooltip.y,
         }}
+        onMouseLeave={handleMouseLeave}
       >
         <p className={styles.stateName}>{tooltip.stateName}</p>
         <hr />

@@ -21,10 +21,10 @@ export default function PageHeader({ home, title, description, statistics, title
   return (
     <div className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${styles.pageHeader} ${home && styles.homeHeader}`}>
       <div className='w-full flex flex-col justify-start items-start'>
-        <h1 className={'self-stretch justify-start text-[#122823] font-bold font-["Inter"] tracking-[.005em] leading-[1.2] ' + (titleCapitalize ? styles.titleCapitalize : styles.title)}>
+        <h1 className={'self-stretch justify-start text-[#122823] font-bold font-["Inter"] leading-[1.2] ' + (titleCapitalize ? styles.titleCapitalize : styles.title)}>
           {title}
         </h1>
-        {description && <div className={'self-stretch justify-start text-[#122823] font-normal font-["Inter"] tracking-[-.005em] leading-[1.5] ' + styles.description}>
+        {description && <div className={'self-stretch justify-start text-[#122823] font-normal font-["Inter"] leading-[1.5] ' + styles.description}>
           {description}
         </div>}
       </div>

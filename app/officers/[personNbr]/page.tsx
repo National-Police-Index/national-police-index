@@ -144,22 +144,22 @@ export default function OfficerProfilePage() {
               </div> */}
               <div className={`self-stretch flex flex-col justify-start items-start ${styles.officeData} `}>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{getText('uid', 'UID Number')}</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-bold font-['Inter'] leading-normal">{getText('uid', 'UID Number')}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.person_nbr}</div>
                 </div>
                 {stateData && (
                   <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
-                    <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{getText('state', 'State')}</div>
+                    <div className="flex-1 justify-start text-[#122823] text-base font-bold font-['Inter'] leading-normal">{getText('state', 'State')}</div>
                     <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal capital-text">{stateData.name}</div>
                   </div>)}
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date ? 'Latest Agency' : 'Current Agency'}</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-bold font-['Inter'] leading-normal">{latestRecord.end_date ? 'Latest Agency' : 'Current Agency'}</div>
                   <div className={`flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal ${styles.agencyName}`}>
                     {latestRecord.agency_name}
                   </div>
                 </div>
                 <div className="self-stretch border-b-[0.50px] border-[#2F5E50] inline-flex justify-center items-center ">
-                  <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">{latestRecord.end_date && latestRecord.end_date !== '0000-00-00' ? 'Period' : 'Start Date'}</div>
+                  <div className="flex-1 justify-start text-[#122823] text-base font-bold font-['Inter'] leading-normal">{latestRecord.end_date && latestRecord.end_date !== '0000-00-00' ? 'Period' : 'Start Date'}</div>
                   <div className="flex-1 justify-start text-[#122823] text-base font-normal font-['Inter'] leading-normal">
                     {new Date(latestRecord.start_date).toLocaleDateString('en-US', {
                       month: 'long',

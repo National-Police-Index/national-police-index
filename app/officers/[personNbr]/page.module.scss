@@ -18,6 +18,9 @@
   > div {
     gap: 16px;
     padding: 8px 0;
+    > div:last-child {
+      flex: 2;
+    }
   }
   div {
     font-size: fluid(14px, 16px);
@@ -91,9 +94,10 @@
           }
         }
         .timelineType {
+          align-self: center;
           border-radius: 8px;
           color: $greenB;
-          flex: 0 0 fluid(100px, 132px);
+          flex: 0 0 fluid(100px, 120px);
           font-weight: 700;
           line-height: 1.4;
           padding: 8px fluid(8px, 16px);

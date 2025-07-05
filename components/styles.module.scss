@@ -2,7 +2,7 @@
 @use "../app/_functions" as *;
 
 .pageHeader {
-  gap: fluid(32px, 132px);
+  gap: fluid(32px, 100px);
   //position: sticky;
   position: relative;
 
@@ -43,6 +43,7 @@
     .statValue {
       color: $greenA;
       font-size: fluid(56px, 80px);
+      letter-spacing: -.025em;
     }
 
     .statLabel {
@@ -61,12 +62,12 @@
 
     .title {
       color: $greenC;
-      font-size: 40px;
+      font-size: fluid(32px, 40px);
     }
 
     .titleCapitalize {
       color: $greenC;
-      font-size: 40px;
+      font-size: fluid(32px, 40px);
       text-transform: capitalize;
     }
 
