@@ -84,10 +84,11 @@
     }
 
     .statistics {
+      align-items: flex-end;
       gap: 24px;
 
       @media screen and (min-width: 1024px) {
-        flex: 0 0 392px;
+        flex: 0 0 240px;
       }
     }
 

@@ -35,8 +35,8 @@
 }
 
 .timeline {
-  //background-color: $grayA;
-  background: linear-gradient(to bottom, $grayA, rgba($grayA, .1));
+  background-color: $grayA;
+  //background: linear-gradient(to bottom, $grayA, rgba($grayA, .1));
   gap: 16px;
   padding: 32px fluid(16px, 32px);
   > div:first-child {
