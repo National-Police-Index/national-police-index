@@ -15,9 +15,10 @@ import { Fragment } from 'react';
 
 interface SearchFiltersProps {
   state?: string;
+  searchDebounceMs?: number;
 }
 
-export default function SearchFilters({ state }: SearchFiltersProps) {
+export default function SearchFilters({ state, searchDebounceMs = 2000 }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
@@ -26,6 +27,9 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
 
   // Initialize filters from URL params
   const searchParams = useSearchParams();
+
+  // Keep track of the actual search query separately from filters
+  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('query') || '');
 
   const [filters, setRawFilters] = useState<SearchFiltersType>({
     query: searchParams.get('query') || '',
@@ -42,6 +46,20 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
     console.log('setFilters', filters);
     setRawFilters({ ...filters, page: '1' });
   };
+
+  // Create debounced function for updating search query in filters
+  const debouncedSetSearchQuery = useMemo(() =>
+    debounce((query: string) => {
+      setFilters({ ...filters, query });
+    }, searchDebounceMs),
+    [filters, searchDebounceMs]);
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSetSearchQuery.cancel();
+    };
+  }, [debouncedSetSearchQuery]);
 
   // Fetch all agencies for the current state when component mounts
   useEffect(() => {
@@ -269,15 +287,30 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
               name="search"
               id="search"
               placeholder="Search Data"
-              value={filters.query}
-              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+              value={searchQuery}
+              onChange={(e) => {
+                const newQuery = e.target.value;
+                setSearchQuery(newQuery);
+                debouncedSetSearchQuery(newQuery);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Cancel the debounced function
+                  debouncedSetSearchQuery.cancel();
+                  // Immediately execute the search
+                  setFilters({ ...filters, query: searchQuery });
+                  // Submit the form to update the URL
+                  handleSearch(e);
+                }
+              }}
             />
-            <button
+            {false && (<button
               type="submit"
               className={styles.searchButton}
             >
               Search
-            </button>
+            </button>)}
           </div>
         </div>
 
@@ -334,12 +367,12 @@ export default function SearchFilters({ state }: SearchFiltersProps) {
                     }}
                     displayValue={(agency: string) => agency}
                   />
-                  <button
+                  {false && (<button
                     type="submit"
                     className={styles.searchButton}
                   >
                     Select
-                  </button>
+                  </button>)}
                 </div>
                 <Transition
                   as={Fragment}
