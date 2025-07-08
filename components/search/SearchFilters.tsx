@@ -355,7 +355,7 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
                 <div className="relative w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
                     </div>
                   )}
                   <Combobox.Input
