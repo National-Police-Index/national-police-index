@@ -18,7 +18,7 @@ interface SearchFiltersProps {
   searchDebounceMs?: number;
 }
 
-export default function SearchFilters({ state, searchDebounceMs = 2000 }: SearchFiltersProps) {
+export default function SearchFilters({ state, searchDebounceMs = 1000 }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
