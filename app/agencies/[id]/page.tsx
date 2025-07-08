@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStaticText } from '@/hooks/useStaticText';
 import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
@@ -28,7 +28,6 @@ export default function AgencyPage() {
   const { getText } = useStaticText('agency');
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
-  console.log('PARAMS', params, searchParams, id);
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
   const pageSize = 16; // Fixed page size, matches state page
@@ -50,7 +49,33 @@ export default function AgencyPage() {
     }
   });
 
-  const loading = statsLoading || officersLoading;
+  // Add a separate loading state for search operations
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  // Track previous loading state to detect transitions
+  const [prevOfficersLoading, setPrevOfficersLoading] = useState(officersLoading);
+
+  // More aggressive reset of searchLoading state
+  useEffect(() => {
+    // Detect when officersLoading transitions from true to false
+    if (prevOfficersLoading && !officersLoading) {
+      setSearchLoading(false);
+    }
+
+    // Update previous loading state
+    setPrevOfficersLoading(officersLoading);
+
+    // Safety timeout to prevent stuck loading state (3 seconds max)
+    const timeout = setTimeout(() => {
+      if (searchLoading) {
+        setSearchLoading(false);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [officersLoading, searchLoading, prevOfficersLoading]);
+
+  const loading = statsLoading || officersLoading || searchLoading;
   const error = statsError || officersError;
   // Calculate total pages based on unique officer groups instead of total records
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
@@ -79,7 +104,11 @@ export default function AgencyPage() {
       <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
         <div className="container-a mx-auto">
 
-          <SearchFilters />
+          <SearchFilters
+            state={stats?.state}
+            onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
+            onSearchCompleted={() => setSearchLoading(false)}
+          />
 
           <div className={styles.cardsWrapper}>
             {loading ? (

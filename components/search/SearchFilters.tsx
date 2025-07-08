@@ -16,9 +16,11 @@ import { Fragment } from 'react';
 interface SearchFiltersProps {
   state?: string;
   searchDebounceMs?: number;
+  onSearchStarted?: () => void;
+  onSearchCompleted?: () => void;
 }
 
-export default function SearchFilters({ state, searchDebounceMs = 1000 }: SearchFiltersProps) {
+export default function SearchFilters({ state, searchDebounceMs = 1000, onSearchStarted, onSearchCompleted }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
@@ -43,16 +45,22 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
   });
 
   const setFilters = (filters: SearchFiltersType) => {
-    console.log('setFilters', filters);
     setRawFilters({ ...filters, page: '1' });
   };
 
   // Create debounced function for updating search query in filters
   const debouncedSetSearchQuery = useMemo(() =>
     debounce((query: string) => {
+      // Always trigger search - even when query is empty
+      if (onSearchStarted) onSearchStarted();
       setFilters({ ...filters, query });
+      // We'll rely on the URL params change to trigger the search
+      // Give it a small delay to ensure state updates first
+      setTimeout(() => {
+        if (onSearchCompleted) onSearchCompleted();
+      }, 2000);
     }, searchDebounceMs),
-    [filters, searchDebounceMs]);
+    [filters, searchDebounceMs, onSearchStarted, onSearchCompleted]);
 
   // Cleanup debounced function on unmount
   useEffect(() => {
@@ -72,7 +80,7 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
           setIsLoadingAgencies(false);
         })
         .catch(error => {
-          console.error('Error loading agencies:', error);
+          console.error('Error fetching agencies:', error);
           setIsLoadingAgencies(false);
         });
     }
@@ -121,7 +129,7 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
     const params = new URLSearchParams(searchParams.toString());
 
     // Update with current filter values
-    if (filters.query) {
+    if (filters.query && filters.query.trim() !== '') {
       params.set('query', filters.query);
     } else {
       params.delete('query');
@@ -187,7 +195,6 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
 
       const downloadURL = await getDownloadURL(csvRef);
 
-      console.log('download url', downloadURL);
       // Create a temporary link and trigger the download
       window.open(downloadURL);
       /*
@@ -239,7 +246,7 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
       */
       window.open(url);
     } catch (error) {
-      console.error('Error generating filtered CSV:', error);
+      console.error('Error downloading CSV:', error);
       alert('Error generating filtered CSV. Please try again later.');
     }
   };
@@ -289,18 +296,27 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
               placeholder="Search Data"
               value={searchQuery}
               onChange={(e) => {
+                e.preventDefault();
+                debouncedSetSearchQuery.cancel();
                 const newQuery = e.target.value;
                 setSearchQuery(newQuery);
+                //if (onSearchStarted) onSearchStarted();
                 debouncedSetSearchQuery(newQuery);
+
+                if (newQuery === '') {
+                  setFilters({ ...filters, query: '' });
+
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete('query');
+                  router.push(`?${params.toString()}`, { scroll: false });
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  // Cancel the debounced function
                   debouncedSetSearchQuery.cancel();
-                  // Immediately execute the search
+                  if (onSearchStarted) onSearchStarted();
                   setFilters({ ...filters, query: searchQuery });
-                  // Submit the form to update the URL
                   handleSearch(e);
                 }
               }}
@@ -355,7 +371,7 @@ export default function SearchFilters({ state, searchDebounceMs = 1000 }: Search
                 <div className="relative w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent" />
                     </div>
                   )}
                   <Combobox.Input

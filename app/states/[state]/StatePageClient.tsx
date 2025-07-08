@@ -10,7 +10,7 @@ import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
 import parse from 'html-react-parser';
 
@@ -40,16 +40,16 @@ function parseDescription(text: string | undefined): React.ReactNode {
               linkText = domNode.children[0].data;
             }
 
-          delete props.class;
+            delete props.class;
 
-          return (
-            <a
-              {...props}
-              className={styles.descriptionLink}
-            >
-              {linkText}
-            </a>
-          );
+            return (
+              <a
+                {...props}
+                className={styles.descriptionLink}
+              >
+                {linkText}
+              </a>
+            );
           }
         }
         return domNode;
@@ -106,7 +106,6 @@ export default function StatePageClient() {
   const pageSize = 16; // Fixed page size
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
-  console.log('STATS', stats);
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByUid({
     state,
     searchParams: {
@@ -116,7 +115,16 @@ export default function StatePageClient() {
     }
   });
 
-  const loading = statsLoading || officersLoading;
+  // Add a separate loading state for search operations
+  const [searchLoading, setSearchLoading] = useState(false);
+  const loading = statsLoading || officersLoading || searchLoading;
+
+  // Reset searchLoading when officersLoading changes from true to false (search completed)
+  useEffect(() => {
+    if (!officersLoading) {
+      setSearchLoading(false);
+    }
+  }, [officersLoading]);
   const error = statsError || officersError;
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
@@ -147,7 +155,11 @@ export default function StatePageClient() {
       <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
         <div className="container-a mx-auto">
 
-          <SearchFilters state={state} />
+          <SearchFilters
+            state={state}
+            onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
+            onSearchCompleted={() => setSearchLoading(false)}
+          />
 
           <div className={styles.cardsWrapper}>
             {loading ? (
