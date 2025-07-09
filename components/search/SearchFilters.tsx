@@ -20,7 +20,7 @@ interface SearchFiltersProps {
   onSearchCompleted?: () => void;
 }
 
-export default function SearchFilters({ state, searchDebounceMs = 1000, onSearchStarted, onSearchCompleted }: SearchFiltersProps) {
+export default function SearchFilters({ state, searchDebounceMs = 3000, onSearchStarted, onSearchCompleted }: SearchFiltersProps) {
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
