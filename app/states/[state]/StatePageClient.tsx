@@ -157,8 +157,8 @@ export default function StatePageClient() {
 
           <SearchFilters
             state={state}
+            agencyMode={false}
             onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
-            onSearchCompleted={() => setSearchLoading(false)}
           />
 
           <div className={styles.cardsWrapper}>

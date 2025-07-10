@@ -15,12 +15,12 @@ import { Fragment } from 'react';
 
 interface SearchFiltersProps {
   state?: string;
-  searchDebounceMs?: number;
+  agencyMode?: boolean;
   onSearchStarted?: () => void;
-  onSearchCompleted?: () => void;
 }
 
-export default function SearchFilters({ state, searchDebounceMs = 3000, onSearchStarted, onSearchCompleted }: SearchFiltersProps) {
+export default function SearchFilters({ state, agencyMode = false, onSearchStarted }: SearchFiltersProps) {
+  console.log('AGENCY', state, agencyMode);
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
@@ -48,30 +48,9 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
     setRawFilters({ ...filters, page: '1' });
   };
 
-  // Create debounced function for updating search query in filters
-  const debouncedSetSearchQuery = useMemo(() =>
-    debounce((query: string) => {
-      // Always trigger search - even when query is empty
-      if (onSearchStarted) onSearchStarted();
-      setFilters({ ...filters, query });
-      // We'll rely on the URL params change to trigger the search
-      // Give it a small delay to ensure state updates first
-      setTimeout(() => {
-        if (onSearchCompleted) onSearchCompleted();
-      }, 2000);
-    }, searchDebounceMs),
-    [filters, searchDebounceMs, onSearchStarted, onSearchCompleted]);
-
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSetSearchQuery.cancel();
-    };
-  }, [debouncedSetSearchQuery]);
-
   // Fetch all agencies for the current state when component mounts
   useEffect(() => {
-    if (state) {
+    if (!agencyMode && state) {
       setIsLoadingAgencies(true);
       getAllAgencies(state)
         .then(results => {
@@ -295,13 +274,18 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
               id="search"
               placeholder="Search Data"
               value={searchQuery}
+              onBlur={(e) => {
+                e.preventDefault();
+                if (onSearchStarted) onSearchStarted();
+                if (searchQuery !== filters.query) {
+                  setFilters({ ...filters, query: searchQuery });
+                  handleSearch(e);
+                }
+              }}
               onChange={(e) => {
                 e.preventDefault();
-                debouncedSetSearchQuery.cancel();
                 const newQuery = e.target.value;
                 setSearchQuery(newQuery);
-                //if (onSearchStarted) onSearchStarted();
-                debouncedSetSearchQuery(newQuery);
 
                 if (newQuery === '') {
                   setFilters({ ...filters, query: '' });
@@ -314,19 +298,18 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  debouncedSetSearchQuery.cancel();
                   if (onSearchStarted) onSearchStarted();
                   setFilters({ ...filters, query: searchQuery });
                   handleSearch(e);
                 }
               }}
             />
-            {false && (<button
+            <button
               type="submit"
               className={styles.searchButton}
             >
               Search
-            </button>)}
+            </button>
           </div>
         </div>
 
@@ -355,23 +338,22 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
         </div>
 
         {/* Agency filter */}
-        {state &&
+        {!agencyMode &&
           <div className={styles.agency}>
             <Combobox
               as="div"
               value={filters.agency}
               onChange={(value) => setFilters({ ...filters, agency: value || '' })}
-              disabled={!state}
               style={{
-                opacity: !state ? 0.5 : 1,
-                pointerEvents: !state ? 'none' : 'auto'
+                opacity: 1,
+                pointerEvents: 'auto'
               }}
             >
               <div className="relative">
                 <div className="relative w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
                     </div>
                   )}
                   <Combobox.Input
@@ -434,7 +416,7 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
         }
 
         {/* Sort by */}
-        <div>
+        {!agencyMode && <div>
           <select
             id="sort-by"
             name="sort-by"
@@ -447,7 +429,7 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
             <option value="date">Date</option>
             {state && <option value="agency">Agency</option>}
           </select>
-        </div>
+        </div>}
 
         {/* Sort order */}
         {false && <div>
@@ -484,7 +466,7 @@ export default function SearchFilters({ state, searchDebounceMs = 3000, onSearch
       </div>
 
       {/* Active Officers Filter */}
-      {!state && (
+      {agencyMode && (
         <Checkbox
           id="active-only"
           checked={filters.activeOnly === 'true'}

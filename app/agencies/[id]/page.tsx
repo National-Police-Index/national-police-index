@@ -106,8 +106,8 @@ export default function AgencyPage() {
 
           <SearchFilters
             state={stats?.state}
+            agencyMode={true}
             onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
-            onSearchCompleted={() => setSearchLoading(false)}
           />
 
           <div className={styles.cardsWrapper}>
