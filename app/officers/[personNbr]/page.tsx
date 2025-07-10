@@ -63,10 +63,48 @@ export default function OfficerProfilePage() {
   const fullName = latestRecord.full_name || ((latestRecord.last_name || latestRecord.middle_name) + ', ' + latestRecord.first_name);
 
   const officerRecords = {} as { [key: string]: PoliceOfficerWithEventType };
-  const timeline = records.reduce((acc, record) => {
+  const timeline = records.reduce((acc = {}, record) => {
     const startYear = new Date(record.start_date).getFullYear();
     const endYear = record.end_date ? new Date(record.end_date).getFullYear() : null;
+    const disciplineYear = record.sanction_date ? new Date(record.sanction_date).getFullYear() : null;
     const startDate = new Date(record.start_date);
+    let startDateString = '';
+    try {
+      startDateString = startDate ? startDate.toISOString() : '';
+    } catch (exception) {
+      console.error('Error converting start date to ISO string:', exception);
+      startDateString = '';
+    }
+
+    const eventType: PoliceOfficerWithEventType = {
+      agency_name: record.agency_name,
+      eventType: (record.offense || record.sanction) ? 'Discipline' : 'Start',
+      start_date: startDateString,
+      rank: record.rank,
+      offense: record.offense || record.sanction,
+      separation_reason: record.separation_reason,
+      sanction_date: record.sanction_date,
+      violation: record.violation || record.violation
+    } as PoliceOfficerWithEventType;
+
+    if (eventType.eventType == 'Discipline') {
+      if (disciplineYear && !acc[disciplineYear]) acc[disciplineYear] = [];
+    } else {
+      if (startYear && !acc[startYear]) acc[startYear] = [];
+
+      if (officerRecords[eventType.start_date]) {
+        const index = (acc[eventType.start_date] || []).findIndex((item) => item.start_date === eventType.start_date);
+        if (index > -1) {
+          acc[eventType.start_date][index] = { ...acc[eventType.start_date][index], ...{ offense: `${acc[eventType.start_date][index].offense || ''}, ${eventType.offense}` } };
+        }
+      } else {
+        officerRecords[eventType.start_date] = eventType;
+        acc[startYear].push(eventType);
+      }
+
+    }
+
+
     const endDate = record.end_date ? new Date(record.end_date) : null;
     let endDateString = '';
     try {
@@ -75,12 +113,7 @@ export default function OfficerProfilePage() {
       console.error('Error converting end date to ISO string:', exception);
       endDateString = '';
     }
-    const eventType: PoliceOfficerWithEventType = {
-      agency_name: record.agency_name,
-      eventType: 'Start',
-      start_date: startDate.toISOString(),
-      rank: record.rank,
-    } as PoliceOfficerWithEventType;
+
     const endEventType: PoliceOfficerWithEventType = {
       agency_name: record.agency_name,
       eventType: (record.offense || record.sanction) ? 'Discipline' : 'End',
@@ -91,24 +124,31 @@ export default function OfficerProfilePage() {
       sanction_date: record.sanction_date,
       violation: record.violation || record.violation
     } as PoliceOfficerWithEventType;
-    if (!acc[startYear]) acc[startYear] = [];
-    if (endYear && endYear !== startYear) {
-      if (!acc[endYear]) acc[endYear] = [];
-    }
+
+    console.log('officerRecords', officerRecords);
+    console.log('endEventType', endEventType);
+    console.log('acc', acc);
     if (officerRecords[endEventType.end_date]) {
       const index = (acc[endEventType.end_date] || []).findIndex((item) => item.end_date === endEventType.end_date);
       if (index > -1 && endEventType.eventType === 'Discipline') {
         acc[endEventType.end_date][index] = { ...acc[endEventType.end_date][index], ...{ offense: `${acc[endEventType.end_date][index].offense || ''}, ${endEventType.offense}` } };
+      } else {
+        officerRecords[endEventType.end_date] = endEventType;
+        if (endYear) {
+          if (!acc[endYear]) acc[endYear] = [];
+          acc[endYear].push(endEventType);
+        }
       }
     } else {
       officerRecords[endEventType.end_date] = endEventType;
-      acc[startYear].push(eventType);
-      if (endYear && endYear !== startYear) {
+      if (endYear) {
+        if (!acc[endYear]) acc[endYear] = [];
         acc[endYear].push(endEventType);
       }
     }
     return acc;
   }, {} as { [key: string]: PoliceOfficerWithEventType[] });
+  console.log('timeline', timeline);
 
   return (
     <div className="w-full mx-auto">
