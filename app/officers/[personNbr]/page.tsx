@@ -59,93 +59,122 @@ export default function OfficerProfilePage() {
   }
 
   const { latestRecord, records } = officerData;
-  console.log('Officer data', officerData);
   const fullName = latestRecord.full_name || ((latestRecord.last_name || latestRecord.middle_name) + ', ' + latestRecord.first_name);
 
+  // Helper functions to improve readability and reduce duplication
+  /**
+   * Safely formats a date to ISO string with error handling
+   */
+  const safeFormatDate = (date: Date | null | undefined): string => {
+    if (!date) return '';
+    try {
+      return date.toISOString();
+    } catch (exception) {
+      console.error('Error converting date to ISO string:', exception);
+      return '';
+    }
+  };
+
+  /**
+   * Creates an event object for the timeline based on record and event type
+   */
+  const createEventObject = (record: PoliceOfficer, eventType: 'Start' | 'End' | 'Discipline', dateString: string): PoliceOfficerWithEventType => {
+    const isDiscipline = record.offense || record.sanction;
+    
+    return {
+      agency_name: record.agency_name,
+      eventType: isDiscipline ? 'Discipline' : eventType,
+      // Only add the relevant date property
+      ...(eventType === 'Start' && { start_date: dateString }),
+      ...(eventType === 'End' && { end_date: dateString }),
+      ...(eventType === 'Discipline' && { sanction_date: dateString }),
+      rank: record.rank,
+      offense: record.offense || record.sanction,
+      separation_reason: record.separation_reason,
+      violation: record.violation
+    } as PoliceOfficerWithEventType;
+  };
+
+  /**
+   * Ensures a year entry exists in the accumulator
+   */
+  const ensureYearEntry = (acc: { [year: string]: PoliceOfficerWithEventType[] }, year: number | null): void => {
+    if (year && !acc[year]) {
+      acc[year] = [];
+    }
+  };
+
+  /**
+   * Updates the offense information when there are multiple offenses on the same date
+   */
+  const updateOffenseInfo = (acc: { [year: string]: PoliceOfficerWithEventType[] }, dateKey: string, event: PoliceOfficerWithEventType): boolean => {
+    const dateField = event.eventType === 'Start' ? 'start_date' : 'end_date';
+    const index = (acc[dateKey] || []).findIndex(item => item[dateField] === event[dateField]);
+    
+    if (index > -1 && event.offense) {
+      acc[dateKey][index] = { 
+        ...acc[dateKey][index], 
+        offense: `${acc[dateKey][index].offense || ''}, ${event.offense}` 
+      };
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   * Adds an event to the timeline accumulator
+   */
+  const addEventToTimeline = (
+    acc: { [year: string]: PoliceOfficerWithEventType[] },
+    officerRecords: { [key: string]: PoliceOfficerWithEventType },
+    event: PoliceOfficerWithEventType,
+    year: number | null,
+    dateKey: string
+  ): void => {
+    ensureYearEntry(acc, year);
+    
+    if (!officerRecords[dateKey] || !updateOffenseInfo(acc, dateKey, event)) {
+      officerRecords[dateKey] = event;
+      if (year) {
+        acc[year].push(event);
+      }
+    }
+  };
+
+  // Generate the timeline using the new helper functions
   const officerRecords = {} as { [key: string]: PoliceOfficerWithEventType };
   const timeline = records.reduce((acc = {}, record) => {
-    const startYear = new Date(record.start_date).getFullYear();
-    const endYear = record.end_date ? new Date(record.end_date).getFullYear() : null;
-    const disciplineYear = record.sanction_date ? new Date(record.sanction_date).getFullYear() : null;
-    const startDate = new Date(record.start_date);
-    let startDateString = '';
-    try {
-      startDateString = startDate ? startDate.toISOString() : '';
-    } catch (exception) {
-      console.error('Error converting start date to ISO string:', exception);
-      startDateString = '';
-    }
-
-    const eventType: PoliceOfficerWithEventType = {
-      agency_name: record.agency_name,
-      eventType: (record.offense || record.sanction) ? 'Discipline' : 'Start',
-      start_date: startDateString,
-      rank: record.rank,
-      offense: record.offense || record.sanction,
-      separation_reason: record.separation_reason,
-      sanction_date: record.sanction_date,
-      violation: record.violation || record.violation
-    } as PoliceOfficerWithEventType;
-
-    if (eventType.eventType == 'Discipline') {
-      if (disciplineYear && !acc[disciplineYear]) acc[disciplineYear] = [];
-    } else {
-      if (startYear && !acc[startYear]) acc[startYear] = [];
-
-      if (officerRecords[eventType.start_date]) {
-        const index = (acc[eventType.start_date] || []).findIndex((item) => item.start_date === eventType.start_date);
-        if (index > -1) {
-          acc[eventType.start_date][index] = { ...acc[eventType.start_date][index], ...{ offense: `${acc[eventType.start_date][index].offense || ''}, ${eventType.offense}` } };
-        }
-      } else {
-        officerRecords[eventType.start_date] = eventType;
-        acc[startYear].push(eventType);
-      }
-
-    }
-
-
+    // Extract all date information once
+    const startDate = record.start_date ? new Date(record.start_date) : null;
     const endDate = record.end_date ? new Date(record.end_date) : null;
-    let endDateString = '';
-    try {
-      endDateString = endDate ? endDate.toISOString() : '';
-    } catch (exception) {
-      console.error('Error converting end date to ISO string:', exception);
-      endDateString = '';
+    const sanctionDate = record.sanction_date ? new Date(record.sanction_date) : null;
+    
+    const startYear = startDate?.getFullYear() || null;
+    const endYear = endDate?.getFullYear() || null;
+    const disciplineYear = sanctionDate?.getFullYear() || null;
+
+    const startDateString = safeFormatDate(startDate);
+    const endDateString = safeFormatDate(endDate);
+    const sanctionDateString = safeFormatDate(sanctionDate);
+
+    // Handle start date event
+    if (startDate) {
+      const startEvent = createEventObject(record, 'Start', startDateString);
+      addEventToTimeline(acc, officerRecords, startEvent, startYear, startDateString);
     }
 
-    const endEventType: PoliceOfficerWithEventType = {
-      agency_name: record.agency_name,
-      eventType: (record.offense || record.sanction) ? 'Discipline' : 'End',
-      end_date: endDateString,
-      rank: record.rank,
-      offense: record.offense || record.sanction,
-      separation_reason: record.separation_reason,
-      sanction_date: record.sanction_date,
-      violation: record.violation || record.violation
-    } as PoliceOfficerWithEventType;
-
-    console.log('officerRecords', officerRecords);
-    console.log('endEventType', endEventType);
-    console.log('acc', acc);
-    if (officerRecords[endEventType.end_date]) {
-      const index = (acc[endEventType.end_date] || []).findIndex((item) => item.end_date === endEventType.end_date);
-      if (index > -1 && endEventType.eventType === 'Discipline') {
-        acc[endEventType.end_date][index] = { ...acc[endEventType.end_date][index], ...{ offense: `${acc[endEventType.end_date][index].offense || ''}, ${endEventType.offense}` } };
-      } else {
-        officerRecords[endEventType.end_date] = endEventType;
-        if (endYear) {
-          if (!acc[endYear]) acc[endYear] = [];
-          acc[endYear].push(endEventType);
-        }
-      }
-    } else {
-      officerRecords[endEventType.end_date] = endEventType;
-      if (endYear) {
-        if (!acc[endYear]) acc[endYear] = [];
-        acc[endYear].push(endEventType);
-      }
+    // Handle end date event if it exists
+    if (endDate) {
+      const endEvent = createEventObject(record, 'End', endDateString);
+      addEventToTimeline(acc, officerRecords, endEvent, endYear, endDateString);
     }
+
+    // Handle discipline event if it exists
+    if ((record.offense || record.sanction) && sanctionDate) {
+      const disciplineEvent = createEventObject(record, 'Discipline', sanctionDateString);
+      addEventToTimeline(acc, officerRecords, disciplineEvent, disciplineYear, sanctionDateString);
+    }
+
     return acc;
   }, {} as { [key: string]: PoliceOfficerWithEventType[] });
   console.log('timeline', timeline);
