@@ -7,7 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Combobox, Transition } from '@headlessui/react';
 import { Checkbox } from '../ui/Checkbox';
 import { SearchFilters as SearchFiltersType } from '@/types';
-import { getAllAgencies } from '@/lib/searchAgencies';
+import { getAllAgencies, filterAgenciesByTerm } from '@/lib/searchAgencies';
 import styles from './styles.module.scss';
 import debounce from 'lodash/debounce';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
@@ -20,12 +20,12 @@ interface SearchFiltersProps {
 }
 
 export default function SearchFilters({ state, agencyMode = false, onSearchStarted }: SearchFiltersProps) {
-  console.log('AGENCY', state, agencyMode);
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState('');
   const [agencies, setAgencies] = useState<{ name: string, count: number }[]>([]);
   const [filteredAgencies, setFilteredAgencies] = useState<{ name: string, count: number }[]>([]);
   const [isLoadingAgencies, setIsLoadingAgencies] = useState(false);
+  const [isLoadingFullAgencyList, setIsLoadingFullAgencyList] = useState(false);
 
   // Initialize filters from URL params
   const searchParams = useSearchParams();
@@ -49,41 +49,81 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
   };
 
   // Fetch all agencies for the current state when component mounts
+  // Define a function to filter agencies by search query
+  const filterAgenciesByQuery = useCallback((query: string) => {
+    if (!query.trim()) {
+      // If no query, show what we have (up to 100 items)
+      setFilteredAgencies(agencies.slice(0, 100));
+      setIsLoadingAgencies(false);
+      return;
+    }
+    
+    if (state) {
+      // Use the more efficient client-side filtering from our cache
+      const filtered = filterAgenciesByTerm(state, query);
+      
+      // If we got results or the query is too short, update immediately
+      if (filtered.length > 0 || query.trim().length < 2) {
+        setFilteredAgencies(filtered);
+        setIsLoadingAgencies(false);
+        setIsLoadingFullAgencyList(false);
+      } else if (query.trim().length >= 2) {
+        // If we have a substantive query but no results, we might need to wait for the full list to load
+        setIsLoadingFullAgencyList(true);
+        console.log(`No immediate results for "${query}", waiting for full agency list...`);
+        
+        // Set a timeout to check again in case the background load is still in progress
+        setTimeout(() => {
+          const updatedFiltered = filterAgenciesByTerm(state, query);
+          console.log(`Second attempt for "${query}" found ${updatedFiltered.length} results`);
+          setFilteredAgencies(updatedFiltered);
+          setIsLoadingAgencies(false);
+          setIsLoadingFullAgencyList(false);
+        }, 2000); // Give the background loading more time to complete
+      }
+    } else {
+      // Fall back to the original filtering for cases where state isn't available
+      const lowerQuery = query.toLowerCase();
+      const filtered = agencies.filter(agency =>
+        agency.name.toLowerCase().includes(lowerQuery)
+      );
+      setFilteredAgencies(filtered);
+      setIsLoadingAgencies(false);
+    }
+  }, [agencies, state]);
+
+  // Load agencies when state changes
   useEffect(() => {
     if (!agencyMode && state) {
       setIsLoadingAgencies(true);
       getAllAgencies(state)
         .then(results => {
           setAgencies(results);
-          setFilteredAgencies(results);
+          setFilteredAgencies(results.slice(0, 100)); // Only show first 100 initially
           setIsLoadingAgencies(false);
+          
+          console.log(`Initial load: ${results.length} agencies for ${state}`);
+          
+          // If we have a query already, filter the results again
+          if (agencyQuery && agencyQuery.trim().length >= 2) {
+            filterAgenciesByQuery(agencyQuery);
+          }
         })
         .catch(error => {
           console.error('Error fetching agencies:', error);
           setIsLoadingAgencies(false);
         });
     }
-  }, [state]);
-
-  // Filter agencies based on query
-  const filterAgencies = useCallback((query: string) => {
-    if (!query.trim()) {
-      setFilteredAgencies(agencies);
-      return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const filtered = agencies.filter(agency =>
-      agency.name.toLowerCase().includes(lowerQuery)
-    );
-    setFilteredAgencies(filtered);
-  }, [agencies]);
+  }, [state, filterAgenciesByQuery, agencyQuery, agencyMode]);
 
   // Create a debounced filter function
   const debouncedFilter = useMemo(
-    () => debounce(filterAgencies, 200),
-    [filterAgencies] // filterAgencies is the only function we need to track
+    () => debounce(filterAgenciesByQuery, 300),
+    [filterAgenciesByQuery]
   );
+
+  // Update filters handler (already defined elsewhere in the code)
+  // We'll remove the duplicate handleAgencyChange function
 
   // Cleanup debounced function on unmount
   useEffect(() => {
@@ -340,6 +380,12 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
         {/* Agency filter */}
         {!agencyMode &&
           <div className={styles.agency}>
+            {agencyQuery && agencyQuery.length > 0 && (
+              <div className="absolute right-10 top-2.5 text-xs text-gray-500">
+                {filteredAgencies.length > 0 && !isLoadingAgencies ? 
+                  `${filteredAgencies.length} results` : ''}  
+              </div>
+            )}
             <Combobox
               as="div"
               value={filters.agency}
@@ -359,10 +405,26 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                   <Combobox.Input
                     className="w-full"
                     placeholder="Search agency..."
+                    value={agencyQuery}
                     onChange={(e) => {
-                      setAgencyQuery(e.target.value);
-                      debouncedFilter(e.target.value);
-                    }}
+                      const value = e.target.value;
+                      setAgencyQuery(value);
+                      
+                      // Show loading state immediately on input
+                      if (value.trim().length > 1) {
+                        setIsLoadingAgencies(true);
+                      } else {
+                        setIsLoadingAgencies(false);
+                      }
+                      
+                      // If Enter is pressed, filter immediately
+                      const keyEvent = window.event as KeyboardEvent;
+                      if (keyEvent && keyEvent.key === 'Enter') {
+                        filterAgenciesByQuery(value);
+                      } else {
+                        debouncedFilter(value);
+                      }
+                    }} 
                     displayValue={(agency: string) => agency}
                   />
                   {false && (<button
@@ -380,9 +442,19 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                   afterLeave={() => setAgencyQuery('')}
                 >
                   <Combobox.Options className={`absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg ${styles.agencyOptions}`}>
-                    {filteredAgencies.length === 0 && agencyQuery.length > 0 ? (
-                      <div className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
-                        No agencies found.
+                    {isLoadingAgencies ? (
+                      <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {isLoadingFullAgencyList ? 'Loading all agencies...' : 'Loading agencies...'}
+                        </div>
+                      </div>
+                    ) : filteredAgencies.length === 0 ? (
+                      <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                        No agencies found for this search.
                       </div>
                     ) : (
                       filteredAgencies.map((agency) => (
