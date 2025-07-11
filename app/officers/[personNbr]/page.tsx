@@ -162,10 +162,6 @@ export default function OfficerProfilePage() {
    * or merges duplicate discipline events
    */
   const updateOffenseInfo = (acc: { [year: string]: PoliceOfficerWithEventType[] }, yearKey: string, event: PoliceOfficerWithEventType): boolean => {
-    // First check for exact date matches
-    const dateField = event.eventType === 'Start' ? 'start_date' :
-      event.eventType === 'End' ? 'end_date' : 'sanction_date';
-
     // Check for duplicate events within the year
     for (let i = 0; i < (acc[yearKey] || []).length; i++) {
       const existingEvent = acc[yearKey][i];
@@ -364,7 +360,7 @@ export default function OfficerProfilePage() {
                                   {event.rank ? <span>{event.rank.toLowerCase()}</span> : ''}
                                   <small>{event.agency_name}</small>
                                 </Link>
-                                {(event.eventType === 'Discipline' && ( event.offense || event.separation_reason || event.violation || event.sanction)) ? <b><small>{event.offense || event.separation_reason || event.violation || event.sanction}</small></b> : ''}
+                                {(event.eventType === 'Discipline' && (event.offense || event.separation_reason || event.violation || event.sanction)) ? <b><small>{event.offense || event.separation_reason || event.violation || event.sanction}</small></b> : ''}
                               </div>
                               <div className={`${styles.timelineType} ${styles[event.eventType]}`}>
                                 {event.eventType === 'Start' ? <>Start<span> Date</span></> : event.eventType === 'End' ? <>End<span> Date</span></> : <>Discipline</>}
