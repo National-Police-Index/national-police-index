@@ -17,7 +17,7 @@ const CACHE_EXPIRY_MS = 4 * 60 * 60 * 1000;
 const INITIAL_LIMIT = 100;
 
 // Background loading flag to prevent duplicate loads
-let isLoadingFullList: { [state: string]: boolean } = {};
+const isLoadingFullList: { [state: string]: boolean } = {};
 
 /**
  * Get agencies for a specific state with pagination support

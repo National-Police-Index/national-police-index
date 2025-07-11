@@ -380,26 +380,28 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
         {/* Agency filter */}
         {!agencyMode &&
           <div className={styles.agency}>
-            {agencyQuery && agencyQuery.length > 0 && (
-              <div className="absolute right-10 top-2.5 text-xs text-gray-500">
-                {filteredAgencies.length > 0 && !isLoadingAgencies ? 
-                  `${filteredAgencies.length} results` : ''}  
-              </div>
-            )}
             <Combobox
               as="div"
               value={filters.agency}
-              onChange={(value) => setFilters({ ...filters, agency: value || '' })}
-              style={{
-                opacity: 1,
-                pointerEvents: 'auto'
+              onChange={(selectedAgency: string) => {
+                // Update filters with selected agency
+                setFilters({ ...filters, agency: selectedAgency || '' });
+                // Update the input field value with the selected agency name
+                setAgencyQuery(selectedAgency || '');
               }}
+              className={styles.select}
             >
               <div className="relative">
                 <div className="relative w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
+                    </div>
+                  )}
+                  {agencyQuery && agencyQuery.length > 0 && (
+                    <div className="absolute right-10 top-2.5 text-xs text-gray-500">
+                      {filteredAgencies.length > 0 && !isLoadingAgencies ? 
+                        `${filteredAgencies.length} results` : ''}  
                     </div>
                   )}
                   <Combobox.Input
@@ -409,6 +411,11 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                     onChange={(e) => {
                       const value = e.target.value;
                       setAgencyQuery(value);
+                      
+                      // When clearing the input, also clear the selected agency
+                      if (!value.trim()) {
+                        setFilters({ ...filters, agency: '' });
+                      }
                       
                       // Show loading state immediately on input
                       if (value.trim().length > 1) {
@@ -427,19 +434,18 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                     }} 
                     displayValue={(agency: string) => agency}
                   />
-                  {false && (<button
-                    type="submit"
-                    className={styles.searchButton}
-                  >
-                    Select
-                  </button>)}
                 </div>
                 <Transition
                   as={Fragment}
                   leave="transition ease-in duration-100"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
-                  afterLeave={() => setAgencyQuery('')}
+                  afterLeave={() => {
+                    // Only clear the query if no agency is selected
+                    if (!filters.agency) {
+                      setAgencyQuery('');
+                    }
+                  }}
                 >
                   <Combobox.Options className={`absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg ${styles.agencyOptions}`}>
                     {isLoadingAgencies ? (
