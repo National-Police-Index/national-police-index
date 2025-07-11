@@ -79,15 +79,16 @@ export default function OfficerProfilePage() {
    * Creates an event object for the timeline based on record and event type
    */
   const createEventObject = (record: PoliceOfficer, eventType: 'Start' | 'End' | 'Discipline', dateString: string): PoliceOfficerWithEventType => {
-    const isDiscipline = record.offense || record.sanction;
-    
+    const isDiscipline = record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired', 'Resigned'].includes(record.separation_reason));
+    console.log('isDiscipline', isDiscipline, record.separation_reason);
+
     return {
       agency_name: record.agency_name,
       eventType: isDiscipline ? 'Discipline' : eventType,
       // Only add the relevant date property
       ...(eventType === 'Start' && { start_date: dateString }),
       ...(eventType === 'End' && { end_date: dateString }),
-      ...(eventType === 'Discipline' && { sanction_date: dateString }),
+      ...(eventType === isDiscipline && { sanction_date: dateString }),
       rank: record.rank,
       offense: record.offense || record.sanction,
       separation_reason: record.separation_reason,
@@ -105,20 +106,84 @@ export default function OfficerProfilePage() {
   };
 
   /**
-   * Updates the offense information when there are multiple offenses on the same date
+   * Checks if two events are duplicates based on their content
    */
-  const updateOffenseInfo = (acc: { [year: string]: PoliceOfficerWithEventType[] }, dateKey: string, event: PoliceOfficerWithEventType): boolean => {
-    const dateField = event.eventType === 'Start' ? 'start_date' : 'end_date';
-    const index = (acc[dateKey] || []).findIndex(item => item[dateField] === event[dateField]);
-    
-    if (index > -1 && event.offense) {
-      acc[dateKey][index] = { 
-        ...acc[dateKey][index], 
-        offense: `${acc[dateKey][index].offense || ''}, ${event.offense}` 
-      };
-      return true;
+  const areDuplicateEvents = (existingEvent: PoliceOfficerWithEventType, newEvent: PoliceOfficerWithEventType): boolean => {
+    // For discipline events, check if they refer to the same incident
+    if (existingEvent.eventType === 'Discipline' && newEvent.eventType === 'Discipline') {
+      // Check if they have the same agency
+      if (existingEvent.agency_name !== newEvent.agency_name) {
+        return false;
+      }
+
+      // Check if they have matching offense or sanction
+      const existingOffense = existingEvent.offense || '';
+      const newOffense = newEvent.offense || '';
+      if (existingOffense && newOffense &&
+        (existingOffense.includes(newOffense) || newOffense.includes(existingOffense))) {
+        return true;
+      }
+
+      // Check if they have matching separation reason
+      const existingSeparation = existingEvent.separation_reason || '';
+      const newSeparation = newEvent.separation_reason || '';
+      if (existingSeparation && newSeparation &&
+        (existingSeparation.includes(newSeparation) || newSeparation.includes(existingSeparation))) {
+        return true;
+      }
+
+      // Check sanction date proximity (if within 7 days, consider it the same event)
+      if (existingEvent.sanction_date && newEvent.sanction_date) {
+        const date1 = new Date(existingEvent.sanction_date);
+        const date2 = new Date(newEvent.sanction_date);
+        const diffDays = Math.abs((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 7) {
+          return true;
+        }
+      }
     }
+
+    // For start/end events, check if they're for the same position
+    if ((existingEvent.eventType === 'Start' && newEvent.eventType === 'Start') ||
+      (existingEvent.eventType === 'End' && newEvent.eventType === 'End')) {
+      const dateField = existingEvent.eventType === 'Start' ? 'start_date' : 'end_date';
+      // Check for identical dates and agencies
+      if (existingEvent[dateField] === newEvent[dateField] &&
+        existingEvent.agency_name === newEvent.agency_name) {
+        return true;
+      }
+    }
+
     return false;
+  };
+
+  /**
+   * Updates the offense information when there are multiple offenses on the same date
+   * or merges duplicate discipline events
+   */
+  const updateOffenseInfo = (acc: { [year: string]: PoliceOfficerWithEventType[] }, yearKey: string, event: PoliceOfficerWithEventType): boolean => {
+    // First check for exact date matches
+    const dateField = event.eventType === 'Start' ? 'start_date' :
+      event.eventType === 'End' ? 'end_date' : 'sanction_date';
+
+    // Check for duplicate events within the year
+    for (let i = 0; i < (acc[yearKey] || []).length; i++) {
+      const existingEvent = acc[yearKey][i];
+
+      if (areDuplicateEvents(existingEvent, event)) {
+        // If they are duplicates, merge the information
+        if (event.offense && existingEvent.offense &&
+          !existingEvent.offense.includes(event.offense)) {
+          acc[yearKey][i] = {
+            ...existingEvent,
+            offense: `${existingEvent.offense}, ${event.offense}`
+          };
+        }
+        return true; // Found and updated a duplicate
+      }
+    }
+
+    return false; // No duplicate found
   };
 
   /**
@@ -131,13 +196,14 @@ export default function OfficerProfilePage() {
     year: number | null,
     dateKey: string
   ): void => {
+    if (!year) return; // Skip if no valid year
     ensureYearEntry(acc, year);
-    
-    if (!officerRecords[dateKey] || !updateOffenseInfo(acc, dateKey, event)) {
+
+    // Check for duplicates across all events in this year
+    if (!updateOffenseInfo(acc, year.toString(), event)) {
+      // No duplicate found, add the event
       officerRecords[dateKey] = event;
-      if (year) {
-        acc[year].push(event);
-      }
+      acc[year].push(event);
     }
   };
 
@@ -148,31 +214,34 @@ export default function OfficerProfilePage() {
     const startDate = record.start_date ? new Date(record.start_date) : null;
     const endDate = record.end_date ? new Date(record.end_date) : null;
     const sanctionDate = record.sanction_date ? new Date(record.sanction_date) : null;
-    
+
     const startYear = startDate?.getFullYear() || null;
     const endYear = endDate?.getFullYear() || null;
     const disciplineYear = sanctionDate?.getFullYear() || null;
 
-    const startDateString = safeFormatDate(startDate);
-    const endDateString = safeFormatDate(endDate);
-    const sanctionDateString = safeFormatDate(sanctionDate);
-
     // Handle start date event
-    if (startDate) {
+    if (startDate && !(record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired'].includes(record.separation_reason)))) {
+      const startDateString = safeFormatDate(startDate);
       const startEvent = createEventObject(record, 'Start', startDateString);
       addEventToTimeline(acc, officerRecords, startEvent, startYear, startDateString);
     }
 
     // Handle end date event if it exists
     if (endDate) {
+      const endDateString = safeFormatDate(endDate);
       const endEvent = createEventObject(record, 'End', endDateString);
       addEventToTimeline(acc, officerRecords, endEvent, endYear, endDateString);
     }
 
     // Handle discipline event if it exists
-    if ((record.offense || record.sanction) && sanctionDate) {
-      const disciplineEvent = createEventObject(record, 'Discipline', sanctionDateString);
-      addEventToTimeline(acc, officerRecords, disciplineEvent, disciplineYear, sanctionDateString);
+    if (record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired', 'Resigned'].includes(record.separation_reason))) {
+      // Use sanction date if available, otherwise use start date
+      const dateToUse = sanctionDate || startDate;
+      const yearToUse = disciplineYear || startYear;
+      const dateStringToUse = safeFormatDate(dateToUse);
+
+      const disciplineEvent = createEventObject(record, 'Discipline', dateStringToUse);
+      addEventToTimeline(acc, officerRecords, disciplineEvent, yearToUse, dateStringToUse);
     }
 
     return acc;
@@ -263,8 +332,8 @@ export default function OfficerProfilePage() {
                     <div className={`w-full flex flex-col ${styles.timelineEvents}`}>
                       {events
                         .sort((a, b) => {
-                          const dateA = a.eventType === 'Start' ? new Date(a.start_date) : new Date(a.end_date);
-                          const dateB = b.eventType === 'Start' ? new Date(b.start_date) : new Date(b.end_date);
+                          const dateA = (a.eventType === 'Discipline' || a.eventType === 'Start') ? new Date(a.start_date) : new Date(a.end_date);
+                          const dateB = (b.eventType === 'Discipline' || b.eventType === 'Start') ? new Date(b.start_date) : new Date(b.end_date);
                           return dateB.getTime() - dateA.getTime();
                         })
                         .map((event, index) => (
@@ -295,7 +364,7 @@ export default function OfficerProfilePage() {
                                   {event.rank ? <span>{event.rank.toLowerCase()}</span> : ''}
                                   <small>{event.agency_name}</small>
                                 </Link>
-                                {event.offense ? <b><small>{event.offense}</small></b> : ''}
+                                {(event.eventType === 'Discipline' && ( event.offense || event.separation_reason || event.violation || event.sanction)) ? <b><small>{event.offense || event.separation_reason || event.violation || event.sanction}</small></b> : ''}
                               </div>
                               <div className={`${styles.timelineType} ${styles[event.eventType]}`}>
                                 {event.eventType === 'Start' ? <>Start<span> Date</span></> : event.eventType === 'End' ? <>End<span> Date</span></> : <>Discipline</>}
