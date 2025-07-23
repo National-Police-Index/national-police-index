@@ -39,6 +39,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
 
   // const fullName = officer.full_name || officer.first_name + ' ' + officer.last_name;
   const fullName = (officer.last_name || officer.middle_name || officer.first_name) ? (`${officer.last_name || officer.middle_name || ''}, ${officer.first_name}`) : officer.full_name;
+  const officerSlug = (fullName || '').replace(/[^\w]+/g, '-').toLowerCase();
   const onMoreClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setMoreActive(!moreActive);
@@ -47,7 +48,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
 
   return (
     <Link
-      href={`/officers/${officer.document_id}`}
+      href={`/officers/${officer.document_id}/${officerSlug}`}
       className={`group flex w-full max-w-sm ${styles.officerCard} ${moreActive ? styles.moreActive : ''}`}
     >
       <div className="w-[24px] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />

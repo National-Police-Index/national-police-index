@@ -245,7 +245,7 @@ export default function Header() {
 
                 {isStatesOpen && (
                   <div className="flex flex-col gap-2 pb-8">
-                    {US_STATES.map((state) => (
+                    {US_STATES.filter(state => state.hasData).map((state) => (
                       <Link
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
