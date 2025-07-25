@@ -14,7 +14,8 @@ import {
   CollectionReference,
   Query,
   setDoc,
-  where
+  where,
+  orderBy
 } from 'firebase/firestore';
 
 // Configure chunk sizes for memory management
@@ -97,7 +98,14 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
 async function loadDiscoveredAgencies(): Promise<Map<string, { name: string; state: string }>> {
   console.log('Loading previously discovered agencies...');
   const tempCollection = collection(db, TEMP_COLLECTION);
-  const snapshot = await getDocs(tempCollection);
+        let q = query(
+          tempCollection,
+        orderBy('discovered_at', 'desc'),
+        );
+
+
+  // const snapshot = await getDocs(tempCollection);
+  const snapshot = await getDocs(q);
   const agencies = new Map<string, { name: string; state: string }>();
 
   snapshot.forEach(doc => {
@@ -292,7 +300,8 @@ async function generateAgencyStats(state: string) {
 // Function to be called monthly
 export async function updateAgencyStatistics() {
   try {
-    await Promise.all(US_STATES.filter(item => item.hasData && item.reference === 'texas').map(async (item) => {
+    // await Promise.all(US_STATES.filter(item => item.hasData && item.reference === 'washington').map(async (item) => {
+    await Promise.all(US_STATES.filter(item => item.hasData).map(async (item) => {
       console.log(`Generating agency statistics for ${item.reference}...`);
       await generateAgencyStats(item.reference);
     }));

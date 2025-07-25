@@ -43,14 +43,23 @@ export default function PageHeader({ home, title, description, statistics, title
             }, [])
             .map((stat, index) => (
               <div key={index} className='flex flex-col justify-start items-start gap-2'>
-                <div className={'justify-start text-[#2F5E50] font-bold font-["Inter"] leading-[1.2] ' + styles.statValue}>
-                  {typeof stat.value === 'number' && !stat.literal
-                    ? stat.value.toLocaleString('en-US')
-                    : stat.value
-                  }
-                </div>
+                {stat.value === -1 ? (
+                  <div className='flex items-center h-8'>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-[#2F5E50] border-r-transparent" />
+                  </div>
+                ) : (
+                  <div className={'justify-start text-[#2F5E50] font-bold font-["Inter"] leading-[1.2] ' + styles.statValue}>
+                    {typeof stat.value === 'number' && !stat.literal
+                      ? stat.value.toLocaleString('en-US')
+                      : stat.value
+                    }
+                  </div>
+                )}
                 <div className={'self-stretch justify-start text-emerald-700 font-semibold font-["Inter"] tracking-[-.005em] leading-[1.5] ' + styles.statLabel}>
-                  {stat.label.replace('Total Officers', 'Current and Former Officers')}
+                  {stat.value === -1
+                    ? stat.label || 'Loading...'
+                    : stat.label.replace('Total Officers', 'Current and Former Officers')
+                  }
                 </div>
                 {stat.tooltip && <small className={styles.tooltip}>
                   {stat.tooltip}

@@ -93,9 +93,14 @@ export default function AgencyPage() {
       <PageHeader
         home={false}
         title={getText('officers-title', `Officers in {state}`).replace('{state}', stats?.name || '') + (stateData ? ` - ${stateData?.name}` : '')}
-        description={`Searching  and explore police officer records in ${stats?.name || ''}`}
-
-        statistics={stats?.stats?.filter(stat => stat.value !== '0').map(stat => ({
+        description={`Searching and exploring police officer records in ${stats?.name || ''}`}
+        statistics={statsLoading ? (
+          // Show loading skeleton for statistics when they're being calculated
+          Array(4).fill(0).map((_, i) => ({
+            value: -1, // Special value to indicate loading
+            label: i === 0 ? 'Calculating statistics...' : ''
+          }))
+        ) : stats?.stats?.filter(stat => stat.value !== '0').map(stat => ({
           value: parseInt(stat.value),
           label: stat.label
         }))}
@@ -109,6 +114,22 @@ export default function AgencyPage() {
             agencyMode={true}
             onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
           />
+
+          {/* Show a notice when stats are being calculated on-the-fly */}
+          {statsLoading && !stats?.is_partial && (
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    Calculating agency statistics on-the-fly. This may take a moment for agencies with many records.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className={styles.cardsWrapper}>
             {loading ? (

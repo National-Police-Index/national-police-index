@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { calculateAgencyStats } from '@/lib/calculateAgencyStats';
 
 interface StatItem {
   label: string;
@@ -73,13 +74,41 @@ export function useAgencyStats(agencyName: string) {
             const statsData = oldStatsDoc.data() as AgencyStats;
             setStats(statsData);
           } else {
+            console.log(`No existing stats found for ${agencyName}, calculating on-the-fly...`);
+          
+          // Try to calculate stats on-the-fly
+          const calculatedStats = await calculateAgencyStats(agencyName);
+          
+          if (calculatedStats) {
+            console.log(`Successfully calculated stats for ${agencyName} on-the-fly`);
+            setStats(calculatedStats);
+          } else {
+            // Fall back to default stats if calculation fails
+            console.log(`Failed to calculate stats for ${agencyName}, using defaults`);
             setStats(createDefaultStats(agencyName));
-            // setError(new Error('No statistics found for this agency'));
+          }
           }
         }
       } catch (err) {
-        setStats(createDefaultStats(agencyName));
-        setError(err instanceof Error ? err : new Error('Failed to fetch agency statistics'));
+        console.error(`Error in useAgencyStats for ${agencyName}:`, err);
+        
+        // Try to calculate stats on-the-fly even in case of error
+        try {
+          console.log(`Attempting to calculate stats for ${agencyName} after error...`);
+          const calculatedStats = await calculateAgencyStats(agencyName);
+          
+          if (calculatedStats) {
+            console.log(`Successfully calculated stats for ${agencyName} after error`);
+            setStats(calculatedStats);
+          } else {
+            setStats(createDefaultStats(agencyName));
+            setError(err instanceof Error ? err : new Error('Failed to fetch agency statistics'));
+          }
+        } catch (calcErr) {
+          // If calculation also fails, fall back to defaults
+          setStats(createDefaultStats(agencyName));
+          setError(err instanceof Error ? err : new Error('Failed to fetch agency statistics'));
+        }
       } finally {
         setLoading(false);
       }
