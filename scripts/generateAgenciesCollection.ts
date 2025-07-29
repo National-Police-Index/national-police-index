@@ -13,6 +13,17 @@ import {
   Timestamp,
   startAfter
 } from 'firebase/firestore';
+import { US_STATES } from '@/constants/states';
+
+interface DbLaunchDocument {
+  agency_name?: string;
+  state?: string;
+}
+
+interface AgencyData {
+  name: string;
+  state: string;
+}
 
 // Configure chunk sizes for memory management
 const BATCH_SIZE = 100; // Number of writes per batch
@@ -62,65 +73,105 @@ async function generateAgenciesCollection() {
     // Get reference to db_launch collection
     const dbLaunchRef = collectionGroup(db, DB_LAUNCH_COLLECTION);
     
-    // Map to store unique agencies
-    const uniqueAgencies = new Map<string, { name: string; state: string }>();
-    
-    // Pagination variables
-    let lastDoc: any = null;
-    let hasMore = true;
-    let currentPage = 0;
-    
-    console.log('Discovering unique agencies...');
-    
-    while (hasMore && currentPage < MAX_PAGES) {
-      currentPage++;
+    // Process each state with data
+    for (const state of US_STATES.reverse().filter(item => item.hasData)) {
+      console.log(`\nProcessing state: ${state.reference}`);
       
-      // Build query
-      let q = query(dbLaunchRef);
+      // Map to store unique agencies for this state
+    const uniqueAgencies = new Map<string, AgencyData>();
       
-      if (lastDoc) {
-        q = query(q, startAfter(lastDoc));
-      }
+      // Pagination variables
+      let lastDoc: any = null;
+      let hasMore = true;
+      let currentPage = 0;
       
-      q = query(q, limit(QUERY_LIMIT));
-      
-      try {
-        const snapshot = await getDocs(q);
+      while (hasMore && currentPage < MAX_PAGES) {
+        currentPage++;
         
-        if (snapshot.empty) {
-          hasMore = false;
-          break;
-        }
-        
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const agencyName = data.agency_name?.trim();
-          const state = data.state?.trim();
+        try {
+          // Build query for this state
+          let q = query(dbLaunchRef, where('state', '==', state.reference));
           
-          if (agencyName && state && !uniqueAgencies.has(agencyName)) {
-            uniqueAgencies.set(agencyName, { name: agencyName, state });
+          if (lastDoc) {
+            q = query(q, startAfter(lastDoc));
           }
-        });
-        
-        if (snapshot.docs.length > 0) {
-          lastDoc = snapshot.docs[snapshot.docs.length - 1];
+          
+          q = query(q, limit(QUERY_LIMIT));
+          
+          const snapshot = await getDocs(q);
+          
+          if (snapshot.empty) {
+            hasMore = false;
+            break;
+          }
+          
+          snapshot.forEach(doc => {
+            const data = doc.data() as DbLaunchDocument;
+            const agencyName = data.agency_name?.trim();
+            
+            if (agencyName && !uniqueAgencies.has(agencyName)) {
+              uniqueAgencies.set(agencyName, { name: agencyName, state: state.reference });
+            }
+          });
+          
+          if (snapshot.docs.length > 0) {
+            lastDoc = snapshot.docs[snapshot.docs.length - 1];
+          }
+          
+          hasMore = snapshot.docs.length === QUERY_LIMIT;
+          
+          console.log(`Discovered ${uniqueAgencies.size} unique agencies in ${state.reference} so far... (page ${currentPage})`);
+          
+          // Run garbage collection periodically
+          if (currentPage % GC_INTERVAL === 0 && typeof global.gc === 'function') {
+            global.gc();
+          }
+          
+        } catch (error) {
+          console.error(`Error processing state ${state.reference} on page ${currentPage}:`, error);
+          // Continue to next page even if this one failed
+          hasMore = false;
         }
-        
-        hasMore = snapshot.docs.length === QUERY_LIMIT;
-        
-        console.log(`Discovered ${uniqueAgencies.size} unique agencies so far... (page ${currentPage})`);
-        
-        // Run garbage collection periodically
-        if (currentPage % GC_INTERVAL === 0 && typeof global.gc === 'function') {
-          global.gc();
-        }
-        
-      } catch (error) {
-        console.error(`Error on page ${currentPage}:`, error);
-        // Continue to next page even if this one failed
-        hasMore = false;
       }
-    }
+      
+      // Save agencies for this state
+      if (uniqueAgencies.size > 0) {
+        console.log(`\nSaving ${uniqueAgencies.size} agencies for state: ${state.reference}`);
+        
+        let batch = writeBatch(db);
+        let batchCount = 0;
+        
+        for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
+          const docId = agencyName
+            .toLowerCase()
+            .replace(/[/\\]/g, '%2F')
+            .replace(/[^a-z0-9-]/g, '-');
+          
+          const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
+          
+          const agencyDoc = {
+            name: agencyName,
+            state: agencyData.state,
+            last_updated: Timestamp.now()
+          };
+          
+          batch.set(agencyRef, agencyDoc);
+          batchCount++;
+          
+          if (batchCount >= BATCH_SIZE) {
+            await batch.commit();
+            console.log(`Saved batch of ${batchCount} agencies for ${state.reference}`);
+            batch = writeBatch(db);
+            batchCount = 0;
+          }
+        }
+        
+        // Commit final batch if any remaining
+        if (batchCount > 0) {
+          await batch.commit();
+          console.log(`Saved final batch of ${batchCount} agencies for ${state.reference}`);
+        }
+      }
     
     console.log(`Found ${uniqueAgencies.size} unique agencies. Starting to save to collection...`);
     
@@ -163,6 +214,7 @@ async function generateAgenciesCollection() {
     if (batchCount > 0) {
       await batch.commit();
       console.log(`Saved final batch of ${batchCount} agencies`);
+    }
     }
     
     console.log('Agencies collection generation completed successfully');

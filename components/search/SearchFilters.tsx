@@ -477,9 +477,9 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                                 <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                   {agency.name}
                                 </span>
-                                <span className={`inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
+                                {/*span className={`inline-block text-xs ${active ? 'text-blue-100' : 'text-gray-500'}`}>
                                   {agency.count} officers
-                                </span>
+                                </span>*/}
                               </div>
                             </>
                           )}

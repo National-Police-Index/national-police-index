@@ -34,7 +34,8 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
 
   try {
     // Fetch the first batch of agencies for immediate display
-    const agenciesRef = collection(db, 'statistics_per_agency');
+    // const agenciesRef = collection(db, 'statistics_per_agency');
+    const agenciesRef = collection(db, 'agencies');
     const q = query(
       agenciesRef,
       where('state', '==', state.toLowerCase()),
