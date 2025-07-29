@@ -1,13 +1,11 @@
 import { 
-  getFirestore, 
   collectionGroup, 
   query, 
   getDocs, 
   doc, 
   setDoc, 
   where,
-  orderBy,
-  limit 
+  orderBy
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
