@@ -12,6 +12,7 @@
     "generate-stats": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateStateStats.ts",
     "generate-stats-agencies": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateAgencyStats.ts",
     "update-stats-agencies": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/updateAgencyActiveStats.ts",
+    "generate-agencies": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateAgenciesCollection.ts",
     "generate-sitemap": "npm run build:sitemap",
     "seed-officers": "tsx scripts/seedOfficers.ts",
     "seed-team": "tsx scripts/seedTeamData.ts",
