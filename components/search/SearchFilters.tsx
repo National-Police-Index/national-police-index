@@ -471,7 +471,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                             `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? styles.active : 'text-gray-900'}`
                           }
                         >
-                          {({ selected, active }) => (
+                          {({ selected}) => (
                             <>
                               <div className="flex items-center justify-between">
                                 <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
