@@ -23,13 +23,13 @@ export default function AboutPage() {
           <section className="relative w-full mx-auto">
             <div className="relative">
               {/* Image - Floating right on desktop, full width on mobile */}
-              <div className="float-none w-full mb-6 sm:float-right sm:w-[300px] md:w-[400px] lg:w-[500px] sm:ml-8 sm:mb-4">
+              {false && <div className="float-none w-full mb-6 sm:float-right sm:w-[300px] md:w-[400px] lg:w-[500px] sm:ml-8 sm:mb-4">
                 <Image
                   className="w-full h-auto aspect-square object-cover"
                   src={aboutImage}
                   alt="About illustration"
                 />
-              </div>
+              </div>}
 
               {/* Text content that wraps around the image */}
               <div className="text-lg font-normal font-inter leading-relaxed space-y-6">
