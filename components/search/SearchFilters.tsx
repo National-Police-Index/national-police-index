@@ -392,14 +392,14 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
               className={styles.select}
             >
               <div className="relative">
-                <div className="relative w-full">
+                <div className="relative flex w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
                     </div>
                   )}
                   {agencyQuery && agencyQuery.length > 0 && (
-                    <div className="absolute right-10 top-2.5 text-xs text-gray-500">
+                    <div className={styles.agencyCount}>
                       {filteredAgencies.length > 0 && !isLoadingAgencies ? 
                         `${filteredAgencies.length} results` : ''}  
                     </div>

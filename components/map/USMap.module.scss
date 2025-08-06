@@ -125,9 +125,9 @@ $dataNoLB: #FAD2D2;
   }
 
   >div>div {
-    @media screen and (max-width: 499px) {
-      pointer-events: none;
-    }
+    // @media screen and (max-width: 499px) {
+    //   pointer-events: none;
+    // }
 
     > :first-child {
       //border: 1.5px solid white;
@@ -191,7 +191,7 @@ $dataNoLB: #FAD2D2;
     width: 125px;
   }
 
-  @media screen and (max-width: 499px) {
+  @media (pointer:coarse) {
     display: none;
     pointer-events: none;
   }
