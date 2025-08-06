@@ -392,7 +392,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
               className={styles.select}
             >
               <div className="relative">
-                <div className="relative w-full">
+                <div className="relative flex w-full">
                   {isLoadingAgencies && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#122823] border-r-transparent" />
