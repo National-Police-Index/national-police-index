@@ -223,7 +223,7 @@ export default function Header() {
       {/* Mobile Menu */}
       {mounted && isMobileMenuOpen && (
         <div ref={menuRef} className={`container-a py-6 md:hidden mx-auto inset-0 z-50 ${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''} ${isStatesOpen ? styles.mobileStatesOpen : ''}`}>
-          <div className="flex flex-col h-full relative">
+          <div className="flex flex-col relative">
             <div className="">
               <nav className="flex flex-col gap-4">
                 <Link

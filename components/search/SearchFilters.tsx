@@ -399,7 +399,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                     </div>
                   )}
                   {agencyQuery && agencyQuery.length > 0 && (
-                    <div className="absolute right-10 top-2.5 text-xs text-gray-500">
+                    <div className={styles.agencyCount}>
                       {filteredAgencies.length > 0 && !isLoadingAgencies ? 
                         `${filteredAgencies.length} results` : ''}  
                     </div>
