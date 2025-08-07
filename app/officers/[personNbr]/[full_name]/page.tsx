@@ -157,10 +157,10 @@ export default function OfficerProfilePage() {
       (existingEvent.eventType === 'End' && newEvent.eventType === 'End')) {
       const dateField = existingEvent.eventType === 'Start' ? 'start_date' : 'end_date';
       // Check for identical dates and agencies
-      // if (existingEvent[dateField] === newEvent[dateField] &&
-      //   existingEvent.agency_name === newEvent.agency_name) {
-      //   return true;
-      // }
+      if (existingEvent[dateField] === newEvent[dateField] &&
+        existingEvent.agency_name === newEvent.agency_name) {
+        return true;
+      }
     }
 
     return false;
