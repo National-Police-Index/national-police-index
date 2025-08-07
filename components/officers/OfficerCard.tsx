@@ -38,7 +38,9 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
   }, []);
 
   // const fullName = officer.full_name || officer.first_name + ' ' + officer.last_name;
-  const fullName = (officer.last_name || officer.middle_name || officer.first_name) ? (`${officer.last_name || officer.middle_name || ''}, ${officer.first_name}`) : officer.full_name;
+  const fullName = (officer.last_name || officer.middle_name || officer.first_name)
+                 ? (officer.last_name || officer.middle_name) ? `${(officer.last_name || officer.middle_name)}${(officer.last_name || officer.middle_name) && officer.first_name && ', '} ${officer.first_name}` : officer.first_name
+                 : officer.full_name;
   const officerSlug = (fullName || '').replace(/[^\w]+/g, '-').toLowerCase();
   const onMoreClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

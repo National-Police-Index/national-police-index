@@ -51,12 +51,15 @@
     .timelineEvents {
       gap: 16px;
       .timelineItem {
-        align-items: flex-start;
+        align-items: center;
         gap: fluid(16px, 24px);
         > div {
           font-size: fluid(14px, 16px);
         }
-        .timelineAgency {
+        .timelineEvent {
+          b {
+            font-weight: 600;
+          }
           a {
             color: $greenC;
             display: flex;

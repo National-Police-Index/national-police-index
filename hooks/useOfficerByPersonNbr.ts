@@ -14,7 +14,7 @@ export function useOfficerByPersonNbr(personNbr: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerData, setOfficerData] = useState<OfficerData | null>(null);
-  console.log('personNbr', personNbr);
+  //console.log('personNbr', personNbr);
   useEffect(() => {
     async function fetchOfficer() {
       try {
@@ -24,11 +24,11 @@ export function useOfficerByPersonNbr(personNbr: string) {
         // Query all records for this officer using collection group
         const officersRef = collectionGroup(db, 'db_launch');
         let q = query(officersRef, where('document_id', '==', personNbr));
-        console.log('personNbr.includes("discipline")', personNbr, personNbr.includes('discipline'));
+        //console.log('personNbr.includes("discipline")', personNbr, personNbr.includes('discipline'));
         if (personNbr.includes('georgia') || personNbr.includes('florida')) {
           const documentId = personNbr.replace("florida-discipline_", "").replace("georgia-discipline_", "").replace("florida_", "").replace("georgia_", "");
           const state = personNbr.includes('florida') ? 'florida' : 'georgia';
-          console.log('DocumentId', documentId, state);
+          //console.log('DocumentId', documentId, state);
           q = query(officersRef, where('person_nbr', '==', documentId), where('state', 'in', [state, `${state}-discipline`]));
         }
         const snapshot = await getDocs(q);
@@ -46,7 +46,7 @@ export function useOfficerByPersonNbr(personNbr: string) {
             return dateB - dateA; // Sort by most recent first
           });
 
-        console.log('Records', records);
+        //console.log('Records', records);
         setOfficerData({
           records,
           latestRecord: records[0]

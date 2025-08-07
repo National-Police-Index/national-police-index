@@ -19,6 +19,10 @@ export interface PoliceOfficer {
   violation?: string,
   sanction_date?: Date,
   separation_reason?: string,
+  employment_status?: string,
+  certification_type?: string,
+  type?: string,
+  [key: string]: any; // Allow additional properties
 }
 
 export interface SearchFilters {

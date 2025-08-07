@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Props }): Promise<M
     const q = query(officersRef, where('document_id', '==', decodedPersonNbr), limit(1));
     const querySnapshot = await getDocs(q);
 
-    console.log('OFFICER NAME', decodedPersonNbr, querySnapshot.empty);
+    //console.log('OFFICER NAME', decodedPersonNbr, querySnapshot.empty);
     if (!querySnapshot.empty) {
       const officerData = querySnapshot.docs[0].data();
       officerName = officerData.full_name ||

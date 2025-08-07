@@ -16,9 +16,18 @@ type PoliceOfficerWithEventType = PoliceOfficer & {
   endDate?: Date,
   agency?: string,
   offense?: string,
+  sanction?: string,
   separation_reason?: string,
-  rank?: string
+  rank?: string,
+  sanction_date?: string
 };
+
+const toSentenceCase = (str: string) => {
+  return str.replace(/-+/g, ' ').replace(
+    /\w\S*/g,
+    (text: string) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+  );
+}
 
 export default function OfficerProfilePage() {
   const { personNbr } = useParams();
@@ -59,7 +68,7 @@ export default function OfficerProfilePage() {
   }
 
   const { latestRecord, records } = officerData;
-  const fullName = latestRecord.full_name || ((latestRecord.last_name || latestRecord.middle_name) + ', ' + latestRecord.first_name);
+  const fullName = latestRecord.full_name || ((latestRecord.last_name || latestRecord.middle_name) + ((latestRecord.last_name || latestRecord.middle_name) && ', ') + latestRecord.first_name);
 
   // Helper functions to improve readability and reduce duplication
   /**
@@ -79,8 +88,8 @@ export default function OfficerProfilePage() {
    * Creates an event object for the timeline based on record and event type
    */
   const createEventObject = (record: PoliceOfficer, eventType: 'Start' | 'End' | 'Discipline', dateString: string): PoliceOfficerWithEventType => {
-    const isDiscipline = record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired', 'Resigned'].includes(record.separation_reason));
-    console.log('isDiscipline', isDiscipline, record.separation_reason);
+    const isDiscipline = record.offense || record.sanction;
+    // console.log('isDiscipline', isDiscipline, record.separation_reason);
 
     return {
       agency_name: record.agency_name,
@@ -88,9 +97,9 @@ export default function OfficerProfilePage() {
       // Only add the relevant date property
       ...(eventType === 'Start' && { start_date: dateString }),
       ...(eventType === 'End' && { end_date: dateString }),
-      ...(eventType === isDiscipline && { sanction_date: dateString }),
-      rank: record.rank,
-      offense: record.offense || record.sanction,
+      ...(eventType === 'Discipline' && { sanction_date: dateString }),
+      rank: record.rank || record.certification_type || record.type,
+      offense: record.offense || record.sanction, 
       separation_reason: record.separation_reason,
       violation: record.violation
     } as PoliceOfficerWithEventType;
@@ -148,10 +157,10 @@ export default function OfficerProfilePage() {
       (existingEvent.eventType === 'End' && newEvent.eventType === 'End')) {
       const dateField = existingEvent.eventType === 'Start' ? 'start_date' : 'end_date';
       // Check for identical dates and agencies
-      if (existingEvent[dateField] === newEvent[dateField] &&
-        existingEvent.agency_name === newEvent.agency_name) {
-        return true;
-      }
+      // if (existingEvent[dateField] === newEvent[dateField] &&
+      //   existingEvent.agency_name === newEvent.agency_name) {
+      //   return true;
+      // }
     }
 
     return false;
@@ -209,32 +218,39 @@ export default function OfficerProfilePage() {
     // Extract all date information once
     const startDate = record.start_date ? new Date(record.start_date) : null;
     const endDate = record.end_date ? new Date(record.end_date) : null;
-    const sanctionDate = record.sanction_date ? new Date(record.sanction_date) : null;
+    const sanctionDate = record.sanction_date ? new Date(record.sanction_date) : record?.case_closed_date ? new Date(record?.case_closed_date) : null;
 
     const startYear = startDate?.getFullYear() || null;
     const endYear = endDate?.getFullYear() || null;
     const disciplineYear = sanctionDate?.getFullYear() || null;
 
     // Handle start date event
-    if (startDate && !(record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired'].includes(record.separation_reason)))) {
+    if (startDate && !(record.offense || record.sanction)) {
       const startDateString = safeFormatDate(startDate);
       const startEvent = createEventObject(record, 'Start', startDateString);
       addEventToTimeline(acc, officerRecords, startEvent, startYear, startDateString);
     }
 
     // Handle end date event if it exists
-    if (endDate) {
+    if (endDate && !(record.offense || record.sanction)) {
       const endDateString = safeFormatDate(endDate);
       const endEvent = createEventObject(record, 'End', endDateString);
       addEventToTimeline(acc, officerRecords, endEvent, endYear, endDateString);
     }
 
     // Handle discipline event if it exists
-    if (record.offense || record.sanction || (record.separation_reason && !['Appointed', 'Hired', 'Resigned'].includes(record.separation_reason))) {
+    if (record.offense || record.sanction) {
       // Use sanction date if available, otherwise use start date
-      const dateToUse = sanctionDate || startDate;
-      const yearToUse = disciplineYear || startYear;
-      const dateStringToUse = safeFormatDate(dateToUse);
+      const dateToUse = sanctionDate;
+      const yearToUse = disciplineYear;
+      // Format date in UTC to avoid timezone offset issues
+      const dateStringToUse = dateToUse
+        ? new Date(Date.UTC(
+            dateToUse.getUTCFullYear(),
+            dateToUse.getUTCMonth(),
+            dateToUse.getUTCDate()
+          )).toISOString().slice(0, 10)
+        : '';
 
       const disciplineEvent = createEventObject(record, 'Discipline', dateStringToUse);
       addEventToTimeline(acc, officerRecords, disciplineEvent, yearToUse, dateStringToUse);
@@ -338,7 +354,11 @@ export default function OfficerProfilePage() {
                               <div className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}>
                                 <span className={styles.timelineDateDesktop}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
+                                    event.eventType === 'Start'
+                                      ? event.start_date || ''
+                                      : event.eventType === 'End'
+                                      ? event.end_date || ''
+                                      : event.sanction_date || ''
                                   ).toLocaleDateString('en-US', {
                                     month: 'short',
                                     day: 'numeric',
@@ -347,7 +367,11 @@ export default function OfficerProfilePage() {
                                 </span>
                                 <span className={styles.timelineDateMobile}>
                                   {new Date(
-                                    event.eventType === 'Start' ? event.start_date || new Date() : event.end_date || new Date()
+                                    event.eventType === 'Start'
+                                      ? event.start_date || ''
+                                      : event.eventType === 'End'
+                                      ? event.end_date || ''
+                                      : event.sanction_date || ''
                                   ).toLocaleDateString('en-US', {
                                     month: 'short',
                                     day: 'numeric',
@@ -355,12 +379,20 @@ export default function OfficerProfilePage() {
                                   })}
                                 </span>
                               </div>
-                              <div className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineAgency}`}>
-                                <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className="">
-                                  {event.rank ? <span>{event.rank.toLowerCase()}</span> : ''}
+                              <div className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineEvent}`}>
+                                <b>
+                                {
+                                  (event.eventType === 'Discipline' && (event.offense || event.violation || event.sanction))
+                                  ? (event.offense || event.violation || event.sanction) ? event.offense || event.violation || event.sanction : ''
+                                  : (event.eventType === 'Start' && event.start_date)
+                                  ? (event.rank ? toSentenceCase(event.rank) : '')
+                                  : (event.eventType === 'End' && event.end_date)
+                                  ? (event.rank ? toSentenceCase(event.rank) : '') + (event.rank && event.separation_reason ? ', ' : '') + (event.separation_reason ? event.separation_reason : '')
+                                  : ''
+                                }</b>
+                                <Link href={`/agencies/${encodeURIComponent(latestRecord.agency_name)}`} className={styles.timelineAgency}>
                                   <small>{event.agency_name}</small>
                                 </Link>
-                                {(event.eventType === 'Discipline' && (event.offense || event.separation_reason || event.violation || event.sanction)) ? <b><small>{event.offense || event.separation_reason || event.violation || event.sanction}</small></b> : ''}
                               </div>
                               <div className={`${styles.timelineType} ${styles[event.eventType]}`}>
                                 {event.eventType === 'Start' ? <>Start<span> Date</span></> : event.eventType === 'End' ? <>End<span> Date</span></> : <>Discipline</>}
@@ -374,6 +406,15 @@ export default function OfficerProfilePage() {
             </div>
           </div>
         </div>
+            <Link
+              href={
+                typeof window !== 'undefined'
+                ? window.location.href.replace('localhost:3000', 'police-index.web.app')
+                : `/officers/${latestRecord.person_nbr}/${encodeURIComponent(fullName)}/timeline`
+              }
+              className={`text-[#122823] text-sm font-normal font-['Inter'] ${styles.viewTimeline}`}
+              ><h1 style={{ fontSize: 25 }}>Link to Live Site</h1>
+            </Link>
       </div>
     </div>
   );
