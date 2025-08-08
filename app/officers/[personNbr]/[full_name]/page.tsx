@@ -405,6 +405,21 @@ export default function OfficerProfilePage() {
             </div>
           </div>
         </div>
+        {process.env.NODE_ENV === 'development' && (
+          <div>
+            <ul className="list-disc pl-8" style={{height: 400, overflowY: 'auto'}}>
+              {records.map((record, index) => (
+                <li key={index} className="mb-2">
+                  {Object.entries(record).map(([key, value]) => (
+                    <span key={key} className="block">
+                      <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value?.toString() || 'N/A'}
+                    </span>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
