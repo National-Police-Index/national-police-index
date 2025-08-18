@@ -54,7 +54,7 @@ export default function AboutPage() {
                 </p>
 
                 <p>
-                  Access the underlying data files for the National Police Index at this <Link href="#" className="underline">link</Link>.
+                  Access the underlying data files for the National Police Index at this <Link href="https://github.com/National-Police-Index/us-post-data" className="underline">link</Link>.
                 </p>
               </div>
 
