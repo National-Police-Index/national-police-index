@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { collectionGroup, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, doc, getDoc } from 'firebase/firestore';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { collectionGroup, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, doc, getDoc, collection } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 import { PoliceOfficer } from '@/types';
@@ -38,61 +38,182 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
     pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : (searchParams.page || 1)
   }), [searchParams.query, searchParams.agency, searchParams.startDate,
-  searchParams.endDate, searchParams.sortBy, searchParams.sortOrder,
-  searchParams.pageSize, searchParams.page]);
+  searchParams.endDate, searchParams.sortBy, searchParams.page]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+  const cancelTokenRef = useRef<AbortController | null>(null);
 
+  // Track fetch state to prevent duplicate fetches
+  const fetchStateRef = useRef({
+    isFetching: false,
+    fetchCount: 0,
+    lastParams: ''
+  });
+
+  // Caché para el conteo total de oficiales basado en los filtros
+  // La estructura será: { [filtersKey: string]: number }
+  const [countCache, setCountCache] = useState<Record<string, number>>({});
+
+  // Genera una clave única para los filtros actuales (excluyendo página y cursor)
+  const filtersCacheKey = useMemo(() => {
+    return JSON.stringify({
+      state,
+      query: searchParameters.query,
+      agency: searchParameters.agency,
+      startDate: searchParameters.startDate,
+      endDate: searchParameters.endDate,
+      sortBy: searchParameters.sortBy,
+      sortOrder: searchParameters.sortOrder,
+      pageSize: searchParameters.pageSize
+    });
+  }, [state, searchParameters.query, searchParameters.agency,
+    searchParameters.startDate, searchParameters.endDate,
+    searchParameters.sortBy, searchParameters.sortOrder,
+    searchParameters.pageSize]);
 
   // Separate function to get total count
-  // Function to get total count from stats
   const getTotalCount = useCallback(async () => {
     try {
-      const statsRef = doc(db, 'statistics_per_state', state.toLowerCase());
-      const statsDoc = await getDoc(statsRef);
+      // Primero verificamos si tenemos el conteo en caché para estos filtros
+      if (countCache[filtersCacheKey]) {
+        console.log('Using cached count:', countCache[filtersCacheKey]);
+        return countCache[filtersCacheKey];
+      }
 
-      if (statsDoc.exists()) {
-        const data = statsDoc.data();
-        // Try to get total_officers first
-        if (data.total_officers) {
-          const count = parseInt(data.total_officers, 10);
-          return count;
-        }
-        // Fallback to stats array
-        if (data.stats) {
-          const officerStats = data.stats.find((stat: any) => stat.label === 'Total Officers');
-          if (officerStats) {
-            const count = parseInt(officerStats.value, 10);
+      // Si no hay filtros especiales, intentamos obtener el recuento de las estadísticas
+      // Esto es más rápido que hacer una consulta completa
+      if (!searchParameters.query && !searchParameters.agency &&
+        !searchParameters.startDate && !searchParameters.endDate) {
+
+        // Try to get count from statistics first
+        const statsRef = doc(db, 'statistics_per_state', state);
+        const statsDoc = await getDoc(statsRef);
+
+        if (statsDoc.exists()) {
+          const data = statsDoc.data();
+          // Try to get total_officers first
+          if (data.total_officers) {
+            const count = parseInt(data.total_officers, 10);
+            // Guardamos en caché
+            setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
             return count;
+          }
+          // Fallback to stats array
+          else if (data.stats) {
+            const officerStats = data.stats.find((stat: any) => stat.label === 'Total Officers');
+            if (officerStats) {
+              const count = parseInt(officerStats.value, 10);
+              // Guardamos en caché
+              setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+              return count;
+            }
           }
         }
       }
 
-      console.log('No stats found, using default');
-      return 11713; // Known count for California
+      // Si llegamos aquí, necesitamos hacer una consulta para contar
+      // Este código se ejecutará cuando tenemos filtros especiales aplicados
+      console.log('Calculating count with query, no cached value available');
+
+      try {
+        // Construimos una consulta con los mismos filtros para contar
+        let countQuery = query(collection(db, 'db_launch'));
+        countQuery = query(countQuery, where('state', '==', state.toLowerCase()));
+        countQuery = query(countQuery, limit(10000)); // Increased multiplier to handle more duplicates
+
+        // Aplicamos los filtros a la consulta
+        if (searchParameters.query) {
+
+          countQuery = query(countQuery, where(
+            'searchQueries',
+            'array-contains-any',
+            searchParameters.query.toLowerCase().split(' ').slice(0, 20), // firestore limit is 30, 20 to be safe
+          ));
+        }
+
+        if (searchParameters.agency) {
+          countQuery = query(countQuery, where('agency_name', '==', searchParameters.agency));
+        }
+
+        if (searchParameters.startDate) {
+          const startDate = new Date(searchParameters.startDate);
+          countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
+        }
+
+        if (searchParameters.endDate) {
+          const endDate = new Date(searchParameters.endDate);
+          countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
+        }
+
+        // Ejecutamos la consulta
+        const countSnapshot = await getDocs(countQuery);
+
+        // Contamos los números de persona únicos
+        const uniqueOfficers = new Set();
+        countSnapshot.docs.forEach(doc => {
+          const officer = doc.data() as PoliceOfficer;
+          uniqueOfficers.add(officer.person_nbr);
+        });
+
+        const uniqueCount = uniqueOfficers.size;
+
+        // Guardamos el resultado en caché
+        setCountCache(prev => ({ ...prev, [filtersCacheKey]: uniqueCount }));
+
+        return uniqueCount;
+      } catch (countErr) {
+        // Valor por defecto en caso de error
+        const defaultCount = 11713; // Known count for California
+        return defaultCount;
+      }
     } catch (err) {
       console.error('Error fetching total count:', err);
-      return 11713; // Default to known count
+      const defaultCount = 11713; // Default to known count for California
+      setCountCache(prev => ({ ...prev, [filtersCacheKey]: defaultCount }));
+      return defaultCount;
     }
-  }, [state]);
+  }, [state, filtersCacheKey, countCache, searchParameters]);
+
+  // Función para calcular el recuento total de oficiales únicos a partir de un snapshot
+  const calculateUniqueOfficersCount = useCallback((docs: QueryDocumentSnapshot<DocumentData>[]) => {
+    const uniqueOfficers = new Set();
+    docs.forEach(doc => {
+      const officer = doc.data() as PoliceOfficer;
+      uniqueOfficers.add(officer.person_nbr);
+    });
+    return uniqueOfficers.size;
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Get total count first
-    getTotalCount().then(count => {
-      if (isMounted) {
-        setTotalCount(count);
-      }
-    });
+    if (cancelTokenRef.current) {
+      cancelTokenRef.current.abort();
+      console.log('Aborted previous fetch request');
+    }
+
+    cancelTokenRef.current = new AbortController();
+    const timeoutId = setTimeout(() => {
+      fetchOfficers();
+    }, 500);
 
     async function fetchOfficers() {
       try {
         setLoading(true);
         setError(null);
+
+        // Verificamos si tenemos un conteo en caché para estos filtros
+        const cachedCount = countCache[filtersCacheKey];
+        if (cachedCount) {
+          setTotalCount(cachedCount);
+        } else {
+          // Si no hay valor en caché, obtenemos el conteo
+          const totalCount = await getTotalCount();
+          setTotalCount(totalCount);
+        }
 
         const officersRef = collectionGroup(db, 'db_launch');
         const pageSize = parseInt(searchParameters.pageSize?.toString() || '16', 10);
@@ -148,10 +269,12 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
         }
 
         // Get total count efficiently
+        /*
         const total = await getTotalCount();
         if (isMounted) {
           setTotalCount(total);
         }
+        */
 
         // Fetch more records to ensure we get enough unique officers
         q = query(q, limit(pageSize * 10)); // Increased multiplier to handle more duplicates
@@ -161,7 +284,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           q = query(q, startAfter(lastDoc));
         }
 
-        console.log('Query', q);
         let snapshot = await getDocs(q);
         if (!isMounted) return;
 
@@ -214,60 +336,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16' } }: U
           setOfficerGroups(groups);
         }
 
-        // Update total count for filtered results
-        if (searchParameters.query || searchParameters.agency || searchParameters.startDate || searchParameters.endDate) {
-          // For filtered results, we need to make a separate count query to get the total
-          // This ensures pagination works correctly with filters
-          try {
-            // Build a count query with the same filters but no pagination
-            let countQuery = query(officersRef, where('state', '==', state.toLowerCase()));
-
-            // Apply the same filters as the main query
-            if (searchParameters.query) {
-              const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
-              countQuery = query(countQuery,
-                where('full_name', '>=', searchParameters.query.toUpperCase()),
-                where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff')
-              );
-            }
-
-            if (searchParameters.agency) {
-              countQuery = query(countQuery, where('agency_name', '==', searchParameters.agency));
-            }
-
-            if (searchParameters.startDate) {
-              const startDate = new Date(searchParameters.startDate);
-              countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
-            }
-
-            if (searchParameters.endDate) {
-              const endDate = new Date(searchParameters.endDate);
-              countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
-            }
-
-            // Execute the count query
-            const countSnapshot = await getDocs(countQuery);
-
-            // Count unique person_nbr values
-            const uniqueOfficers = new Set();
-            countSnapshot.docs.forEach(doc => {
-              const officer = doc.data() as PoliceOfficer;
-              uniqueOfficers.add(officer.person_nbr);
-            });
-
-            if (isMounted) {
-              setTotalCount(uniqueOfficers.size);
-              console.log(`Total unique officers with filters: ${uniqueOfficers.size}`);
-            }
-          } catch (countErr) {
-            console.error('Error counting filtered results:', countErr);
-            // Fallback to the current page count
-            const uniqueOfficers = new Set(groups.map(g => g.person_nbr));
-            if (isMounted) {
-              setTotalCount(uniqueOfficers.size);
-            }
-          }
-        }
       } catch (err) {
         if (isMounted) {
           setError(err instanceof Error ? err : new Error('Failed to fetch officers'));
