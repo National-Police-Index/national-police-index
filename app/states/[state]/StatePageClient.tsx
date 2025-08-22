@@ -102,13 +102,14 @@ export default function StatePageClient() {
     notFound();
   }
 
-  const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
+  console.log('resolved search params', resolvedSearchParams);
   const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10); // Default page size of 16
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
   // Obtener la dirección de navegación directamente de los parámetros de URL
   const direction = resolvedSearchParams.direction as 'next' | 'prev' | undefined;
-  
+  const page = resolvedSearchParams.page || '1';
+
   // También mantenemos un estado local para casos donde queramos establecer la dirección programáticamente
   const [navigationDirection, setNavigationDirection] = useState<'next' | 'prev' | undefined>(direction);
 
@@ -117,25 +118,27 @@ export default function StatePageClient() {
     setNavigationDirection(direction);
   }, [direction]);
 
-  const { 
-    loading: officersLoading, 
-    error: officersError, 
-    officerGroups, 
+  const {
+    loading: officersLoading,
+    error: officersError,
+    officerGroups,
     totalGroups,
     hasNextPage,
     hasPreviousPage,
     currentPage: apiCurrentPage,
-    pageSize: apiPageSize 
+    pageSize: apiPageSize
   } = useOfficersByUid({
     state,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
-      page: currentPage.toString(),
-      direction: navigationDirection || undefined
+      direction: navigationDirection || undefined,
+      page
     }
   });
 
+  const currentPage = apiCurrentPage;
+  console.log('CURRENT PAGE', apiCurrentPage, currentPage);
   // Add a separate loading state for search operations
   const [searchLoading, setSearchLoading] = useState(false);
   const loading = statsLoading || officersLoading || searchLoading;
@@ -204,16 +207,17 @@ export default function StatePageClient() {
                   {totalGroups > 0 && (
                     <div>
                       <CursorPagination
-                        currentPage={apiCurrentPage || currentPage}
+                        currentPage={apiCurrentPage}
                         totalCount={totalGroups}
                         pageSize={apiPageSize || pageSize}
                         baseUrl={`/states/${state}`}
                         hasPreviousPage={hasPreviousPage}
                         hasNextPage={hasNextPage}
                         onPageSizeChange={(newSize) => {
+                          console.log('new size', newSize);
                           const params = new URLSearchParams(searchParams.toString());
                           params.set('pageSize', newSize.toString());
-                          params.set('page', '1'); // Reset to first page on size change
+                          // params.set('page', '1'); // Reset to first page on size change
                           window.location.href = `/states/${state}?${params.toString()}`;
                         }}
                       />

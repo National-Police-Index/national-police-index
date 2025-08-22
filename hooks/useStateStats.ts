@@ -24,14 +24,12 @@ export function useStateStats(stateRef: string) {
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState<StateStats | null>(null);
 
-  console.log('STATS', stats);
   useEffect(() => {
     async function fetchStats() {
       try {
         setLoading(true);
         setError(null);
 
-        console.log('State reference', stateRef);
         //const statsRef = doc(db, 'state_statistics', stateRef.toLowerCase());
         const statsRef = doc(db, 'statistics_per_state', stateRef.toLowerCase());
         const statsDoc = await getDoc(statsRef);

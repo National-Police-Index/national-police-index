@@ -12,7 +12,8 @@ interface OfficerGroup {
 }
 
 interface SearchParams {
-  page: string;
+  currentPage?: string;
+  page?: string;
   pageSize: string;
   query?: string;
   agency?: string;
@@ -28,21 +29,23 @@ interface UseOfficersByUidProps {
   searchParams?: SearchParams;
 }
 
-export function useOfficersByUid({ state, searchParams = { pageSize: '16', page: '1' } }: UseOfficersByUidProps) {
+export function useOfficersByUid({ state, searchParams = { pageSize: '16', page: '' } }: UseOfficersByUidProps) {
+  console.log('AITO 3', searchParams);
   // Memoize search parameters to prevent unnecessary re-renders
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
     agency: searchParams.agency || '',
+    page: searchParams.page || '1',
     startDate: searchParams.startDate || '',
     endDate: searchParams.endDate || '',
     sortBy: searchParams.sortBy || 'full_name',
     sortOrder: searchParams.sortOrder || 'asc',
     pageSize: parseInt(searchParams.pageSize || '16', 10),
-    // Eliminamos la dependencia en el parámetro page de la URL
-    direction: searchParams.direction
+    direction: searchParams.direction,
+    // page: searchParams.page
   }), [searchParams.query, searchParams.agency, searchParams.startDate,
   searchParams.endDate, searchParams.sortBy, searchParams.sortOrder,
-  searchParams.pageSize, searchParams.direction]);
+  searchParams.pageSize, searchParams.direction, searchParams.page]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
@@ -50,7 +53,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
   const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   // Siempre comenzamos en página 1 para paginación basada en cursores
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(parseInt(searchParams.currentPage || '1', 10));
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const cancelTokenRef = useRef<AbortController | null>(null);
@@ -61,7 +64,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
     fetchCount: 0,
     lastParams: ''
   });
-  
+
   // References para almacenar el historial de documentos para navegación
   const cursorHistoryRef = useRef<{
     cursors: QueryDocumentSnapshot[];
@@ -203,6 +206,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
   }, []);
 
   useEffect(() => {
+    console.log('AITO 1');
     let isMounted = true;
 
     if (cancelTokenRef.current) {
@@ -245,21 +249,12 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
           const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
 
           q = query(q,
-            // where('full_name', '>=', searchParameters.query.toUpperCase()),
-            //  where('full_name', '<=', searchParameters.query.toUpperCase() + '\uf8ff'),
             where(
               'searchQueries',
               'array-contains-any',
               searchParameters.query.toLowerCase().split(' ').slice(0, 20), // firestore limit is 30, 20 to be safe
             )
-            /*
-            where('agency_name', '>=', searchParameters.query.toUpperCase()),
-            where('agency_name', '<', searchParameters.query.toUpperCase() + '\uf8ff'),
-            where('last_name', '>=', capitalizeQuery.toUpperCase()),
-            where('last_name', '<=', capitalizeQuery.toUpperCase() + '\uf8ff')
-            */
           );
-          // console.log('Query', q);
         }
 
         if (searchParameters.agency) {
@@ -278,65 +273,38 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
           searchParameters.sortBy === 'agency' ? 'agency_name' : 'last_name';
         q = query(q, orderBy(sortField, searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
-        if (false && sortField === 'last_name') {
-          q = query(q, orderBy('first_name', searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
-        }
-
-        // Get total count efficiently
-        /*
-        const total = await getTotalCount();
-        if (isMounted) {
-          setTotalCount(total);
-        }
-        */
-
-        // Fetch more records to ensure we get enough unique officers
         q = query(q, limit(pageSize * 10)); // Increased multiplier to handle more duplicates
 
-        // Manejar navegación por cursor
-      const direction = searchParameters.direction;
-      // En paginación por cursor, mantenemos el control de página actual internamente
-      const currentPageNum = currentPage;
-      
-      // Manejar navegación por cursor
-      if (direction === 'next' && lastDoc) {
-        // Avanzar hacia adelante - usamos el último documento visible de la página actual como punto de partida
-        // Esto evita que el último registro de la página anterior se duplique como primer registro de la siguiente
-        q = query(q, startAfter(lastDoc));
-        console.log('Avanzando a la siguiente página con cursor:', lastDoc.id);
-      } else if (direction === 'prev' && currentPageNum > 1) {
-        console.log('Retrocediendo a la página anterior');
-        
-        // Para retroceder, necesitamos obtener el cursor del inicio de la página anterior
-        const history = cursorHistoryRef.current;
-        const prevIndex = history.currentIndex - 1;
-        
-        if (prevIndex >= 0 && prevIndex < history.cursors.length) {
-          // Usamos el cursor de la página anterior como punto de partida
-          const prevCursor = history.cursors[prevIndex];
-          q = query(q, startAfter(prevCursor));
-          
-          // Actualizamos el índice actual en el historial
-          cursorHistoryRef.current.currentIndex = prevIndex;
-          console.log(`Usando cursor del historial en índice ${prevIndex} para retroceder (ID: ${prevCursor.id})`);
-        } else if (prevIndex === -1) {
-          // Estamos volviendo a la primera página
-          console.log('Retrocediendo a la primera página');
-          // No necesitamos añadir ningún cursor para la primera página
-          // Al no modificar la consulta, se cargará la primera página
-          cursorHistoryRef.current.currentIndex = -1;
-        } else {
-          console.log('No hay suficiente historial para retroceder, recargando desde el principio');
-          // Si no tenemos suficiente historial, volvemos a la primera página
-          // Al no modificar la consulta, se cargará la primera página
-          cursorHistoryRef.current.currentIndex = -1;
+        const direction = searchParameters.direction;
+        const currentPageNum = currentPage;
+
+        console.log('DIRECTION', direction, lastDoc);
+        if (direction === 'next' && lastDoc) {
+          q = query(q, startAfter(lastDoc));
+          console.log('Avanzando a la siguiente página con cursor:', lastDoc.id);
+        } else if (direction === 'prev' && currentPageNum > 1) {
+          console.log('Retrocediendo a la página anterior');
+
+          const history = cursorHistoryRef.current;
+          const prevIndex = history.currentIndex - 1;
+
+          if (prevIndex >= 0 && prevIndex < history.cursors.length) {
+            const prevCursor = history.cursors[prevIndex];
+            q = query(q, startAfter(prevCursor));
+
+            cursorHistoryRef.current.currentIndex = prevIndex;
+            console.log(`Usando cursor del historial en índice ${prevIndex} para retroceder (ID: ${prevCursor.id})`);
+          } else if (prevIndex === -1) {
+            console.log('Retrocediendo a la primera página');
+            cursorHistoryRef.current.currentIndex = -1;
+          } else {
+            console.log('No hay suficiente historial para retroceder, recargando desde el principio');
+            cursorHistoryRef.current.currentIndex = -1;
+          }
+        } else if (currentPageNum === 1 || !direction) {
+          console.log('Cargando primera página');
+          cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
         }
-      } else if (currentPageNum === 1 || !direction) {
-        // Primera página o carga inicial sin dirección especificada
-        console.log('Cargando primera página');
-        // Reiniciamos el historial de cursores
-        cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
-      }
 
         let snapshot = await getDocs(q);
         if (!isMounted) return;
@@ -377,16 +345,17 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         if (snapshot.docs.length > 0) {
           // Documento inicial (para navegación prev)
           setFirstDoc(snapshot.docs[0]);
-          
+
           // Último documento visible (para navegación next)
+          console.log('lastDocIndex', lastDocIndex);
           if (lastDocIndex >= 0) {
             const newFirstDoc = snapshot.docs[0]; // Primer documento de esta página
             const newLastDoc = snapshot.docs[lastDocIndex]; // Último documento visible
             setLastDoc(newLastDoc);
-            
+
             // Sistema mejorado para el historial de cursores
             // Almacenamos el primer documento de cada página para permitir navegación fluida
-            
+
             // Para la primera página, simplemente reiniciamos el historial
             if (currentPageNum === 1) {
               cursorHistoryRef.current = {
@@ -399,20 +368,20 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
             else if (direction === 'next') {
               const newCursors = [...cursorHistoryRef.current.cursors];
               const newIndex = cursorHistoryRef.current.currentIndex + 1;
-              
+
               // Truncar el historial si estamos reescribiendo una navegación previa
               if (newIndex < newCursors.length) {
                 newCursors.splice(newIndex);
               }
-              
+
               // Guardamos el primer documento de esta página para permitir navegación hacia atrás
               newCursors.push(snapshot.docs[0]);
-              
+
               cursorHistoryRef.current = {
                 cursors: newCursors,
                 currentIndex: newIndex
               };
-              
+
               console.log(`Actualizando historial (avance): ${newCursors.length} cursores, índice ${newIndex}`);
             }
             // Para carga inicial sin dirección (ej. refresh de página o acceso directo a URL)
@@ -422,12 +391,12 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
               const newCursors = [];
               // Guardamos el primer documento de esta página
               newCursors.push(snapshot.docs[0]);
-              
+
               cursorHistoryRef.current = {
                 cursors: newCursors,
                 currentIndex: 0
               };
-              
+
               console.log(`Inicializando historial para página ${currentPageNum}`);
             }
             // No modificamos el historial cuando navegamos hacia atrás, ya que eso lo maneja
@@ -442,14 +411,14 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         if (!direction) {
           newPage = currentPageNum; // Mantenemos la página del URL en carga inicial
         } else {
-          newPage = direction === 'next' ? currentPageNum + 1 : 
-                  direction === 'prev' ? Math.max(1, currentPageNum - 1) : currentPageNum;
+          newPage = direction === 'next' ? currentPageNum + 1 :
+            direction === 'prev' ? Math.max(1, currentPageNum - 1) : currentPageNum;
         }
-        
+
         setCurrentPage(newPage);
         setHasPreviousPage(newPage > 1);
         setHasNextPage(uniqueCount >= searchParameters.pageSize); // Si tenemos una página completa, asumimos que hay más
-        
+
         console.log(`Found ${uniqueCount} unique officers after ${attempts + 1} attempts`);
 
         // Sort and set results efficiently
@@ -479,19 +448,21 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
     return () => {
       isMounted = false;
     };
-  }, [state, searchParameters]);
+  }, [state, searchParameters.direction, searchParameters.pageSize, searchParameters.page]);
 
   // Reset pagination and total count when filters change
   useEffect(() => {
+    console.log('AITO 2');
     // Reiniciar cursores y página actual cuando cambian los filtros
+    console.log('reset');
     setLastDoc(null);
     setFirstDoc(null);
     setCurrentPage(1);
     cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
-    
+
     // Reiniciar estado de navegación
     setHasPreviousPage(false);
-    
+
     // Reset total count to stats value when filters are cleared
     if (!searchParameters.query && !searchParameters.agency && !searchParameters.startDate && !searchParameters.endDate) {
       getTotalCount().then(count => {

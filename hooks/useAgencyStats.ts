@@ -51,14 +51,12 @@ export function useAgencyStats(agencyName: string) {
           .toLowerCase()
           .replace(/[/\\]/g, '%2F') // Replace slashes with a descriptive replacement
           .replace(/[^a-z0-9-]/g, '-');
-        console.log('Agency ID:', agencyId);
         // Check the new collection first
         const statsRef = doc(db, 'statistics_per_agency', agencyId);
         const statsDoc = await getDoc(statsRef);
 
         if (statsDoc.exists()) {
           const statsData = statsDoc.data() as AgencyStats;
-          console.log('statsData', statsData);
 
           // Ensure stats array exists and total_officers is reflected in stats
           if (!statsData.stats) {
@@ -80,11 +78,9 @@ export function useAgencyStats(agencyName: string) {
           const calculatedStats = await calculateAgencyStats(agencyName);
           
           if (calculatedStats) {
-            console.log(`Successfully calculated stats for ${agencyName} on-the-fly`);
             setStats(calculatedStats);
           } else {
             // Fall back to default stats if calculation fails
-            console.log(`Failed to calculate stats for ${agencyName}, using defaults`);
             setStats(createDefaultStats(agencyName));
           }
           }

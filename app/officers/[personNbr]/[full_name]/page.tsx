@@ -405,7 +405,7 @@ export default function OfficerProfilePage() {
             </div>
           </div>
         </div>
-        {process.env.NODE_ENV === 'development' && (
+        {false && process.env.NODE_ENV === 'development' && (
           <div>
             <ul className="list-disc pl-8" style={{height: 400, overflowY: 'auto'}}>
               {records.map((record, index) => (

@@ -40,12 +40,11 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
     agency: searchParams.get('agency') || '',
     sortBy: (searchParams.get('sortBy') as 'name' | 'date' | 'agency' | undefined) || undefined,
     sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc' | undefined) || undefined,
-    page: searchParams.get('page') || '1',
     activeOnly: searchParams.get('activeOnly') || 'false'
   });
 
   const setFilters = (filters: SearchFiltersType) => {
-    setRawFilters({ ...filters, page: '1' });
+    setRawFilters({ ...filters });
   };
 
   // Fetch all agencies for the current state when component mounts
@@ -191,15 +190,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       params.delete('sortOrder');
     }
 
-    if (filters.page) {
-      params.set('page', filters.page);
-      delete filters.page;
-    }
-
-    if (!params.has('page')) {
-      params.set('page', '1');
-    }
-
     // Update URL with search parameters (without causing a full page reload)
     router.push(`?${params.toString()}`, { scroll: false });
   }, [filters, router, searchParams]);
@@ -281,9 +271,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Reset to page 1 when applying new filters via the search button
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', '1');
 
     if (filters.query) params.set('query', filters.query);
     if (filters.agency) params.set('agency', filters.agency);

@@ -48,7 +48,6 @@ export function useAgencies() {
           } satisfies AgencyData;
         });
 
-        console.log('agencyList', agencyList);
         setAgencies(agencyList);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch agencies'));

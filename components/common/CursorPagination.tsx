@@ -31,7 +31,8 @@ export default function CursorPagination({
     const params = new URLSearchParams(searchParams.toString());
     
     // Eliminamos el parámetro page ya que no se puede acceder a una página específica con cursores
-    params.delete('page');
+    params.set('page', direction === 'next' ? (currentPage + 1).toString() : (currentPage - 1).toString());
+    //router.push(`?${params.toString()}`, { scroll: false });
     
     // Establecemos solo la dirección de navegación
     params.set('direction', direction);
