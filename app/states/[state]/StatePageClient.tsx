@@ -21,20 +21,20 @@ function toTitleCase(str: string) {
   );
 }
 
-// Function to render state descriptions with HTML content and make URLs clickable
+
 function parseDescription(text: string | undefined): React.ReactNode {
   if (!text) return null;
 
-  // Check if the description contains HTML tags
+  
   if (text.includes('<')) {
-    // Use the html-react-parser library to render HTML content
+    
     return parse(text, {
       replace: (domNode: any) => {
         if (domNode.type === 'tag') {
           if (domNode.name === 'a') {
-            // Apply consistent styling to all anchor tags
+            
             const props = domNode.attribs || {};
-            // Extract link text safely
+            
             let linkText = props.href;
             if (domNode.children && domNode.children[0] && 'data' in domNode.children[0]) {
               linkText = domNode.children[0].data;
@@ -57,18 +57,18 @@ function parseDescription(text: string | undefined): React.ReactNode {
     });
   }
 
-  // For plain text descriptions with URLs, use the previous implementation
-  // Regular expression to find URLs
+  
+  
   const urlRegex = /(https?:\/\/[^\s]+)/g;
 
-  // Split the text by URLs
+  
   const parts = text.split(urlRegex);
 
-  // Map through parts and convert URLs to anchor tags
+  
   return (
     <>
       {parts.map((part, i) => {
-        // Check if this part is a URL
+        
         if (part.match(urlRegex)) {
           return (
             <a
@@ -81,7 +81,7 @@ function parseDescription(text: string | undefined): React.ReactNode {
             </a>
           );
         }
-        // Return regular text
+        
         return part;
       })}
     </>
@@ -102,18 +102,17 @@ export default function StatePageClient() {
     notFound();
   }
 
-  console.log('resolved search params', resolvedSearchParams);
-  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10); // Default page size of 16
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10); 
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
-  // Obtener la dirección de navegación directamente de los parámetros de URL
+  
   const direction = resolvedSearchParams.direction as 'next' | 'prev' | undefined;
   const page = resolvedSearchParams.page || '1';
 
-  // También mantenemos un estado local para casos donde queramos establecer la dirección programáticamente
+  
   const [navigationDirection, setNavigationDirection] = useState<'next' | 'prev' | undefined>(direction);
 
-  // Actualizar la dirección cuando cambia en los parámetros de URL
+  
   useEffect(() => {
     setNavigationDirection(direction);
   }, [direction]);
@@ -138,12 +137,11 @@ export default function StatePageClient() {
   });
 
   const currentPage = apiCurrentPage;
-  console.log('CURRENT PAGE', apiCurrentPage, currentPage);
-  // Add a separate loading state for search operations
+  
   const [searchLoading, setSearchLoading] = useState(false);
   const loading = statsLoading || officersLoading || searchLoading;
 
-  // Reset searchLoading when officersLoading changes from true to false (search completed)
+  
   useEffect(() => {
     if (!officersLoading) {
       setSearchLoading(false);
@@ -152,10 +150,10 @@ export default function StatePageClient() {
   const error = statsError || officersError;
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  // No necesitamos redirección automática con navegación por cursor
-  // ya que los botones previous/next se deshabilitarán automáticamente
+  
+  
 
-  // Log a warning if we don't have the expected number of officers
+  
   if (!loading && !error && officerGroups.length < pageSize && currentPage < totalPages) {
     console.warn('Warning: Expected', pageSize, 'officers but only got', officerGroups.length);
   }
@@ -214,10 +212,9 @@ export default function StatePageClient() {
                         hasPreviousPage={hasPreviousPage}
                         hasNextPage={hasNextPage}
                         onPageSizeChange={(newSize) => {
-                          console.log('new size', newSize);
                           const params = new URLSearchParams(searchParams.toString());
                           params.set('pageSize', newSize.toString());
-                          // params.set('page', '1'); // Reset to first page on size change
+                          
                           window.location.href = `/states/${state}?${params.toString()}`;
                         }}
                       />

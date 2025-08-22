@@ -34,6 +34,7 @@ export interface SearchFilters {
   sortOrder?: 'asc' | 'desc';
   page?: string;
   activeOnly?: string;
+  reset?: boolean; 
 }
 
 export interface StateData {

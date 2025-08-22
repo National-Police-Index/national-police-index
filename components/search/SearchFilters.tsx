@@ -26,6 +26,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
   const [filteredAgencies, setFilteredAgencies] = useState<{ name: string, count: number }[]>([]);
   const [isLoadingAgencies, setIsLoadingAgencies] = useState(false);
   const [isLoadingFullAgencyList, setIsLoadingFullAgencyList] = useState(false);
+  const [reset, setReset] = useState(false);
 
   // Initialize filters from URL params
   const searchParams = useSearchParams();
@@ -40,10 +41,12 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
     agency: searchParams.get('agency') || '',
     sortBy: (searchParams.get('sortBy') as 'name' | 'date' | 'agency' | undefined) || undefined,
     sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc' | undefined) || undefined,
-    activeOnly: searchParams.get('activeOnly') || 'false'
+    activeOnly: searchParams.get('activeOnly') || 'false',
+    reset,
   });
 
   const setFilters = (filters: SearchFiltersType) => {
+    setReset(true);
     setRawFilters({ ...filters });
   };
 
@@ -69,12 +72,10 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       } else if (query.trim().length >= 2) {
         // If we have a substantive query but no results, we might need to wait for the full list to load
         setIsLoadingFullAgencyList(true);
-        console.log(`No immediate results for "${query}", waiting for full agency list...`);
 
         // Set a timeout to check again in case the background load is still in progress
         setTimeout(() => {
           const updatedFiltered = filterAgenciesByTerm(state, query);
-          console.log(`Second attempt for "${query}" found ${updatedFiltered.length} results`);
           setFilteredAgencies(updatedFiltered);
           setIsLoadingAgencies(false);
           setIsLoadingFullAgencyList(false);
@@ -101,7 +102,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
           setFilteredAgencies(results.slice(0, 100)); // Only show first 100 initially
           setIsLoadingAgencies(false);
 
-          console.log(`Initial load: ${results.length} agencies for ${state}`);
 
           // If we have a query already, filter the results again
           if (agencyQuery && agencyQuery.trim().length >= 2) {
@@ -109,7 +109,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
           }
         })
         .catch(error => {
-          console.error('Error fetching agencies:', error);
           setIsLoadingAgencies(false);
         });
     }
@@ -183,7 +182,11 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       params.delete('sortOrder');
     }
     // Update URL with search parameters (without causing a full page reload)
-    console.log('AITO 7');
+    if (reset) {
+      params.set('page', '1');
+      params.delete('direction');
+      setReset(false);
+    }
     router.push(`?${params.toString()}`, { scroll: false });
   }, [filters, router, searchParams]);
 
@@ -208,7 +211,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       document.body.removeChild(link);
       */
     } catch (error) {
-      console.error('Error downloading CSV:', error);
       alert('Error downloading CSV. Please try again later.');
     }
   };
@@ -248,7 +250,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       */
       window.open(url);
     } catch (error) {
-      console.error('Error downloading CSV:', error);
       alert('Error generating filtered CSV. Please try again later.');
     }
   };
@@ -274,7 +275,6 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
     if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
 
-    console.log('AITO 5', params.toString());
     // Update URL with search parameters
     router.push(`?${params.toString()}`, { scroll: false });
   };
