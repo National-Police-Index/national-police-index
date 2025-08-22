@@ -68,6 +68,14 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
     currentIndex: number;
   }>({ cursors: [], currentIndex: -1 });
   
+  // Control para prevenir refetching innecesarios
+  const fetchStateRef = useRef({
+    isFetching: false,
+    fetchCount: 0,
+    lastParams: '',
+    debounceTimer: null as ReturnType<typeof setTimeout> | null
+  });
+  
   // Genera una clave única para los filtros actuales (excluyendo página y cursor)
   const filtersCacheKey = useMemo(() => {
     return JSON.stringify({
@@ -204,7 +212,43 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
     });
   }, [getTotalCount]);
   
+  // Memoizar los parámetros de búsqueda para comparación
+  const searchParamsString = useMemo(() => JSON.stringify({
+    agencyName, 
+    query: searchParameters.query,
+    startDate: searchParameters.startDate,
+    endDate: searchParameters.endDate,
+    activeOnly: searchParameters.activeOnly,
+    sortBy: searchParameters.sortBy,
+    sortOrder: searchParameters.sortOrder,
+    pageSize: searchParameters.pageSize,
+    direction: searchParameters.direction,
+    page: searchParameters.page
+  }), [agencyName, searchParameters]);
+
   useEffect(() => {
+    let isMounted = true;
+    
+    // Comprobamos si los parámetros son los mismos que en la última consulta
+    if (fetchStateRef.current.lastParams === searchParamsString) {
+      console.log('Saltando la búsqueda - mismos parámetros que la solicitud anterior (agency)');
+      return;
+    }
+    
+    // Cancelamos cualquier temporizador de debounce anterior
+    if (fetchStateRef.current.debounceTimer) {
+      clearTimeout(fetchStateRef.current.debounceTimer);
+    }
+    
+    // Aplicamos debounce para evitar múltiples solicitudes en sucesión rápida
+    fetchStateRef.current.debounceTimer = setTimeout(() => {
+      // Marcamos que estamos comenzando una nueva búsqueda
+      fetchStateRef.current.isFetching = true;
+      fetchStateRef.current.lastParams = searchParamsString;
+      fetchStateRef.current.fetchCount++;
+      fetchOfficers();
+    }, 300);
+    
     async function fetchOfficers() {
       try {
         setLoading(true);
@@ -455,12 +499,51 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch officers'));
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          // Marcamos que hemos terminado de buscar
+          fetchStateRef.current.isFetching = false;
+        }
       }
     }
-
-    fetchOfficers();
-  }, [agencyName, searchParameters.direction, searchParameters.pageSize, searchParameters.page]);
+    
+    // No llamamos directamente a fetchOfficers() aquí, ya se llama en el setTimeout
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      // Limpiamos el temporizador si el componente se desmonta
+      if (fetchStateRef.current.debounceTimer) {
+        clearTimeout(fetchStateRef.current.debounceTimer);
+      }
+    };
+  }, [searchParamsString]);
+  
+  // Reiniciar paginación cuando cambian los filtros pero no la dirección
+  useEffect(() => {
+    // Extraemos los parámetros de filtro sin incluir dirección y página
+    const filtersOnly = JSON.stringify({
+      agencyName, 
+      query: searchParameters.query,
+      startDate: searchParameters.startDate,
+      endDate: searchParameters.endDate,
+      activeOnly: searchParameters.activeOnly,
+      sortBy: searchParameters.sortBy,
+      sortOrder: searchParameters.sortOrder,
+      pageSize: searchParameters.pageSize
+    });
+    
+    // Si cambian los filtros (pero no solo la dirección o página)
+    if (!searchParameters.direction && !searchParameters.page) {
+      console.log('Reiniciando paginación por cambio de filtros (agency)');
+      setCurrentPage(1);
+      setLastDoc(null);
+      cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
+      setHasPreviousPage(false);
+    }
+  }, [agencyName, searchParameters.query, searchParameters.startDate, searchParameters.endDate, 
+      searchParameters.activeOnly, searchParameters.sortBy, searchParameters.sortOrder, 
+      searchParameters.pageSize]);
 
   return {
     loading,

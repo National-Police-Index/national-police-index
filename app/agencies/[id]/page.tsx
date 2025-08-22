@@ -63,7 +63,7 @@ export default function AgencyPage() {
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [officersLoading ]);
+  }, [officersLoading]);
 
   const loading = statsLoading || officersLoading || searchLoading;
   const error = statsError || officersError;

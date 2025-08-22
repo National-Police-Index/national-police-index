@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 import styles from './Pagination.module.scss';
 
 interface CursorPaginationProps {
@@ -36,6 +35,7 @@ export default function CursorPagination({
     
     // Establecemos solo la dirección de navegación
     params.set('direction', direction);
+    console.log('CREATE PAGE URL', params.toString());
     
     return `${baseUrl}?${params.toString()}`;
   };

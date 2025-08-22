@@ -30,8 +30,9 @@ interface UseOfficersByUidProps {
 }
 
 export function useOfficersByUid({ state, searchParams = { pageSize: '16', page: '' } }: UseOfficersByUidProps) {
-  console.log('AITO 3', searchParams);
+  console.log('AITO 3', JSON.stringify(searchParams));
   // Memoize search parameters to prevent unnecessary re-renders
+  const searchParamsString = useMemo(() => JSON.stringify(searchParams), [searchParams]);
   const searchParameters = useMemo(() => ({
     query: searchParams.query?.toLowerCase() || '',
     agency: searchParams.agency || '',
@@ -44,7 +45,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
     direction: searchParams.direction,
     // page: searchParams.page
   }), [searchParams.query, searchParams.agency, searchParams.startDate,
-  searchParams.endDate, searchParams.sortBy, searchParams.sortOrder,
+  searchParams.endDate, searchParams.sortOrder,
   searchParams.pageSize, searchParams.direction, searchParams.page]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -62,7 +63,8 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
   const fetchStateRef = useRef({
     isFetching: false,
     fetchCount: 0,
-    lastParams: ''
+    lastParams: '',
+    debounceTimer: null as ReturnType<typeof setTimeout> | null
   });
 
   // References para almacenar el historial de documentos para navegación
@@ -206,20 +208,39 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
   }, []);
 
   useEffect(() => {
-    console.log('AITO 1');
     let isMounted = true;
-
+    
+    // Comprobamos si los parámetros son los mismos que en la última consulta
+    if (fetchStateRef.current.lastParams === searchParamsString) {
+      console.log('Skipping fetch - same parameters as previous request');
+      return;
+    }
+    
+    // Cancelamos cualquier solicitud anterior
     if (cancelTokenRef.current) {
       cancelTokenRef.current.abort();
       console.log('Aborted previous fetch request');
     }
-
+    
+    // Cancelamos cualquier temporizador de debounce anterior
+    if (fetchStateRef.current.debounceTimer) {
+      clearTimeout(fetchStateRef.current.debounceTimer);
+    }
+    
+    // Creamos un nuevo token de cancelación
     cancelTokenRef.current = new AbortController();
-    const timeoutId = setTimeout(() => {
+    
+    // Aplicamos debounce para evitar múltiples solicitudes en sucesión rápida
+    fetchStateRef.current.debounceTimer = setTimeout(() => {
+      // Marcamos que estamos comenzando una nueva búsqueda
+      fetchStateRef.current.isFetching = true;
+      fetchStateRef.current.lastParams = searchParamsString;
+      fetchStateRef.current.fetchCount++;
       fetchOfficers();
-    }, 500);
-
+    }, 300);
+    
     async function fetchOfficers() {
+      console.log('FETCH OFFICERS', searchParamsString);
       try {
         setLoading(true);
         setError(null);
@@ -239,10 +260,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
 
         // Build the optimized query
         let q = query(officersRef, where('state', '==', state.toLowerCase()));
-        // if (false && ['georgia', 'florida'].includes(state.toLowerCase())) {
-        if (false && ['georgia', 'florida'].includes(state.toLowerCase())) {
-          q = query(officersRef, where('state', '==', `${state.toLowerCase()}-discipline`));
-        }
 
         // Add filters efficiently
         if (searchParameters.query) {
@@ -278,7 +295,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
 
-        console.log('DIRECTION', direction, lastDoc);
+        console.log('DIRECTION', direction, currentPageNum, lastDoc);
         if (direction === 'next' && lastDoc) {
           q = query(q, startAfter(lastDoc));
           console.log('Avanzando a la siguiente página con cursor:', lastDoc.id);
@@ -351,8 +368,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
           if (lastDocIndex >= 0) {
             const newFirstDoc = snapshot.docs[0]; // Primer documento de esta página
             const newLastDoc = snapshot.docs[lastDocIndex]; // Último documento visible
-            setLastDoc(newLastDoc);
 
+            setLastDoc(newLastDoc);
+            console.log('newLastDoc', newLastDoc);
             // Sistema mejorado para el historial de cursores
             // Almacenamos el primer documento de cada página para permitir navegación fluida
 
@@ -438,22 +456,36 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
       } finally {
         if (isMounted) {
           setLoading(false);
+          // Marcamos que hemos terminado de buscar
+          fetchStateRef.current.isFetching = false;
         }
       }
     }
-
-    fetchOfficers();
-
+    
+    // No llamamos directamente a fetchOfficers() aquí, ya se llama en el setTimeout
+    
     // Cleanup function
     return () => {
       isMounted = false;
+      // Limpiamos el temporizador si el componente se desmonta
+      if (fetchStateRef.current.debounceTimer) {
+        clearTimeout(fetchStateRef.current.debounceTimer);
+      }
+      // Cancelamos cualquier solicitud pendiente
+      if (cancelTokenRef.current) {
+        cancelTokenRef.current.abort();
+      }
     };
-  }, [state, searchParameters.direction, searchParameters.pageSize, searchParameters.page]);
+  },
+    [state, searchParamsString]);
 
   // Reset pagination and total count when filters change
   useEffect(() => {
+    console.log('RESET', searchParameters.page);
+    if (searchParameters.page && searchParameters.page !== '1') {
+      return;
+    }
     console.log('AITO 2');
-    // Reiniciar cursores y página actual cuando cambian los filtros
     console.log('reset');
     setLastDoc(null);
     setFirstDoc(null);
@@ -469,8 +501,7 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         setTotalCount(count);
       });
     }
-  }, [searchParameters.query, searchParameters.agency, searchParameters.startDate,
-  searchParameters.endDate, searchParameters.sortBy, searchParameters.sortOrder, searchParameters.pageSize, getTotalCount]);
+  }, [searchParameters, getTotalCount]);
 
   return {
     loading,

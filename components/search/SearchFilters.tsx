@@ -56,11 +56,11 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       setIsLoadingAgencies(false);
       return;
     }
-    
+
     if (state) {
       // Use the more efficient client-side filtering from our cache
       const filtered = filterAgenciesByTerm(state, query);
-      
+
       // If we got results or the query is too short, update immediately
       if (filtered.length > 0 || query.trim().length < 2) {
         setFilteredAgencies(filtered);
@@ -70,7 +70,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
         // If we have a substantive query but no results, we might need to wait for the full list to load
         setIsLoadingFullAgencyList(true);
         console.log(`No immediate results for "${query}", waiting for full agency list...`);
-        
+
         // Set a timeout to check again in case the background load is still in progress
         setTimeout(() => {
           const updatedFiltered = filterAgenciesByTerm(state, query);
@@ -100,9 +100,9 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
           setAgencies(results);
           setFilteredAgencies(results.slice(0, 100)); // Only show first 100 initially
           setIsLoadingAgencies(false);
-          
+
           console.log(`Initial load: ${results.length} agencies for ${state}`);
-          
+
           // If we have a query already, filter the results again
           if (agencyQuery && agencyQuery.trim().length >= 2) {
             filterAgenciesByQuery(agencyQuery);
@@ -171,26 +171,19 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       params.delete('endDate');
     }
 
-    if (filters.sortBy) {
-      params.set('sortBy', filters.sortBy);
-    } else {
-      params.delete('sortBy');
-    }
-
     if (filters.activeOnly) {
       params.set('activeOnly', filters.activeOnly);
     } else {
       params.delete('activeOnly');
     }
 
-
     if (filters.sortOrder) {
       params.set('sortOrder', filters.sortOrder);
     } else {
       params.delete('sortOrder');
     }
-
     // Update URL with search parameters (without causing a full page reload)
+    console.log('AITO 7');
     router.push(`?${params.toString()}`, { scroll: false });
   }, [filters, router, searchParams]);
 
@@ -272,7 +265,8 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
     e.preventDefault();
 
     const params = new URLSearchParams(searchParams.toString());
-
+    params.set('page', '1');
+    params.delete('direction');
     if (filters.query) params.set('query', filters.query);
     if (filters.agency) params.set('agency', filters.agency);
     if (filters.startDate) params.set('startDate', filters.startDate.toISOString());
@@ -280,6 +274,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
     if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
 
+    console.log('AITO 5', params.toString());
     // Update URL with search parameters
     router.push(`?${params.toString()}`, { scroll: false });
   };
@@ -296,7 +291,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                 <path d="M22 22.5L20 20.5" stroke="#122823" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <input
+            {false && <input
               type="text"
               name="search"
               id="search"
@@ -331,10 +326,43 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                   handleSearch(e);
                 }
               }}
+            />}
+            <input
+              type="text"
+              name="search"
+              id="search"
+              placeholder="Search Data"
+              value={searchQuery}
+              onChange={(e) => {
+                e.preventDefault();
+                const newQuery = e.target.value;
+                setSearchQuery(newQuery);
+
+                if (newQuery === '') {
+                  setFilters({ ...filters, query: '' });
+
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete('query');
+                  params.set('page', '1');
+                  params.delete('direction');
+                  router.push(`?${params.toString()}`, { scroll: false });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                }
+              }}
             />
             <button
               type="submit"
               className={styles.searchButton}
+              onClick={(e) => {
+                e.preventDefault();
+                if (onSearchStarted) onSearchStarted();
+                setFilters({ ...filters, query: searchQuery });
+                handleSearch(e);
+              }
+              }
             >
               Search
             </button>
@@ -388,8 +416,8 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                   )}
                   {agencyQuery && agencyQuery.length > 0 && (
                     <div className={styles.agencyCount}>
-                      {filteredAgencies.length > 0 && !isLoadingAgencies ? 
-                        `${filteredAgencies.length} results` : ''}  
+                      {filteredAgencies.length > 0 && !isLoadingAgencies ?
+                        `${filteredAgencies.length} results` : ''}
                     </div>
                   )}
                   <Combobox.Input
@@ -399,19 +427,19 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                     onChange={(e) => {
                       const value = e.target.value;
                       setAgencyQuery(value);
-                      
+
                       // When clearing the input, also clear the selected agency
                       if (!value.trim()) {
                         setFilters({ ...filters, agency: '' });
                       }
-                      
+
                       // Show loading state immediately on input
                       if (value.trim().length > 1) {
                         setIsLoadingAgencies(true);
                       } else {
                         setIsLoadingAgencies(false);
                       }
-                      
+
                       // If Enter is pressed, filter immediately
                       const keyEvent = window.event as KeyboardEvent;
                       if (keyEvent && keyEvent.key === 'Enter') {
@@ -419,7 +447,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                       } else {
                         debouncedFilter(value);
                       }
-                    }} 
+                    }}
                     displayValue={(agency: string) => agency}
                   />
                 </div>
@@ -459,7 +487,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
                             `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? styles.active : 'text-gray-900'}`
                           }
                         >
-                          {({ selected}) => (
+                          {({ selected }) => (
                             <>
                               <div className="flex items-center justify-between">
                                 <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
