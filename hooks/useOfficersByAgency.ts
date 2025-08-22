@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { collectionGroup, query, where, getDocs, orderBy, limit, doc, getDoc, startAfter, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PoliceOfficer } from '@/types';
@@ -51,6 +51,7 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
   const [sortedGroups, setSortedGroups] = useState<OfficerGroup[]>([]);
   const [totalOfficers, setTotalOfficers] = useState<number | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   
   // Estados para la paginación por cursor
   const [currentPage, setCurrentPage] = useState<number>(parseInt(searchParams.page || '1', 10));
@@ -58,12 +59,151 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [lastDoc, setLastDoc] = useState<any | null>(null);
   
+  // Caché para el conteo total de oficiales basado en los filtros
+  const [countCache, setCountCache] = useState<Record<string, number>>({});
+  
   // Referencias para el historial de cursores
   const cursorHistoryRef = useRef<{
     cursors: any[];
     currentIndex: number;
   }>({ cursors: [], currentIndex: -1 });
+  
+  // Genera una clave única para los filtros actuales (excluyendo página y cursor)
+  const filtersCacheKey = useMemo(() => {
+    return JSON.stringify({
+      agencyName,
+      query: searchParameters.query,
+      startDate: searchParameters.startDate,
+      endDate: searchParameters.endDate,
+      activeOnly: searchParameters.activeOnly,
+      sortBy: searchParameters.sortBy,
+      sortOrder: searchParameters.sortOrder,
+      pageSize: searchParameters.pageSize
+    });
+  }, [agencyName, searchParameters.query, searchParameters.startDate, searchParameters.endDate,
+      searchParameters.activeOnly, searchParameters.sortBy, searchParameters.sortOrder,
+      searchParameters.pageSize]);
+      
+  // Función para obtener el conteo total de oficiales
+  const getTotalCount = useCallback(async () => {
+    try {
+      // Primero verificamos si tenemos el conteo en caché para estos filtros
+      if (countCache[filtersCacheKey]) {
+        console.log('Usando conteo en caché (agency):', countCache[filtersCacheKey]);
+        return countCache[filtersCacheKey];
+      }
+      
+      // Si no hay filtros especiales, intentamos obtener el recuento de las estadísticas
+      if (!searchParameters.query && !searchParameters.startDate && 
+          !searchParameters.endDate && !searchParameters.activeOnly) {
+        
+        // Intentamos obtener de las estadísticas
+        const statsRef = doc(db, 'statistics_per_agency', normalizedAgencyId);
+        const statsDoc = await getDoc(statsRef);
+        
+        if (statsDoc.exists()) {
+          const data = statsDoc.data();
+          // Primero intentamos total_officers
+          if (data.total_officers) {
+            const count = parseInt(data.total_officers, 10);
+            // Guardamos en caché
+            setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+            return count;
+          }
+          // Fallback a stats array
+          else if (data.stats) {
+            const officerStats = data.stats.find((stat: any) => stat.label === 'Total Officers');
+            if (officerStats) {
+              const count = parseInt(officerStats.value, 10);
+              // Guardamos en caché
+              setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+              return count;
+            }
+          }
+        }
+        
+        // Si no hay stats en la nueva colección, intentamos la antigua
+        const oldStatsRef = doc(db, 'agency_statistics', normalizedAgencyId);
+        const oldStatsDoc = await getDoc(oldStatsRef);
+        
+        if (oldStatsDoc.exists()) {
+          const statsData = oldStatsDoc.data();
+          const totalOfficersStat = statsData.stats?.find((stat: any) => stat.label === 'Total Officers');
+          if (totalOfficersStat) {
+            const count = parseInt(totalOfficersStat.value, 10);
+            // Guardamos en caché
+            setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+            return count;
+          }
+        }
+      }
+      
+      // Si llegamos aquí, necesitamos hacer una consulta para contar
+      console.log('Calculando conteo con consulta, no hay valor en caché (agency)');
+      
+      try {
+        // Construimos una consulta con los mismos filtros para contar
+        let countQuery = query(collectionGroup(db, 'officers'));
+        countQuery = query(countQuery, where('agency_name', '==', agencyName));
+        countQuery = query(countQuery, limit(10000)); // Límite alto para conteo
+        
+        // Aplicamos los filtros a la consulta
+        if (searchParameters.query) {
+          countQuery = query(countQuery, where(
+            'searchQueries',
+            'array-contains-any',
+            searchParameters.query.toLowerCase().split(' ').slice(0, 20), // firestore limit is 30, 20 to be safe
+          ));
+        }
+        
+        if (searchParameters.startDate) {
+          const startDate = new Date(searchParameters.startDate);
+          countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
+        }
+        
+        if (searchParameters.endDate) {
+          const endDate = new Date(searchParameters.endDate);
+          countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
+        }
+        
+        if (searchParameters.activeOnly === 'true') {
+          countQuery = query(countQuery, where('end_date', '==', ''));
+        }
+        
+        // Ejecutamos la consulta
+        const countSnapshot = await getDocs(countQuery);
+        
+        // Contamos los números de persona únicos
+        const uniqueOfficers = new Set();
+        countSnapshot.docs.forEach(doc => {
+          const officer = doc.data() as PoliceOfficer;
+          uniqueOfficers.add(officer.person_nbr);
+        });
+        
+        const uniqueCount = uniqueOfficers.size;
+        
+        // Guardamos el resultado en caché
+        setCountCache(prev => ({ ...prev, [filtersCacheKey]: uniqueCount }));
+        
+        return uniqueCount;
+      } catch (countErr) {
+        // Valor por defecto en caso de error
+        console.error('Error calculando conteo (agency):', countErr);
+        return 500; // Valor por defecto
+      }
+    } catch (err) {
+      console.error('Error en getTotalCount (agency):', err);
+      return 500; // Valor por defecto
+    }
+  }, [agencyName, normalizedAgencyId, filtersCacheKey, countCache, searchParameters]);
 
+  // Obtener el conteo total
+  useEffect(() => {
+    getTotalCount().then(count => {
+      setTotalCount(count);
+    });
+  }, [getTotalCount]);
+  
   useEffect(() => {
     async function fetchOfficers() {
       try {
@@ -201,6 +341,11 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
         let attempts = 0;
         const maxAttempts = 10;
         
+        // Actualizar conteo de página para CursorPagination
+        getTotalCount().then(count => {
+          setTotalCount(count);
+        });
+        
         // Keep fetching until we get pageSize unique officers or hit the last record
         while (uniqueCount < pageSize && attempts < maxAttempts && snapshot.docs.length > 0) {
           for (let i = 0; i < snapshot.docs.length && uniqueCount < pageSize; i++) {
@@ -321,7 +466,8 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
     loading,
     error,
     officerGroups,
-    totalGroups: totalOfficers !== null ? totalOfficers : (sortedGroups?.length || 0),
+    totalGroups: totalOfficers !== null ? totalOfficers : totalCount,
+    totalCount,
     currentPage,
     hasNextPage,
     hasPreviousPage
