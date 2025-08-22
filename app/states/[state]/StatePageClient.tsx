@@ -7,7 +7,7 @@ import { useStateStats } from '@/hooks/useStateStats';
 import SearchFilters from '@/components/search/SearchFilters';
 import { US_STATES, STATE_DESCRIPTIONS } from '@/constants/states';
 import PageHeader from '@/components/PageHeader';
-import Pagination from '@/components/common/Pagination';
+import CursorPagination from '@/components/common/CursorPagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
@@ -103,15 +103,36 @@ export default function StatePageClient() {
   }
 
   const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
-  const pageSize = 16; // Fixed page size
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '16', 10); // Default page size of 16
 
   const { loading: statsLoading, error: statsError, stats } = useStateStats(state);
-  const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByUid({
+  // Obtener la dirección de navegación directamente de los parámetros de URL
+  const direction = resolvedSearchParams.direction as 'next' | 'prev' | undefined;
+  
+  // También mantenemos un estado local para casos donde queramos establecer la dirección programáticamente
+  const [navigationDirection, setNavigationDirection] = useState<'next' | 'prev' | undefined>(direction);
+
+  // Actualizar la dirección cuando cambia en los parámetros de URL
+  useEffect(() => {
+    setNavigationDirection(direction);
+  }, [direction]);
+
+  const { 
+    loading: officersLoading, 
+    error: officersError, 
+    officerGroups, 
+    totalGroups,
+    hasNextPage,
+    hasPreviousPage,
+    currentPage: apiCurrentPage,
+    pageSize: apiPageSize 
+  } = useOfficersByUid({
     state,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
-      page: currentPage.toString()
+      page: currentPage.toString(),
+      direction: navigationDirection || undefined
     }
   });
 
@@ -128,11 +149,8 @@ export default function StatePageClient() {
   const error = statsError || officersError;
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
-  useEffect(() => {
-    if (!loading && currentPage > totalPages && totalPages > 0) {
-      window.location.href = `/states/${state}?page=${totalPages}`;
-    }
-  }, [loading, currentPage, totalPages, state]);
+  // No necesitamos redirección automática con navegación por cursor
+  // ya que los botones previous/next se deshabilitarán automáticamente
 
   // Log a warning if we don't have the expected number of officers
   if (!loading && !error && officerGroups.length < pageSize && currentPage < totalPages) {
@@ -183,12 +201,21 @@ export default function StatePageClient() {
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
-                  {totalPages > 0 && (
+                  {totalGroups > 0 && (
                     <div>
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={Math.max(1, totalPages)}
+                      <CursorPagination
+                        currentPage={apiCurrentPage || currentPage}
+                        totalCount={totalGroups}
+                        pageSize={apiPageSize || pageSize}
                         baseUrl={`/states/${state}`}
+                        hasPreviousPage={hasPreviousPage}
+                        hasNextPage={hasNextPage}
+                        onPageSizeChange={(newSize) => {
+                          const params = new URLSearchParams(searchParams.toString());
+                          params.set('pageSize', newSize.toString());
+                          params.set('page', '1'); // Reset to first page on size change
+                          window.location.href = `/states/${state}?${params.toString()}`;
+                        }}
                       />
                     </div>
                   )}
