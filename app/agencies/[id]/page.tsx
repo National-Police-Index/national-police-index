@@ -7,7 +7,7 @@ import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
 import SearchFilters from '@/components/search/SearchFilters';
 import PageHeader from '@/components/PageHeader';
-import Pagination from '@/components/common/Pagination';
+import CursorPagination from '@/components/common/CursorPagination';
 import OfficerCard from '@/components/officers/OfficerCard';
 import styles from './styles.module.scss';
 import { US_STATES } from '@/constants/states';
@@ -20,6 +20,7 @@ interface SearchParams {
   endDate?: string;
   sortBy?: string;
   sortOrder?: string;
+  direction?: string;
 }
 
 export default function AgencyPage() {
@@ -29,43 +30,32 @@ export default function AgencyPage() {
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
 
-  const currentPage = parseInt(resolvedSearchParams.page || '1', 10);
   const pageSize = 16; // Fixed page size, matches state page
+  const direction = resolvedSearchParams.direction as 'next' | 'prev' | undefined;
+  const page = resolvedSearchParams.page || '1';
 
-  // Get agency statistics
   const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id);
 
   const stateData = US_STATES.find(
     s => s.reference.toLowerCase() === stats?.state.toLowerCase()
   );
-  // Get officers for this agency
-  const { loading: officersLoading, error: officersError, officerGroups, totalGroups } = useOfficersByAgency({
+
+  const { loading: officersLoading, error: officersError, officerGroups, totalGroups, hasNextPage, hasPreviousPage, currentPage: apiCurrentPage } = useOfficersByAgency({
     agencyName: stats?.name || '',
     agencyId: id,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
-      page: currentPage.toString()
+      page,
+      direction
     }
   });
 
-  // Add a separate loading state for search operations
   const [searchLoading, setSearchLoading] = useState(false);
 
-  // Track previous loading state to detect transitions
-  const [prevOfficersLoading, setPrevOfficersLoading] = useState(officersLoading);
-
-  // More aggressive reset of searchLoading state
   useEffect(() => {
-    // Detect when officersLoading transitions from true to false
-    if (prevOfficersLoading && !officersLoading) {
-      setSearchLoading(false);
-    }
+    setSearchLoading(officersLoading);
 
-    // Update previous loading state
-    setPrevOfficersLoading(officersLoading);
-
-    // Safety timeout to prevent stuck loading state (3 seconds max)
     const timeout = setTimeout(() => {
       if (searchLoading) {
         setSearchLoading(false);
@@ -73,21 +63,12 @@ export default function AgencyPage() {
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [officersLoading, searchLoading, prevOfficersLoading]);
+  }, [officersLoading ]);
 
   const loading = statsLoading || officersLoading || searchLoading;
   const error = statsError || officersError;
-  // Calculate total pages based on unique officer groups instead of total records
-  const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
-
   // Debug logging similar to state page
-
-  // Redirect if user is on a page that doesn't exist
-  useEffect(() => {
-    if (!loading && currentPage > totalPages && totalPages > 0) {
-      window.location.href = `/agencies/${encodeURIComponent(id)}?page=${totalPages}`;
-    }
-  }, [loading, currentPage, totalPages, id]);
+  console.log('AGENCY PAGE', { apiCurrentPage, hasNextPage, hasPreviousPage });
   return (
     <div className="w-full mx-auto">
       <PageHeader
@@ -153,15 +134,22 @@ export default function AgencyPage() {
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
-                  {totalPages > 1 && (
-                    <div>
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        baseUrl={`/agencies/${decodeURIComponent(id)}`}
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <CursorPagination
+                      currentPage={apiCurrentPage}
+                      totalCount={totalGroups || 0}
+                      pageSize={pageSize}
+                      baseUrl={`/agencies/${encodeURIComponent(id)}`}
+                      hasPreviousPage={hasPreviousPage}
+                      hasNextPage={hasNextPage}
+                      onPageSizeChange={(newSize) => {
+                        console.log('new size', newSize);
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('pageSize', newSize.toString());
+                        window.location.href = `/agencies/${encodeURIComponent(id)}?${params.toString()}`;
+                      }}
+                    />
+                  </div>
                 </div>
               </>
             )}
