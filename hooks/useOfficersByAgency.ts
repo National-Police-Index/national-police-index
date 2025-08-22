@@ -32,14 +32,26 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
     startDate: searchParams.startDate || '',
     endDate: searchParams.endDate || '',
     activeOnly: searchParams.activeOnly || 'false',
-    sortBy: searchParams.sortBy || 'last_name',
     sortOrder: searchParams.sortOrder || 'asc',
     pageSize: typeof searchParams.pageSize === 'string' ? parseInt(searchParams.pageSize, 10) : (searchParams.pageSize || 16),
     page: parseInt(searchParams.page || '1', 10),
     direction: searchParams.direction
   }), [searchParams.query, searchParams.startDate, searchParams.endDate,
-  searchParams.sortBy, searchParams.sortOrder, searchParams.pageSize, searchParams.page, searchParams.activeOnly,
+  searchParams.sortOrder, searchParams.pageSize, searchParams.page, searchParams.activeOnly,
   searchParams.direction]);
+// Memoizar los parámetros de búsqueda para comparación
+  const searchParamsString = useMemo(() => JSON.stringify({
+    agencyName, 
+    query: searchParameters.query,
+    startDate: searchParameters.startDate,
+    endDate: searchParameters.endDate,
+    activeOnly: searchParameters.activeOnly,
+    sortOrder: searchParameters.sortOrder,
+    pageSize: searchParameters.pageSize,
+    direction: searchParameters.direction,
+    page: searchParameters.page
+  }), [agencyName, searchParameters]);
+
 
   // Get the actual agency ID from the name if not provided
   const normalizedAgencyId = useMemo(() => {
@@ -207,26 +219,7 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
 
   // Obtener el conteo total
   useEffect(() => {
-    getTotalCount().then(count => {
-      setTotalCount(count);
-    });
-  }, [getTotalCount]);
-  
-  // Memoizar los parámetros de búsqueda para comparación
-  const searchParamsString = useMemo(() => JSON.stringify({
-    agencyName, 
-    query: searchParameters.query,
-    startDate: searchParameters.startDate,
-    endDate: searchParameters.endDate,
-    activeOnly: searchParameters.activeOnly,
-    sortBy: searchParameters.sortBy,
-    sortOrder: searchParameters.sortOrder,
-    pageSize: searchParameters.pageSize,
-    direction: searchParameters.direction,
-    page: searchParameters.page
-  }), [agencyName, searchParameters]);
-
-  useEffect(() => {
+    console.log('AITO 5');
     let isMounted = true;
     
     // Comprobamos si los parámetros son los mismos que en la última consulta
@@ -521,19 +514,12 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
   
   // Reiniciar paginación cuando cambian los filtros pero no la dirección
   useEffect(() => {
-    // Extraemos los parámetros de filtro sin incluir dirección y página
-    const filtersOnly = JSON.stringify({
-      agencyName, 
-      query: searchParameters.query,
-      startDate: searchParameters.startDate,
-      endDate: searchParameters.endDate,
-      activeOnly: searchParameters.activeOnly,
-      sortBy: searchParameters.sortBy,
-      sortOrder: searchParameters.sortOrder,
-      pageSize: searchParameters.pageSize
-    });
-    
-    // Si cambian los filtros (pero no solo la dirección o página)
+
+    if (searchParameters.page && searchParameters.page !== '1') {
+      return;
+    }
+
+    console.log('AITO 6');
     if (!searchParameters.direction && !searchParameters.page) {
       console.log('Reiniciando paginación por cambio de filtros (agency)');
       setCurrentPage(1);
@@ -541,8 +527,14 @@ export function useOfficersByAgency({ agencyName, agencyId, searchParams = { pag
       cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
       setHasPreviousPage(false);
     }
+    if (!searchParameters.query && !searchParameters.startDate && !searchParameters.endDate) {
+      getTotalCount().then(count => {
+        setTotalCount(count);
+      });
+    }
+
   }, [agencyName, searchParameters.query, searchParameters.startDate, searchParameters.endDate, 
-      searchParameters.activeOnly, searchParameters.sortBy, searchParameters.sortOrder, 
+      searchParameters.activeOnly, searchParameters.sortOrder, 
       searchParameters.pageSize]);
 
   return {

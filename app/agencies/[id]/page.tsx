@@ -93,7 +93,7 @@ export default function AgencyPage() {
           <SearchFilters
             state={stats?.state}
             agencyMode={true}
-            onSearchStarted={() => { setSearchLoading(true); setTimeout(() => setSearchLoading(false), 1000); }}
+            onSearchStarted={() => setSearchLoading(true)}
           />
 
           {/* Show a notice when stats are being calculated on-the-fly */}

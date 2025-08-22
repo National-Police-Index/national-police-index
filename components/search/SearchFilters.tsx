@@ -111,6 +111,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
         .catch(error => {
           setIsLoadingAgencies(false);
         });
+    console.log('AITO 2');
     }
   }, [state, filterAgenciesByQuery, agencyQuery, agencyMode]);
 
@@ -187,6 +188,7 @@ export default function SearchFilters({ state, agencyMode = false, onSearchStart
       params.delete('direction');
       setReset(false);
     }
+    console.log('AITO 1', params.toString());
     router.push(`?${params.toString()}`, { scroll: false });
   }, [filters, router, searchParams]);
 
