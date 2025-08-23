@@ -68,25 +68,20 @@ export default function CursorPagination({
   );
 
   return (
-    <div className="flex items-center justify-between mt-6">
-      <div className="flex items-center space-x-2">
-        <label htmlFor="page-size" className="text-sm font-medium text-gray-700">
-          Show:
-        </label>
-        <select
-          id="page-size"
-          className="h-9 rounded border border-gray-300 px-2 py-1 text-sm"
-          value={pageSize}
-          onChange={handlePageSizeChange}
-        >
-          {pageSizeOptions.map(size => (
-            <option key={size} value={size}>{size}</option>
-          ))}
-        </select>
+    <div className={`flex items-center justify-between ${styles.paginationWrapper}`}>
+      <div className="">
+        Displaying {totalCount > 0 ? (
+            <>
+            {((currentPage - 1) * pageSize + 1).toLocaleString()}-
+            {Math.min(currentPage * pageSize, totalCount).toLocaleString()} of {totalCount.toLocaleString()}
+            </>
+        ) : (
+          '0 items'
+        )}
       </div>
 
       <nav className={`flex items-center justify-center ${styles.pagination}`}>
-        <ul className="flex items-center space-x-6">
+        <ul className="flex items-center">
           {/* Previous page */}
           <li className={`${!hasPreviousPage ? 'cursor-not-allowed' : ''} ${styles.arrow}`}>
             {hasPreviousPage ?
@@ -106,8 +101,8 @@ export default function CursorPagination({
           </li>
 
           {/* Current page indicator */}
-          <li className="text-sm font-medium w-[300px]">
-            Page {currentPage} of {totalPages || 1}
+          <li className="">
+            Page {currentPage} of {totalPages.toLocaleString() || 1}
           </li>
 
           {/* Next page */}
@@ -131,15 +126,20 @@ export default function CursorPagination({
         </ul>
       </nav>
 
-      <div className="text-sm text-gray-500 w-[100px]">
-        {totalCount > 0 ? (
-          <>
-            {(currentPage - 1) * pageSize + 1}-
-            {Math.min(currentPage * pageSize, totalCount)} of {totalCount}
-          </>
-        ) : (
-          '0 items'
-        )}
+      <div className="flex items-center space-x-2">
+        <label htmlFor="page-size" className="">
+          Show:
+        </label>
+        <select
+          id="page-size"
+          className={styles.pageSizeSelect}
+          value={pageSize}
+          onChange={handlePageSizeChange}
+        >
+          {pageSizeOptions.map(size => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
