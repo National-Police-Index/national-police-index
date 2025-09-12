@@ -1,10 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { collectionGroup, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, doc, getDoc, collection, DocumentData } from 'firebase/firestore';
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import {
+  collectionGroup,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+  startAfter,
+  QueryDocumentSnapshot,
+  doc,
+  getDoc,
+  collection,
+  DocumentData,
+} from "firebase/firestore";
 
-import { db } from '@/lib/firebase';
-import { PoliceOfficer } from '@/types';
+import { db } from "@/lib/firebase";
+import { PoliceOfficer } from "@/types";
 
 interface OfficerGroup {
   person_nbr: string;
@@ -21,7 +34,7 @@ interface SearchParams {
   endDate?: string;
   sortBy?: string;
   sortOrder?: string;
-  direction?: 'next' | 'prev';
+  direction?: "next" | "prev";
 }
 
 interface UseOfficersByUidProps {
@@ -29,52 +42,66 @@ interface UseOfficersByUidProps {
   searchParams?: SearchParams;
 }
 
-export function useOfficersByUid({ state, searchParams = { pageSize: '16', page: '' } }: UseOfficersByUidProps) {
-  const searchParamsString = useMemo(() => JSON.stringify(searchParams), [searchParams]);
-  const searchParameters = useMemo(() => ({
-    query: searchParams.query?.toLowerCase() || '',
-    agency: searchParams.agency || '',
-    page: searchParams.page || '1',
-    startDate: searchParams.startDate || '',
-    endDate: searchParams.endDate || '',
-    sortBy: searchParams.sortBy || 'full_name',
-    sortOrder: searchParams.sortOrder || 'asc',
-    pageSize: parseInt(searchParams.pageSize || '16', 10),
-    direction: searchParams.direction,
-
-  }), [searchParams.query, searchParams.agency, searchParams.startDate,
-  searchParams.endDate, searchParams.sortOrder,
-  searchParams.pageSize, searchParams.direction, searchParams.page]);
+export function useOfficersByUid({
+  state,
+  searchParams = { pageSize: "16", page: "" },
+}: UseOfficersByUidProps) {
+  const searchParamsString = useMemo(
+    () => JSON.stringify(searchParams),
+    [searchParams]
+  );
+  const searchParameters = useMemo(
+    () => ({
+      query: searchParams.query?.toLowerCase() || "",
+      agency: searchParams.agency || "",
+      page: searchParams.page || "1",
+      startDate: searchParams.startDate || "",
+      endDate: searchParams.endDate || "",
+      sortBy: searchParams.sortBy || "full_name",
+      sortOrder: searchParams.sortOrder || "asc",
+      pageSize: parseInt(searchParams.pageSize || "16", 10),
+      direction: searchParams.direction,
+    }),
+    [
+      searchParams.query,
+      searchParams.agency,
+      searchParams.startDate,
+      searchParams.endDate,
+      searchParams.sortOrder,
+      searchParams.pageSize,
+      searchParams.direction,
+      searchParams.page,
+    ]
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [firstDoc, setFirstDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
-  const [currentPage, setCurrentPage] = useState<number>(parseInt(searchParams.currentPage || '1', 10));
+  const [currentPage, setCurrentPage] = useState<number>(
+    parseInt(searchParams.currentPage || "1", 10)
+  );
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const cancelTokenRef = useRef<AbortController | null>(null);
 
-
   const fetchStateRef = useRef({
     isFetching: false,
     fetchCount: 0,
-    lastParams: '',
-    debounceTimer: null as ReturnType<typeof setTimeout> | null
+    lastParams: "",
+    debounceTimer: null as ReturnType<typeof setTimeout> | null,
   });
-
 
   const cursorHistoryRef = useRef<{
     cursors: QueryDocumentSnapshot[];
     currentIndex: number;
   }>({ cursors: [], currentIndex: -1 });
 
-
-
   const [countCache, setCountCache] = useState<Record<string, number>>({});
-
 
   const filtersCacheKey = useMemo(() => {
     return JSON.stringify({
@@ -85,28 +112,32 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
       endDate: searchParameters.endDate,
       sortBy: searchParameters.sortBy,
       sortOrder: searchParameters.sortOrder,
-      pageSize: searchParameters.pageSize
+      pageSize: searchParameters.pageSize,
     });
-  }, [state, searchParameters.query, searchParameters.agency,
-    searchParameters.startDate, searchParameters.endDate,
-    searchParameters.sortBy, searchParameters.sortOrder,
-    searchParameters.pageSize]);
-
+  }, [
+    state,
+    searchParameters.query,
+    searchParameters.agency,
+    searchParameters.startDate,
+    searchParameters.endDate,
+    searchParameters.sortBy,
+    searchParameters.sortOrder,
+    searchParameters.pageSize,
+  ]);
 
   const getTotalCount = useCallback(async () => {
     try {
-
       if (countCache[filtersCacheKey]) {
         return countCache[filtersCacheKey];
       }
 
-
-
-      if (!searchParameters.query && !searchParameters.agency &&
-        !searchParameters.startDate && !searchParameters.endDate) {
-
-
-        const statsRef = doc(db, 'statistics_per_state', state);
+      if (
+        !searchParameters.query &&
+        !searchParameters.agency &&
+        !searchParameters.startDate &&
+        !searchParameters.endDate
+      ) {
+        const statsRef = doc(db, "statistics_per_state", state);
         const statsDoc = await getDoc(statsRef);
 
         if (statsDoc.exists()) {
@@ -115,16 +146,16 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
           if (data.total_officers) {
             const count = parseInt(data.total_officers, 10);
 
-            setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+            setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
             return count;
-          }
-
-          else if (data.stats) {
-            const officerStats = data.stats.find((stat: any) => stat.label === 'Total Officers');
+          } else if (data.stats) {
+            const officerStats = data.stats.find(
+              (stat: any) => stat.label === "Total Officers"
+            );
             if (officerStats) {
               const count = parseInt(officerStats.value, 10);
 
-              setCountCache(prev => ({ ...prev, [filtersCacheKey]: count }));
+              setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
               return count;
             }
           }
@@ -132,97 +163,102 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
       }
 
       try {
-        let countQuery = query(collection(db, 'db_launch'));
-        countQuery = query(countQuery, where('state', '==', state.toLowerCase()));
+        let countQuery = query(collection(db, "db_launch"));
+        countQuery = query(
+          countQuery,
+          where("state", "==", state.toLowerCase())
+        );
         countQuery = query(countQuery, limit(10000));
 
         if (searchParameters.query) {
-          countQuery = query(countQuery, where(
-            'searchQueries',
-            'array-contains-any',
-            searchParameters.query.toLowerCase().split(' ').slice(0, 20),
-          ));
+          countQuery = query(
+            countQuery,
+            where(
+              "searchQueries",
+              "array-contains-any",
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
+            )
+          );
         }
 
         if (searchParameters.agency) {
-          countQuery = query(countQuery, where('agency_name', '==', searchParameters.agency));
+          countQuery = query(
+            countQuery,
+            where("agency_name", "==", searchParameters.agency)
+          );
         }
 
         if (searchParameters.startDate) {
           const startDate = new Date(searchParameters.startDate);
-          countQuery = query(countQuery, where('start_date', '>=', startDate.toISOString()));
+          countQuery = query(
+            countQuery,
+            where("start_date", ">=", startDate.toISOString())
+          );
         }
 
         if (searchParameters.endDate) {
           const endDate = new Date(searchParameters.endDate);
-          countQuery = query(countQuery, where('end_date', '<=', endDate.toISOString()));
+          countQuery = query(
+            countQuery,
+            where("end_date", "<=", endDate.toISOString())
+          );
         }
-
 
         const countSnapshot = await getDocs(countQuery);
 
-
         const uniqueOfficers = new Set();
-        countSnapshot.docs.forEach(doc => {
+        countSnapshot.docs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
           uniqueOfficers.add(officer.person_nbr);
         });
 
         const uniqueCount = uniqueOfficers.size;
 
-
-        setCountCache(prev => ({ ...prev, [filtersCacheKey]: uniqueCount }));
+        setCountCache((prev) => ({ ...prev, [filtersCacheKey]: uniqueCount }));
 
         return uniqueCount;
       } catch (countErr) {
-
         const defaultCount = 11713;
         return defaultCount;
       }
     } catch (err) {
-      console.error('Error fetching total count:', err);
+      console.error("Error fetching total count:", err);
       const defaultCount = 11713;
-      setCountCache(prev => ({ ...prev, [filtersCacheKey]: defaultCount }));
+      setCountCache((prev) => ({ ...prev, [filtersCacheKey]: defaultCount }));
       return defaultCount;
     }
   }, [state, filtersCacheKey, countCache, searchParameters]);
 
-
-  const calculateUniqueOfficersCount = useCallback((docs: QueryDocumentSnapshot<DocumentData>[]) => {
-    const uniqueOfficers = new Set();
-    docs.forEach(doc => {
-      const officer = doc.data() as PoliceOfficer;
-      uniqueOfficers.add(officer.person_nbr);
-    });
-    return uniqueOfficers.size;
-  }, []);
+  const calculateUniqueOfficersCount = useCallback(
+    (docs: QueryDocumentSnapshot<DocumentData>[]) => {
+      const uniqueOfficers = new Set();
+      docs.forEach((doc) => {
+        const officer = doc.data() as PoliceOfficer;
+        uniqueOfficers.add(officer.person_nbr);
+      });
+      return uniqueOfficers.size;
+    },
+    []
+  );
 
   useEffect(() => {
     let isMounted = true;
 
-
     if (fetchStateRef.current.lastParams === searchParamsString) {
-      console.log('Skipping fetch - same parameters as previous request');
       return;
     }
 
-
     if (cancelTokenRef.current) {
       cancelTokenRef.current.abort();
-      console.log('Aborted previous fetch request');
     }
-
 
     if (fetchStateRef.current.debounceTimer) {
       clearTimeout(fetchStateRef.current.debounceTimer);
     }
 
-
     cancelTokenRef.current = new AbortController();
 
-
     fetchStateRef.current.debounceTimer = setTimeout(() => {
-
       fetchStateRef.current.isFetching = true;
       fetchStateRef.current.lastParams = searchParamsString;
       fetchStateRef.current.fetchCount++;
@@ -230,64 +266,67 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
     }, 300);
 
     async function fetchOfficers() {
-      console.log('FETCH OFFICERS', searchParamsString);
       try {
         setLoading(true);
         setError(null);
-
 
         const cachedCount = countCache[filtersCacheKey];
         if (cachedCount) {
           setTotalCount(cachedCount);
         } else {
-
           const totalCount = await getTotalCount();
           setTotalCount(totalCount);
         }
 
-        const officersRef = collectionGroup(db, 'db_launch');
+        const officersRef = collectionGroup(db, "db_launch");
         const pageSize = searchParameters.pageSize;
 
-
-        let q = query(officersRef, where('state', '==', state.toLowerCase()));
-
+        let q = query(officersRef, where("state", "==", state.toLowerCase()));
 
         if (searchParameters.query) {
-          const capitalizeQuery = String(searchParameters.query[0]).toUpperCase() + String(searchParameters.query).slice(1).toLowerCase;
-
-          q = query(q,
+          q = query(
+            q,
             where(
-              'searchQueries',
-              'array-contains-any',
-              searchParameters.query.toLowerCase().split(' ').slice(0, 20),
+              "searchQueries",
+              "array-contains-any",
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
             )
           );
         }
 
         if (searchParameters.agency) {
-          q = query(q, where('agency_name', '==', searchParameters.agency));
+          q = query(q, where("agency_name", "==", searchParameters.agency));
         }
 
         if (searchParameters.startDate) {
-          q = query(q, where('start_date', '>=', searchParameters.startDate));
+          q = query(q, where("start_date", ">=", searchParameters.startDate));
         }
 
         if (searchParameters.endDate) {
-          q = query(q, where('end_date', '<=', searchParameters.endDate));
+          q = query(q, where("end_date", "<=", searchParameters.endDate));
         }
 
-
-        const sortField = searchParameters.sortBy === 'date' ? 'start_date' :
-          searchParameters.sortBy === 'agency' ? 'agency_name' : 'last_name';
-        q = query(q, orderBy(sortField, searchParameters.sortOrder === 'desc' ? 'desc' : 'asc'));
+        const sortField =
+          searchParameters.sortBy === "date"
+            ? "start_date"
+            : searchParameters.sortBy === "agency"
+            ? "agency_name"
+            : "last_name";
+        q = query(
+          q,
+          orderBy(
+            sortField,
+            searchParameters.sortOrder === "desc" ? "desc" : "asc"
+          )
+        );
         q = query(q, limit(pageSize * 10));
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
 
-        if (direction === 'next' && lastDoc) {
+        if (direction === "next" && lastDoc) {
           q = query(q, startAfter(lastDoc));
-        } else if (direction === 'prev' && currentPageNum > 1) {
+        } else if (direction === "prev" && currentPageNum > 1) {
           const history = cursorHistoryRef.current;
           const prevIndex = history.currentIndex - 1;
 
@@ -308,15 +347,22 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         let snapshot = await getDocs(q);
         if (!isMounted) return;
 
-
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
         let uniqueCount = 0;
         let lastDocIndex = -1;
         let attempts = 0;
         const maxAttempts = 10;
 
-        while (uniqueCount < pageSize && attempts < maxAttempts && snapshot.docs.length > 0) {
-          for (let i = 0; i < snapshot.docs.length && uniqueCount < pageSize; i++) {
+        while (
+          uniqueCount < pageSize &&
+          attempts < maxAttempts &&
+          snapshot.docs.length > 0
+        ) {
+          for (
+            let i = 0;
+            i < snapshot.docs.length && uniqueCount < pageSize;
+            i++
+          ) {
             const doc = snapshot.docs[i];
             const officer = doc.data() as PoliceOfficer;
             if (!groupedOfficers.has(officer.person_nbr)) {
@@ -328,7 +374,10 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
             }
           }
 
-          if (uniqueCount < pageSize && snapshot.docs.length === pageSize * 10) {
+          if (
+            uniqueCount < pageSize &&
+            snapshot.docs.length === pageSize * 10
+          ) {
             const lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
             q = query(q, startAfter(lastVisibleDoc));
             snapshot = await getDocs(q);
@@ -348,10 +397,9 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
             if (currentPageNum === 1) {
               cursorHistoryRef.current = {
                 cursors: [],
-                currentIndex: -1
+                currentIndex: -1,
               };
-            }
-            else if (direction === 'next') {
+            } else if (direction === "next") {
               const newCursors = [...cursorHistoryRef.current.cursors];
               const newIndex = cursorHistoryRef.current.currentIndex + 1;
 
@@ -363,18 +411,16 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
 
               cursorHistoryRef.current = {
                 cursors: newCursors,
-                currentIndex: newIndex
+                currentIndex: newIndex,
               };
-            }
-            else if (!direction && currentPageNum > 1) {
+            } else if (!direction && currentPageNum > 1) {
               const newCursors = [];
               newCursors.push(snapshot.docs[0]);
 
               cursorHistoryRef.current = {
                 cursors: newCursors,
-                currentIndex: 0
+                currentIndex: 0,
               };
-
             }
           }
         }
@@ -383,26 +429,37 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         if (!direction) {
           newPage = currentPageNum;
         } else {
-          newPage = direction === 'next' ? currentPageNum + 1 :
-            direction === 'prev' ? Math.max(1, currentPageNum - 1) : currentPageNum;
+          newPage =
+            direction === "next"
+              ? currentPageNum + 1
+              : direction === "prev"
+              ? Math.max(1, currentPageNum - 1)
+              : currentPageNum;
         }
 
         setCurrentPage(newPage);
         setHasPreviousPage(newPage > 1);
         setHasNextPage(uniqueCount >= searchParameters.pageSize);
 
-        const groups = Array.from(groupedOfficers.entries()).map(([person_nbr, records]) => ({
-          person_nbr,
-          records: records.sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
-        }));
+        const groups = Array.from(groupedOfficers.entries()).map(
+          ([person_nbr, records]) => ({
+            person_nbr,
+            records: records.sort(
+              (a, b) =>
+                new Date(b.start_date).getTime() -
+                new Date(a.start_date).getTime()
+            ),
+          })
+        );
 
         if (isMounted) {
           setOfficerGroups(groups);
         }
-
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err : new Error('Failed to fetch officers'));
+          setError(
+            err instanceof Error ? err : new Error("Failed to fetch officers")
+          );
         }
       } finally {
         if (isMounted) {
@@ -421,11 +478,10 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
         cancelTokenRef.current.abort();
       }
     };
-  },
-    [state, searchParamsString]);
+  }, [state, searchParamsString]);
 
   useEffect(() => {
-    if (searchParameters.page && searchParameters.page !== '1') {
+    if (searchParameters.page && searchParameters.page !== "1") {
       return;
     }
     setLastDoc(null);
@@ -435,8 +491,13 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
 
     setHasPreviousPage(false);
 
-    if (!searchParameters.query && !searchParameters.agency && !searchParameters.startDate && !searchParameters.endDate) {
-      getTotalCount().then(count => {
+    if (
+      !searchParameters.query &&
+      !searchParameters.agency &&
+      !searchParameters.startDate &&
+      !searchParameters.endDate
+    ) {
+      getTotalCount().then((count) => {
         setTotalCount(count);
       });
     }
@@ -450,6 +511,6 @@ export function useOfficersByUid({ state, searchParams = { pageSize: '16', page:
     currentPage,
     hasNextPage,
     hasPreviousPage,
-    pageSize: searchParameters.pageSize
+    pageSize: searchParameters.pageSize,
   };
 }

@@ -1,7 +1,7 @@
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-// Cache to store all agencies by state
+
 const agencyCache: {
   [state: string]: { 
     agencies: { name: string, count: number }[], 
@@ -10,13 +10,13 @@ const agencyCache: {
   }
 } = {};
 
-// Expiry time for cache (4 hours)
+
 const CACHE_EXPIRY_MS = 4 * 60 * 60 * 1000;
 
-// Limit for initial quick load
+
 const INITIAL_LIMIT = 100;
 
-// Background loading flag to prevent duplicate loads
+
 const isLoadingFullList: { [state: string]: boolean } = {};
 
 /**
@@ -25,16 +25,16 @@ const isLoadingFullList: { [state: string]: boolean } = {};
 export async function getAllAgencies(state: string): Promise<{ name: string, count: number }[]> {
   if (!state) return [];
   
-  // Return from cache if available and not expired
+  
   if (agencyCache[state] && 
       (Date.now() - agencyCache[state].lastFetched < CACHE_EXPIRY_MS)) {
-    // Return the cached agencies
+    
     return agencyCache[state].agencies;
   }
 
   try {
-    // Fetch the first batch of agencies for immediate display
-    // const agenciesRef = collection(db, 'statistics_per_agency');
+    
+    
     const agenciesRef = collection(db, 'agencies');
     const q = query(
       agenciesRef,
@@ -56,14 +56,14 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
       }
     });
 
-    // Store in cache
+    
     agencyCache[state] = {
       agencies,
       lastFetched: Date.now(),
       isComplete: false
     };
     
-    // Start loading the full list in the background if not already loading
+    
     if (!isLoadingFullList[state]) {
       isLoadingFullList[state] = true;
       loadAllAgenciesForState(state).catch(err => {
@@ -85,10 +85,9 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
  */
 async function loadAllAgenciesForState(state: string): Promise<void> {
   try {
-    console.log(`Loading all agencies for ${state} in background...`);
     const agenciesRef = collection(db, 'statistics_per_agency');
     
-    // Query without limit to get all agencies
+    
     const q = query(
       agenciesRef,
       where('state', '==', state.toLowerCase()),
@@ -108,9 +107,7 @@ async function loadAllAgenciesForState(state: string): Promise<void> {
       }
     });
 
-    console.log(`Loaded all ${agencies.length} agencies for ${state}`);
-    
-    // Update the cache with the complete list
+   
     agencyCache[state] = {
       agencies,
       lastFetched: Date.now(),
@@ -119,7 +116,7 @@ async function loadAllAgenciesForState(state: string): Promise<void> {
   } catch (error) {
     console.error(`Error loading all agencies for ${state}:`, error);
   } finally {
-    // Reset loading flag
+    
     isLoadingFullList[state] = false;
   }
 }
@@ -130,16 +127,16 @@ async function loadAllAgenciesForState(state: string): Promise<void> {
  */
 export function filterAgenciesByTerm(state: string, searchTerm: string): { name: string, count: number }[] {
   if (!state || !searchTerm || searchTerm.length < 2) {
-    // Return the first 100 agencies if no search term
+    
     return agencyCache[state]?.agencies.slice(0, 100) || [];
   }
 
-  // If we have the complete list in cache, filter it
+  
   if (agencyCache[state]) {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return agencyCache[state].agencies.filter(agency => 
       agency.name.toLowerCase().includes(lowerSearchTerm)
-    ).slice(0, 100); // Limit to 100 matches to keep the UI responsive
+    ).slice(0, 100); 
   }
   
   return [];
@@ -152,7 +149,7 @@ export function filterAgenciesByTerm(state: string, searchTerm: string): { name:
 export async function searchAgencies(searchTerm: string, state?: string): Promise<string[]> {
   if (!searchTerm || searchTerm.length < 2) return [];
   if (!state) {
-    // Fall back to the original implementation for non-state specific searches
+    
     try {
       const agenciesRef = collection(db, 'statistics_per_agency');
       const q = query(
@@ -178,7 +175,7 @@ export async function searchAgencies(searchTerm: string, state?: string): Promis
       return [];
     }
   } else {
-    // For state-specific searches, use our cached mechanism
+    
     const filteredAgencies = filterAgenciesByTerm(state, searchTerm);
     return filteredAgencies.map(agency => agency.name);
   }

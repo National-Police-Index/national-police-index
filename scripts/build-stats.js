@@ -3,13 +3,7 @@ import { updateAgencyStatistics } from 'generateAgencyStats';
 
 async function generateAllStats() {
   try {
-    console.log('Starting state statistics generation...');
     await updateStateStatistics();
-    console.log('Successfully generated state statistics');
-
-    console.log('\nStarting agency statistics generation...');
-    // await updateAgencyStatistics();
-    console.log('Successfully generated agency statistics');
   } catch (error) {
     console.error('Error generating statistics:', error);
     process.exit(1);

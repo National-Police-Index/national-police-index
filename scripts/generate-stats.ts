@@ -3,7 +3,7 @@ import type { ServiceAccount } from 'firebase-admin';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 
-// Import service account credentials
+
 const serviceAccountPath = join(process.cwd(), 'firebase-service-account.json');
 const serviceAccount = JSON.parse(
   readFileSync(serviceAccountPath, 'utf8')
@@ -58,7 +58,7 @@ const US_STATES = [
   { name: 'Wyoming', reference: 'wyoming', abbreviation: 'WY', hasData: true }
 ];
 
-// Initialize Firebase Admin
+
 const app = admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -69,7 +69,6 @@ async function testConnection() {
   try {
     const testRef = db.collection('_test_connection');
     await testRef.limit(1).get();
-    console.log('Successfully connected to Firestore');
     return true;
   } catch (error) {
     console.error('Failed to connect to Firestore:', error);
@@ -79,54 +78,41 @@ async function testConnection() {
 
 async function generateStateStats() {
   try {
-    console.log('Starting state statistics generation...');
-    console.log('Initializing Firestore connection...');
-    
-    // Test the database connection first
     await testConnection();
-    console.log('Database connection successful');
-    
-    // Process only one state first as a test
     const testState = US_STATES[0];
-    console.log(`Testing with state: ${testState.name}`);
-    
+
     try {
-      console.log('Attempting to query officers...');
       const officersRef = db.collectionGroup('db_launch');
-      console.log('Query created, fetching documents in chunks...');
-      
+
       const CHUNK_SIZE = 1000;
       let lastDoc = null;
       let totalOfficers = 0;
       let processedDocs = 0;
-      
+
       while (true) {
         let query = officersRef.orderBy('document_id').limit(CHUNK_SIZE);
         if (lastDoc) {
           query = query.startAfter(lastDoc);
         }
-        
+
         const snapshot = await query.get();
         const batchSize = snapshot.size;
         if (batchSize === 0) break;
-        
+
         processedDocs += batchSize;
-        console.log(`Processing documents ${processedDocs - batchSize + 1} to ${processedDocs}`);
-        
+
         snapshot.forEach(doc => {
           const data = doc.data();
           if (data.state === testState.reference) {
             totalOfficers++;
           }
         });
-        
+
         lastDoc = snapshot.docs[snapshot.docs.length - 1];
-        
+
         if (batchSize < CHUNK_SIZE) break;
       }
-      
-      console.log(`Processed ${processedDocs} total documents`);
-      
+
       const stateStats = {
         title: testState.name,
         description: `Police officer records and history in ${testState.name}`,
@@ -138,12 +124,9 @@ async function generateStateStats() {
         ],
         last_updated: new Date()
       };
-      
-      console.log('Writing stats to Firestore...');
+
       const statsDoc = db.collection('statistics_per_state').doc(testState.reference.toLowerCase());
       await statsDoc.set(stateStats);
-      console.log(`Updated stats for ${testState.name}: ${totalOfficers} officers`);
-      
     } catch (error) {
       console.error('Error processing state:', error);
       throw error;
@@ -163,7 +146,6 @@ async function main() {
 
   try {
     await generateStateStats();
-    console.log('Successfully updated state statistics');
     process.exit(0);
   } catch (error) {
     console.error('Error:', error);

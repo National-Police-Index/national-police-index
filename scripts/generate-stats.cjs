@@ -12,21 +12,19 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function generateStateStats() {
-  console.log('Starting state statistics generation...');
   const statsCollection = collection(db, 'statistics_per_state');
 
   for (const state of US_STATES) {
-    console.log(`Processing state: ${state.name}`);
     const officersRef = collectionGroup(db, 'db_launch');
     const snapshot = await getDocs(officersRef);
-    
+
     let totalOfficers = 0;
-    
+
     snapshot.forEach((doc) => {
       const data = doc.data();
       if (data.state === state.reference) {
@@ -48,13 +46,11 @@ async function generateStateStats() {
 
     const statsDoc = doc(statsCollection, state.reference.toLowerCase());
     await setDoc(statsDoc, stateStats);
-    console.log(`Updated stats for ${state.name}: ${totalOfficers} officers`);
   }
 }
 
 generateStateStats()
   .then(() => {
-    console.log('Successfully updated state statistics');
     process.exit(0);
   })
   .catch((error) => {

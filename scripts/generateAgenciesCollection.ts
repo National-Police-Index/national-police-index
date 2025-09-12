@@ -25,17 +25,17 @@ interface AgencyData {
   state: string;
 }
 
-// Configure chunk sizes for memory management
-const BATCH_SIZE = 100; // Number of writes per batch
-const QUERY_LIMIT = 1000; // Number of documents per query
-const MAX_PAGES = 1000; // Safety limit for pagination
-const GC_INTERVAL = 5; // Run garbage collection every 5 pages
 
-// Collection names
+const BATCH_SIZE = 100;
+const QUERY_LIMIT = 1000;
+const MAX_PAGES = 1000;
+const GC_INTERVAL = 5;
+
+
 const AGENCIES_COLLECTION = 'agencies';
 const DB_LAUNCH_COLLECTION = 'db_launch';
 
-// Load environment variables
+
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
@@ -48,7 +48,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Validate required environment variables
+
 const requiredEnvVars = [
   'NEXT_PUBLIC_FIREBASE_API_KEY',
   'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
@@ -64,168 +64,151 @@ requiredEnvVars.forEach(envVar => {
 
 async function generateAgenciesCollection() {
   try {
-    // Initialize Firebase
+
     initializeApp(firebaseConfig);
     const db = getFirestore();
 
-    console.log('Starting agencies collection generation...');
-    
-    // Get reference to db_launch collection
+
     const dbLaunchRef = collectionGroup(db, DB_LAUNCH_COLLECTION);
-    
-    // Process each state with data
+
+
     for (const state of US_STATES.reverse().filter(item => item.hasData)) {
-      console.log(`\nProcessing state: ${state.reference}`);
-      
-      // Map to store unique agencies for this state
+
     const uniqueAgencies = new Map<string, AgencyData>();
-      
-      // Pagination variables
+
+
       let lastDoc: any = null;
       let hasMore = true;
       let currentPage = 0;
-      
+
       while (hasMore && currentPage < MAX_PAGES) {
         currentPage++;
-        
+
         try {
-          // Build query for this state
+
           let q = query(dbLaunchRef, where('state', '==', state.reference));
-          
+
           if (lastDoc) {
             q = query(q, startAfter(lastDoc));
           }
-          
+
           q = query(q, limit(QUERY_LIMIT));
-          
+
           const snapshot = await getDocs(q);
-          
+
           if (snapshot.empty) {
             hasMore = false;
             break;
           }
-          
+
           snapshot.forEach(doc => {
             const data = doc.data() as DbLaunchDocument;
             const agencyName = data.agency_name?.trim();
-            
+
             if (agencyName && !uniqueAgencies.has(agencyName)) {
               uniqueAgencies.set(agencyName, { name: agencyName, state: state.reference });
             }
           });
-          
+
           if (snapshot.docs.length > 0) {
             lastDoc = snapshot.docs[snapshot.docs.length - 1];
           }
-          
+
           hasMore = snapshot.docs.length === QUERY_LIMIT;
-          
-          console.log(`Discovered ${uniqueAgencies.size} unique agencies in ${state.reference} so far... (page ${currentPage})`);
-          
-          // Run garbage collection periodically
+
+
           if (currentPage % GC_INTERVAL === 0 && typeof global.gc === 'function') {
             global.gc();
           }
-          
+
         } catch (error) {
           console.error(`Error processing state ${state.reference} on page ${currentPage}:`, error);
-          // Continue to next page even if this one failed
+
           hasMore = false;
         }
       }
-      
-      // Save agencies for this state
+
+
       if (uniqueAgencies.size > 0) {
-        console.log(`\nSaving ${uniqueAgencies.size} agencies for state: ${state.reference}`);
-        
         let batch = writeBatch(db);
         let batchCount = 0;
-        
+
         for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
           const docId = agencyName
             .toLowerCase()
             .replace(/[/\\]/g, '%2F')
             .replace(/[^a-z0-9-]/g, '-');
-          
+
           const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
-          
+
           const agencyDoc = {
             name: agencyName,
             state: agencyData.state,
             last_updated: Timestamp.now()
           };
-          
+
           batch.set(agencyRef, agencyDoc);
           batchCount++;
-          
+
           if (batchCount >= BATCH_SIZE) {
             await batch.commit();
-            console.log(`Saved batch of ${batchCount} agencies for ${state.reference}`);
             batch = writeBatch(db);
             batchCount = 0;
           }
         }
-        
-        // Commit final batch if any remaining
+
+
         if (batchCount > 0) {
           await batch.commit();
-          console.log(`Saved final batch of ${batchCount} agencies for ${state.reference}`);
         }
       }
-    
-    console.log(`Found ${uniqueAgencies.size} unique agencies. Starting to save to collection...`);
-    
-    // Save agencies to the new collection
+
+
     let batch = writeBatch(db);
     let batchCount = 0;
-    
+
     for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
-      // Create a valid document ID
+
       const docId = agencyName
         .toLowerCase()
-        .replace(/[/\\]/g, '%2F') // Replace slashes with a descriptive replacement
+        .replace(/[/\\]/g, '%2F')
         .replace(/[^a-z0-9-]/g, '-');
-      
+
       const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
-      
+
       const agencyDoc = {
         name: agencyName,
         state: agencyData.state,
         last_updated: Timestamp.now()
       };
-      
+
       batch.set(agencyRef, agencyDoc);
       batchCount++;
-      
+
       if (batchCount >= BATCH_SIZE) {
         await batch.commit();
-        console.log(`Saved batch of ${batchCount} agencies`);
         batch = writeBatch(db);
         batchCount = 0;
-        
-        // Run garbage collection after each batch
+
+
         if (typeof global.gc === 'function') {
           global.gc();
         }
       }
     }
-    
-    // Commit final batch if any remaining
+
+
     if (batchCount > 0) {
       await batch.commit();
-      console.log(`Saved final batch of ${batchCount} agencies`);
     }
     }
-    
-    console.log('Agencies collection generation completed successfully');
-    
   } catch (error) {
     console.error('Error generating agencies collection:', error);
     throw error;
   }
 }
 
-// Run the script
+
 async function main() {
   try {
     await generateAgenciesCollection();

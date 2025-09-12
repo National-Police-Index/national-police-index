@@ -14,15 +14,15 @@ export interface PoliceOfficer {
   position?: string;
   status?: string;
   notes?: string;
-  offense?: string,
-  sanction?: string,
-  violation?: string,
-  sanction_date?: Date,
-  separation_reason?: string,
-  employment_status?: string,
-  certification_type?: string,
-  type?: string,
-  [key: string]: any; // Allow additional properties
+  offense?: string;
+  sanction?: string;
+  violation?: string;
+  sanction_date?: string;
+  separation_reason?: string;
+  employment_status?: string;
+  certification_type?: string;
+  type?: string;
+  [key: string]: any;
 }
 
 export interface SearchFilters {
@@ -30,11 +30,11 @@ export interface SearchFilters {
   startDate?: Date;
   endDate?: Date;
   agency?: string;
-  sortBy?: 'name' | 'date' | 'agency';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "name" | "date" | "agency";
+  sortOrder?: "asc" | "desc";
   page?: string;
   activeOnly?: string;
-  reset?: boolean; 
+  reset?: boolean;
 }
 
 export interface StateData {

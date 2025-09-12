@@ -36,10 +36,10 @@ interface ProgressData {
     totalProcessed: number;
 }
 
-// Load environment variables
+
 dotenv.config({ path: '.env.local' });
 
-// Initialize Firebase
+
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -53,30 +53,30 @@ console.log(firebaseConfig);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Load states data
+
 const { US_STATES } = require('../constants/states') as { US_STATES: State[] };
 
 async function updateAgencyActiveStats(startState?: string) {
     try {
-        // Get the last processed state from progress document
+
         const progressRef = doc(db, 'system', 'active_stats_progress');
         const progressDoc = await getDoc(progressRef);
         const lastState = progressDoc.exists() ? progressDoc.data()?.lastState || startState || 'alabama' : startState || 'alabama';
 
-        // Find the index of the last processed state
+
         const states = US_STATES.filter((s: State) => s.hasData);
         let startIndex = states.findIndex((s: State) => s.reference === lastState);
         if (startIndex === -1) {
             startIndex = 0;
         }
 
-        // Process each state sequentially
+
         for (let i = startIndex; i < states.length; i++) {
             const state = states[i];
             console.log(`\nProcessing state: ${state.name} (${state.reference})`);
 
             try {
-                // Get agencies for this state
+
                 const statsRef = collection(db, 'statistics_per_agency');
                 const statsQuery = query(
                     statsRef,
@@ -90,7 +90,7 @@ async function updateAgencyActiveStats(startState?: string) {
                     continue;
                 }
 
-                // Create a batch for updates
+
                 const batch = writeBatch(db);
                 let batchCount = 0;
                 let processedCount = 0;
@@ -99,7 +99,7 @@ async function updateAgencyActiveStats(startState?: string) {
                     const agencyId = statDoc.id;
                     const agencyName = statDoc.data().name;
                     try {
-                        // Get all active officers for this agency
+
                         const officersQuery = query(
                             collection(db, 'db_launch'),
                             where('agency_name', '==', agencyName),
@@ -109,7 +109,7 @@ async function updateAgencyActiveStats(startState?: string) {
                         const officersSnapshot = await getDocs(officersQuery);
                         const activeOfficerCount = officersSnapshot.size;
 
-                        // Update the stats array with total_active_officers
+
                         const stats = statDoc.data().stats || [];
                         interface Stat {
                             name?: string;
@@ -120,7 +120,7 @@ async function updateAgencyActiveStats(startState?: string) {
 
                         const existingActiveStat = stats.find((stat: Stat) => stat.label === 'Total Active Officers');
 
-                        // If the stat already exists, update it, otherwise add it
+
                         if (existingActiveStat) {
                             existingActiveStat.value = activeOfficerCount.toString();
                         } else {
@@ -130,19 +130,19 @@ async function updateAgencyActiveStats(startState?: string) {
                             });
                         }
 
-                        // Update the document with batch
+
                         batch.update(statDoc.ref, {
                             stats: stats,
-                            // updated_at: new Date().toISOString()
+
                         });
                         console.log(`Updated ${agencyId} in ${state.name}`, stats);
 
                         batchCount++;
                         processedCount++;
 
-                        // Execute batch if it's full
+
                         if (batchCount >= 500) {
-                            // await batch.commit();
+
                             batchCount = 0;
                             console.log(`Processed ${processedCount} agencies in ${state.name}`);
                         }
@@ -153,15 +153,15 @@ async function updateAgencyActiveStats(startState?: string) {
                     }
                 }
 
-                // Commit any remaining updates
+
                 if (batchCount > 0) {
                     await batch.commit();
                 }
 
-                // Update progress document
+
                 await setDoc(progressRef, {
                     lastState: state.reference,
-                    // lastProcessed: new Date().toISOString(),
+
                     totalProcessed: processedCount
                 });
 
@@ -181,6 +181,6 @@ async function updateAgencyActiveStats(startState?: string) {
     }
 }
 
-// Run the update function
-const startState = process.argv[2] || undefined; // Optional: pass a state reference to start from
+
+const startState = process.argv[2] || undefined;
 updateAgencyActiveStats(startState as string | undefined);

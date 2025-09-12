@@ -135,7 +135,6 @@ export default function StatePageClient() {
       page
     }
   });
-
   const currentPage = apiCurrentPage;
   
   const [searchLoading, setSearchLoading] = useState(false);

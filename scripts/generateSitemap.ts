@@ -11,11 +11,11 @@ interface State {
   hasData?: boolean;
 }
 
-// Get current directory
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const baseUrl = 'https://nationalpoliceindex.org'; // Replace with your actual domain
+const baseUrl = 'https://nationalpoliceindex.org';
 
 async function initializeFirebase() {
   if (!admin.apps.length) {
@@ -37,7 +37,7 @@ interface SitemapUrl {
 async function generateSitemap() {
   const db = await initializeFirebase();
   try {
-    // Get all officers using collectionGroup
+
     const officersSnapshot = await db.collectionGroup('db_launch').get();
     const officers = officersSnapshot.docs.map(doc => ({
       id: doc.id,
@@ -45,16 +45,16 @@ async function generateSitemap() {
       lastModified: doc.updateTime.toDate()
     }));
 
-    // Create sitemap entries
+
     const urls: SitemapUrl[] = [
-      // Home page
+
       {
         loc: baseUrl,
         lastmod: new Date().toISOString(),
         changefreq: 'daily',
         priority: '1.0'
       },
-      // State pages
+
       ...US_STATES
         .filter((state: State) => state.hasData)
         .map((state: State) => ({
@@ -63,7 +63,7 @@ async function generateSitemap() {
           changefreq: 'weekly',
           priority: '0.8'
         })),
-      // Officer pages
+
       ...officers.map(officer => ({
         loc: `${baseUrl}/officers/${officer.personNbr}`,
         lastmod: officer.lastModified.toISOString(),
@@ -72,9 +72,9 @@ async function generateSitemap() {
       }))
     ];
 
-    // Generate sitemap XML
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http:
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
     <lastmod>${url.lastmod}</lastmod>
@@ -83,17 +83,15 @@ ${urls.map(url => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
-    // Write sitemap to public directory
-    await fs.writeFile(path.join(process.cwd(), 'public', 'sitemap.xml'), sitemap);
-    console.log('Sitemap generated successfully');
 
+    await fs.writeFile(path.join(process.cwd(), 'public', 'sitemap.xml'), sitemap);
   } catch (error) {
     console.error('Error generating sitemap:', error);
     throw error;
   }
 }
 
-// Execute if running directly
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   generateSitemap()
     .then(() => process.exit(0))

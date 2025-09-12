@@ -1,13 +1,13 @@
 import * as admin from 'firebase-admin';
 import type { ServiceAccount } from 'firebase-admin';
 
-// You'll need to download this from Firebase Console -> Project Settings -> Service Accounts
+
 import serviceAccount from '../firebase-service-account.json' assert { type: 'json' };
 
-// Cast the imported JSON to ServiceAccount type
+
 const typedServiceAccount = serviceAccount as ServiceAccount;
 
-// Initialize Firebase Admin
+
 admin.initializeApp({
   credential: admin.credential.cert(typedServiceAccount)
 });
@@ -79,10 +79,10 @@ const teamMembers = [
 
 async function seedTeamData() {
   try {
-    // Create a batch write
+
     const batch = db.batch();
-    
-    // Add all team members
+
+
     teamMembers.forEach((member) => {
       const docRef = db.collection('team').doc();
       batch.set(docRef, {
@@ -92,13 +92,12 @@ async function seedTeamData() {
       });
     });
 
-    // Commit the batch
+
     await batch.commit();
     console.log('Team data seeded successfully');
   } catch (error) {
     console.error('Error seeding team data:', error);
   } finally {
-    // Exit the process
     process.exit(0);
   }
 }

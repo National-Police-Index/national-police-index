@@ -17,9 +17,6 @@ interface ExportFile {
 
 async function importStaticTexts(filename: string, clearExisting: boolean = false) {
   try {
-    console.log('Starting import of static texts...');
-    
-    // Read the import file
     const filePath = path.resolve(process.cwd(), filename);
     if (!fs.existsSync(filePath)) {
       throw new Error(`Import file not found: ${filePath}`);
@@ -30,17 +27,14 @@ async function importStaticTexts(filename: string, clearExisting: boolean = fals
 
     const textsRef = collection(db, 'static_texts');
 
-    // Clear existing texts if requested
+
     if (clearExisting) {
-      console.log('Clearing existing texts...');
       const snapshot = await getDocs(textsRef);
       const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
       await Promise.all(deletePromises);
-      console.log('Existing texts cleared.');
     }
 
-    // Import new texts
-    console.log('Importing texts...');
+
     let imported = 0;
     for (const text of importData.texts) {
       await setDoc(doc(textsRef, text.id), {
@@ -54,15 +48,13 @@ async function importStaticTexts(filename: string, clearExisting: boolean = fals
       }
     }
 
-    console.log(`Successfully imported ${imported} texts`);
-    console.log(`Original export was created at: ${importData.exportedAt}`);
   } catch (error) {
     console.error('Error importing static texts:', error);
     process.exit(1);
   }
 }
 
-// Get filename from command line arguments
+
 const args = process.argv.slice(2);
 if (args.length === 0) {
   console.error('Please provide the import file path as an argument');

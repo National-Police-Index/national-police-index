@@ -43,13 +43,13 @@ exports.updateStateStatistics = updateStateStatistics;
 var app_1 = require("firebase/app");
 var firestore_1 = require("firebase/firestore");
 var states_1 = require("../constants/states");
-// Configure chunk sizes for memory management
-var BATCH_SIZE = 50; // Number of writes per batch
-var QUERY_LIMIT = 250; // Number of documents per query
-var STATE_CHUNK_SIZE = 2; // Number of states to process at once
-var MAX_PAGES_PER_STATE = 800; // Safety limit for pagination to avoid infinite loops
-var GC_INTERVAL = 2; // Run garbage collection every N pages
-// Load environment variables
+
+var BATCH_SIZE = 50;
+var QUERY_LIMIT = 250;
+var STATE_CHUNK_SIZE = 2;
+var MAX_PAGES_PER_STATE = 800;
+var GC_INTERVAL = 2;
+
 var dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: '.env.local' });
 var firebaseConfig = {
@@ -60,7 +60,7 @@ var firebaseConfig = {
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
-// Validate required environment variables
+
 var requiredEnvVars = [
     'NEXT_PUBLIC_FIREBASE_API_KEY',
     'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
@@ -72,10 +72,10 @@ for (var _i = 0, requiredEnvVars_1 = requiredEnvVars; _i < requiredEnvVars_1.len
         throw new Error("Missing required environment variable: ".concat(envVar));
     }
 }
-// Initialize Firebase
+
 var app = (0, app_1.initializeApp)(firebaseConfig);
 var db = (0, firestore_1.getFirestore)(app);
-// Timeout wrapper for Firebase queries
+
 function withTimeout(promise_1) {
     return __awaiter(this, arguments, void 0, function (promise, timeoutMs) {
         var timeoutId, timeoutPromise, result, error_1;
@@ -120,7 +120,6 @@ function processStateChunk(states, statsCollection) {
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    console.log("Processing state: ".concat(state.name));
                                     stateRef = state.reference.toLowerCase();
                                     officersRef = (0, firestore_1.collection)(db, 'db_launch');
                                     lastDoc = null;
@@ -137,16 +136,14 @@ function processStateChunk(states, statsCollection) {
                                 case 2:
                                     if (!(hasMoreDocs && pageCount < MAX_PAGES_PER_STATE)) return [3 /*break*/, 6];
                                     pageCount++;
-                                    q = (0, firestore_1.query)(officersRef, (0, firestore_1.where)('state', '==', stateRef), (0, firestore_1.orderBy)('__name__'), // Use document ID for consistent pagination
+                                    q = (0, firestore_1.query)(officersRef, (0, firestore_1.where)('state', '==', stateRef), (0, firestore_1.orderBy)('__name__'),
                                     (0, firestore_1.limit)(QUERY_LIMIT));
                                     if (lastDoc_1) {
                                         q = (0, firestore_1.query)(q, (0, firestore_1.startAfter)(lastDoc_1));
                                     }
-                                    console.log("Querying officers for ".concat(state.name, " (attempt ").concat(retryCount + 1, ")..."));
                                     return [4 /*yield*/, withTimeout((0, firestore_1.getDocs)(q))];
                                 case 3:
                                     snapshot = _b.sent();
-                                    console.log("Retrieved ".concat(snapshot.size, " officers for ").concat(state.name));
                                     totalOfficers += snapshot.size;
                                     if (snapshot.empty || snapshot.size < QUERY_LIMIT) {
                                         hasMoreDocs = false;
@@ -154,33 +151,31 @@ function processStateChunk(states, statsCollection) {
                                     else {
                                         lastDoc_1 = snapshot.docs[snapshot.docs.length - 1];
                                     }
-                                    // Log progress
-                                    console.log("Page ".concat(pageCount, "/").concat(MAX_PAGES_PER_STATE, " for ").concat(state.name, ": ").concat(totalOfficers, " officers so far"));
+
                                     if (!(pageCount % GC_INTERVAL === 0 && global.gc)) return [3 /*break*/, 5];
-                                    console.log('Running garbage collection...');
                                     global.gc();
-                                    // Add a small delay to allow GC to complete
+
                                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 100); })];
                                 case 4:
-                                    // Add a small delay to allow GC to complete
+
                                     _b.sent();
                                     _b.label = 5;
                                 case 5:
-                                    // Process documents
+
                                     snapshot.forEach(function (doc) {
                                         var data = doc.data();
-                                        // Process end dates
+
                                         if (data.end_date) {
                                             var endYear = new Date(data.end_date).getFullYear().toString();
                                             endDateStats[endYear] = (endDateStats[endYear] || 0) + 1;
                                         }
-                                        // Process start dates
+
                                         if (data.start_date) {
                                             var startYear = new Date(data.start_date).getFullYear().toString();
                                             startDateStats[startYear] = (startDateStats[startYear] || 0) + 1;
                                         }
                                     });
-                                    // Force garbage collection between chunks
+
                                     if (global.gc) {
                                         global.gc();
                                     }
@@ -200,32 +195,28 @@ function processStateChunk(states, statsCollection) {
                                     statsDoc = (0, firestore_1.doc)(statsCollection, stateRef);
                                     batch.set(statsDoc, stateStats);
                                     batchCount++;
-                                    // Reset retry count for next state
+
                                     retryCount = 0;
                                     if (!(batchCount === BATCH_SIZE || totalOfficers % (BATCH_SIZE * QUERY_LIMIT) === 0)) return [3 /*break*/, 8];
                                     return [4 /*yield*/, batch.commit()];
                                 case 7:
                                     _b.sent();
-                                    console.log("Committed batch for ".concat(batchCount, " states"));
-                                    batch = (0, firestore_1.writeBatch)(db); // Create a new batch
+                                    batch = (0, firestore_1.writeBatch)(db);
                                     batchCount = 0;
                                     _b.label = 8;
                                 case 8:
-                                    console.log("Successfully processed ".concat(totalOfficers, " officers for ").concat(state.name));
                                     return [3 /*break*/, 17];
                                 case 9:
                                     error_3 = _b.sent();
                                     console.error("Error processing state ".concat(state.name, ":"), error_3);
                                     if (!(retryCount < MAX_RETRIES)) return [3 /*break*/, 11];
                                     retryCount++;
-                                    console.log("Retrying ".concat(state.name, " (attempt ").concat(retryCount + 1, " of ").concat(MAX_RETRIES, ")..."));
                                     return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 5000 * retryCount); })];
                                 case 10:
-                                    _b.sent(); // Exponential backoff
+                                    _b.sent();
                                     return [2 /*return*/, "continue"];
                                 case 11:
                                     if (!(totalOfficers > 0)) return [3 /*break*/, 16];
-                                    console.log("Storing partial results for ".concat(state.name, " with ").concat(totalOfficers, " officers"));
                                     stateStats = {
                                         title: state.name,
                                         description: "Partial police officer records and history in ".concat(state.name),
@@ -248,8 +239,7 @@ function processStateChunk(states, statsCollection) {
                                     return [4 /*yield*/, batch.commit()];
                                 case 13:
                                     _b.sent();
-                                    console.log("Committed partial results for ".concat(state.name));
-                                    batch = (0, firestore_1.writeBatch)(db); // Create a new batch
+                                    batch = (0, firestore_1.writeBatch)(db);
                                     batchCount = 0;
                                     _b.label = 14;
                                 case 14: return [3 /*break*/, 16];
@@ -282,8 +272,7 @@ function processStateChunk(states, statsCollection) {
                     return [4 /*yield*/, batch.commit()];
                 case 6:
                     _a.sent();
-                    console.log("Committed final batch for ".concat(batchCount, " states"));
-                    batch = (0, firestore_1.writeBatch)(db); // Create a new batch for any subsequent operations
+                    batch = (0, firestore_1.writeBatch)(db);
                     batchCount = 0;
                     return [3 /*break*/, 8];
                 case 7:
@@ -301,18 +290,16 @@ function generateStateStats() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log('Starting state statistics generation...');
                     statsCollection = (0, firestore_1.collection)(db, 'statistics_per_state');
                     i = 0;
                     _a.label = 1;
                 case 1:
                     if (!(i < states_1.US_STATES.length)) return [3 /*break*/, 4];
                     stateChunk = states_1.US_STATES.slice(i, i + STATE_CHUNK_SIZE);
-                    console.log("Processing states ".concat(i + 1, " to ").concat(Math.min(i + STATE_CHUNK_SIZE, states_1.US_STATES.length)));
                     return [4 /*yield*/, processStateChunk(stateChunk, statsCollection)];
                 case 2:
                     _a.sent();
-                    // Force garbage collection between chunks
+
                     if (global.gc) {
                         global.gc();
                     }
@@ -321,13 +308,12 @@ function generateStateStats() {
                     i += STATE_CHUNK_SIZE;
                     return [3 /*break*/, 1];
                 case 4:
-                    console.log('Successfully updated state statistics');
                     return [2 /*return*/];
             }
         });
     });
 }
-// Function to be called monthly
+
 function updateStateStatistics() {
     return __awaiter(this, void 0, void 0, function () {
         var error_4;
@@ -338,7 +324,6 @@ function updateStateStatistics() {
                     return [4 /*yield*/, generateStateStats()];
                 case 1:
                     _a.sent();
-                    console.log('State statistics update completed successfully');
                     return [3 /*break*/, 3];
                 case 2:
                     error_4 = _a.sent();
@@ -349,7 +334,7 @@ function updateStateStatistics() {
         });
     });
 }
-// Allow running directly from command line
+
 if (require.main === module) {
     updateStateStatistics()
         .then(function () { return process.exit(0); })

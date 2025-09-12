@@ -51,7 +51,7 @@ async function seedOfficers() {
   console.log('Successfully seeded officers');
 }
 
-// Execute if running directly
+
 if (process.argv[1] === import.meta.url) {
   seedOfficers()
     .then(() => process.exit(0))
