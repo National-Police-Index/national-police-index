@@ -166,9 +166,9 @@ export default function CursorPagination({
         </ul>
       </nav>
 
-      <div className="flex items-center space-x-2">
+      <div>
         {
-          <div>
+          <div className="flex items-center gap-2">
             <label htmlFor="page-size" className="">
               Show:
             </label>
