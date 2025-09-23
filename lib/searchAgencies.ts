@@ -38,7 +38,8 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
     const agenciesRef = collection(db, 'agencies');
     const q = query(
       agenciesRef,
-      where('state', '==', state.toLowerCase()),
+      // where('state', '==', state.toLowerCase()),
+      where('state', 'in', [state.toLowerCase(), `${state.toLowerCase()}-discipline`]),
       orderBy('name'),
       limit(INITIAL_LIMIT)
     );
@@ -90,9 +91,12 @@ async function loadAllAgenciesForState(state: string): Promise<void> {
     
     const q = query(
       agenciesRef,
-      where('state', '==', state.toLowerCase()),
+      // where('state', '==', state.toLowerCase()),
+      where('state', 'in', [state.toLowerCase(), `${state.toLowerCase()}-discipline`]),
       orderBy('name')
     );
+
+    console.log("Q", q);
 
     const snapshot = await getDocs(q);
     const agencies: { name: string, count: number }[] = [];
