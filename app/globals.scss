@@ -177,3 +177,11 @@ svg.react-datepicker__triangle {
     border: white;
   }
 }
+
+a, select, input, textarea, button {
+  &:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid $greenB;
+    outline-offset: 4px;
+  }
+}

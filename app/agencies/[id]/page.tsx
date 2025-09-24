@@ -96,14 +96,14 @@ export default function AgencyPage() {
           />
 
           {/* Show a notice when stats are being calculated on-the-fly */}
-          {statsLoading && !stats?.is_partial && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          {!statsLoading && !stats?.is_partial && (
+            <div className="bg-[#F3F4F6] border-l-4 border-[#2F5E50] p-4 my-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#4F8C7E] border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-[#122823]">
                     Calculating agency statistics on-the-fly. This may take a moment for agencies with many records.
                   </p>
                 </div>
