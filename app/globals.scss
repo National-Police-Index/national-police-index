@@ -13,6 +13,10 @@
   --font-sans: var(--font-inter);
 }
 
+html {
+  overflow: unset !important;
+}
+
 body {
   color: $greenC;
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
@@ -45,8 +49,8 @@ h2 {
 .container-a {
   margin: 0 auto;
   max-width: 1304px;
-  padding-left: 40px;
-  padding-right: 40px;
+  padding-left: fluid(20px, 40px);
+  padding-right: fluid(20px, 40px);
   width: 100%;
 }
 

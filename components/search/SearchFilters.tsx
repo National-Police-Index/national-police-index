@@ -392,7 +392,7 @@ export default function SearchFilters({
 
       <div
         className={`flex ${styles.filtersRow} ${
-          state ? styles.stateFilters : ""
+          !agencyMode ? styles.stateFilters : ""
         }`}
       >
         {/* Date range pickers */}

@@ -66,6 +66,16 @@
       }
     }
 
+    &.stateFilters {
+      .agency {
+        input {
+          @media screen and (max-width: 1023px) {
+            flex: 100%;
+          }
+        }        
+      }
+    }
+  
     .agency {
       flex: 400px;
       min-width: 200px;

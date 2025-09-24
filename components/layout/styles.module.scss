@@ -35,7 +35,7 @@
     height: 1px;
     position: absolute;
     top: 100%;
-    width: calc(100% - 80px);
+    width: calc(100% - fluid(40px, 80px));
   }
 
   &.headerContentOpen {
