@@ -10,7 +10,11 @@
     margin-left: 0;
   }
   .content {
+    align-items: flex-start;
     gap: 24px;
+    @media screen and (max-width: 767px) {
+      flex-direction: column;
+    }
   }
 }
 
@@ -40,23 +44,29 @@
   gap: 16px;
   padding: 32px fluid(16px, 32px);
   > div:first-child {
-    border-bottom: .5px solid $greenC;
+    //border-bottom: .5px solid $greenC;
     h2 {
       line-height: 1.4;
       margin-bottom: 8px;
     }
   }
   .timelineYear {
+    > div:first-child {
+      border-bottom: 0.5px solid $greenA;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+    }
     gap: 8px;
     .timelineEvents {
       gap: 16px;
       .timelineItem {
         align-items: center;
-        gap: fluid(16px, 24px);
+        gap: fluid(12px, 24px);
         > div {
           font-size: fluid(14px, 16px);
         }
         .timelineEvent {
+          word-break: break-word;
           b {
             font-weight: 600;
           }
@@ -75,14 +85,14 @@
           }
         }
         .timelineDate {
-          flex: 0 0 100px;
+          flex: 0 0 80px;
           @media screen and (max-width: 1023px) {
             flex: 0 0 20%;
-            min-width: 80px;
+            min-width: 60px;
           }
           @media screen and (max-width: 479px) {
             flex: 0 0 20px;
-            min-width: unset;
+            min-width: 50px;
           }
           .timelineDateMobile {
             display: none;

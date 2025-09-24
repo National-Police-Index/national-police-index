@@ -342,7 +342,7 @@ export default function OfficerProfilePage() {
       >
         <div className="container-a mx-auto ">
           <div
-            className={`w-full flex lg:flex-row flex-col items-start lg:justify-between ${styles.content}`}
+            className={`w-full flex ${styles.content}`}
           >
             <div className="w-full px-4 py-8 flex flex-col justify-start items-start ">
               {/* <div className="self-stretch flex justify-center items-center">
@@ -459,7 +459,7 @@ export default function OfficerProfilePage() {
                             className="flex flex-col w-full "
                           >
                             <div
-                              className={`w-full flex flex-row justify-between items-center ${styles.timelineItem}`}
+                              className={`w-full flex flex-row ${styles.timelineItem}`}
                             >
                               <div
                                 className={`justify-start text-[#122823] text-sm font-normal font-['Inter'] ${styles.timelineDate}`}
