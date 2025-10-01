@@ -351,11 +351,15 @@ export function useOfficersByAgency({
           q = query(q, where("end_date", "==", ""));
         }
 
-        const pageSize = searchParameters.pageSize || 16;
+        // const pageSize = searchParameters.pageSize || 16;
+
+        const pageSize = searchParameters.query
+          ? 100
+          : searchParameters.pageSize;
         const page = currentPage;
         const direction = searchParameters.direction;
 
-        q = query(q, limit(pageSize * 10));
+        q = query(q, limit(pageSize * (searchParameters.query ? 1 : 10)));
 
         if (direction === "next" && lastDoc) {
           q = query(q, startAfter(lastDoc));
@@ -386,6 +390,11 @@ export function useOfficersByAgency({
         let attempts = 0;
         const maxAttempts = 10;
 
+        const terms = searchParameters.query
+          ? searchParameters.query.trim().toLowerCase().split(" ")
+          : false;
+
+
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -399,6 +408,18 @@ export function useOfficersByAgency({
             const doc = snapshot.docs[i];
             const officer = doc.data() as PoliceOfficer;
             const person_nbr = officer.person_nbr;
+
+            if (terms && terms.length > 1) {
+              if (
+                !(
+                  terms.includes(officer.first_name.toLowerCase()) &&
+                  terms.includes(officer.last_name.toLowerCase())
+                )
+              ) {
+                continue;
+              }
+            }
+
 
             if (!groupedOfficers.has(person_nbr)) {
               groupedOfficers.set(person_nbr, []);

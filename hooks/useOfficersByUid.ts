@@ -279,7 +279,10 @@ export function useOfficersByUid({
         }
 
         const officersRef = collectionGroup(db, "db_launch");
-        const pageSize = searchParameters.pageSize;
+        // const pageSize = searchParameters.query ? 100 : searchParameters.pageSize;
+        const pageSize = searchParameters.query
+          ? 100
+          : searchParameters.pageSize;
 
         let q = query(officersRef, where("state", "==", state.toLowerCase()));
 
@@ -319,7 +322,7 @@ export function useOfficersByUid({
             searchParameters.sortOrder === "desc" ? "desc" : "asc"
           )
         );
-        q = query(q, limit(pageSize * 10));
+        q = query(q, limit(pageSize * (searchParameters.query ? 1 : 10)));
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
@@ -353,6 +356,10 @@ export function useOfficersByUid({
         let attempts = 0;
         const maxAttempts = 10;
 
+        const terms = searchParameters.query
+          ? searchParameters.query.trim().toLowerCase().split(" ")
+          : false;
+
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -365,6 +372,18 @@ export function useOfficersByUid({
           ) {
             const doc = snapshot.docs[i];
             const officer = doc.data() as PoliceOfficer;
+
+            if (terms && terms.length > 1) {
+              if (
+                !(
+                  terms.includes(officer.first_name.toLowerCase()) &&
+                  terms.includes(officer.last_name.toLowerCase())
+                )
+              ) {
+                continue;
+              }
+            }
+
             if (!groupedOfficers.has(officer.person_nbr)) {
               groupedOfficers.set(officer.person_nbr, [officer]);
               uniqueCount++;

@@ -64,7 +64,7 @@ async function updateAgencyActiveStats(startState?: string) {
         const lastState = progressDoc.exists() ? progressDoc.data()?.lastState || startState || 'alabama' : startState || 'alabama';
 
 
-        const states = US_STATES.filter((s: State) => s.hasData);
+        const states = US_STATES.filter((s: State) => s.reference === 'kansas').filter((s: State) => s.hasData);
         let startIndex = states.findIndex((s: State) => s.reference === lastState);
         if (startIndex === -1) {
             startIndex = 0;

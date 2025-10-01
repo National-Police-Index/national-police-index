@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   collectionGroup,
@@ -11,9 +11,9 @@ import {
   where,
   orderBy,
   Timestamp,
-  startAfter
-} from 'firebase/firestore';
-import { US_STATES } from '@/constants/states';
+  startAfter,
+} from "firebase/firestore";
+import { US_STATES } from "@/constants/states";
 
 interface DbLaunchDocument {
   agency_name?: string;
@@ -25,19 +25,16 @@ interface AgencyData {
   state: string;
 }
 
-
 const BATCH_SIZE = 100;
-const QUERY_LIMIT = 1000;
+const QUERY_LIMIT = 5000;
 const MAX_PAGES = 1000;
 const GC_INTERVAL = 5;
 
+const AGENCIES_COLLECTION = "agencies";
+const DB_LAUNCH_COLLECTION = "db_launch";
 
-const AGENCIES_COLLECTION = 'agencies';
-const DB_LAUNCH_COLLECTION = 'db_launch';
-
-
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -48,15 +45,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-
 const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-  'NEXT_PUBLIC_FIREBASE_APP_ID',
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+  "NEXT_PUBLIC_FIREBASE_APP_ID",
 ];
 
-requiredEnvVars.forEach(envVar => {
+requiredEnvVars.forEach((envVar) => {
   if (!process.env[envVar]) {
     throw new Error(`Missing required environment variable: ${envVar}`);
   }
@@ -64,18 +60,15 @@ requiredEnvVars.forEach(envVar => {
 
 async function generateAgenciesCollection() {
   try {
-
     initializeApp(firebaseConfig);
     const db = getFirestore();
 
-
     const dbLaunchRef = collectionGroup(db, DB_LAUNCH_COLLECTION);
 
-
-    for (const state of US_STATES.reverse().filter(item => item.hasData)) {
-
-    const uniqueAgencies = new Map<string, AgencyData>();
-
+    for (const state of US_STATES.reverse()
+      .filter((item) => item.reference == "kansas")
+      .filter((item) => item.hasData)) {
+      const uniqueAgencies = new Map<string, AgencyData>();
 
       let lastDoc: any = null;
       let hasMore = true;
@@ -85,8 +78,7 @@ async function generateAgenciesCollection() {
         currentPage++;
 
         try {
-
-          let q = query(dbLaunchRef, where('state', '==', state.reference));
+          let q = query(dbLaunchRef, where("state", "==", state.reference));
 
           if (lastDoc) {
             q = query(q, startAfter(lastDoc));
@@ -101,12 +93,15 @@ async function generateAgenciesCollection() {
             break;
           }
 
-          snapshot.forEach(doc => {
+          snapshot.forEach((doc) => {
             const data = doc.data() as DbLaunchDocument;
             const agencyName = data.agency_name?.trim();
 
             if (agencyName && !uniqueAgencies.has(agencyName)) {
-              uniqueAgencies.set(agencyName, { name: agencyName, state: state.reference });
+              uniqueAgencies.set(agencyName, {
+                name: agencyName,
+                state: state.reference,
+              });
             }
           });
 
@@ -116,18 +111,21 @@ async function generateAgenciesCollection() {
 
           hasMore = snapshot.docs.length === QUERY_LIMIT;
 
-
-          if (currentPage % GC_INTERVAL === 0 && typeof global.gc === 'function') {
+          if (
+            currentPage % GC_INTERVAL === 0 &&
+            typeof global.gc === "function"
+          ) {
             global.gc();
           }
-
         } catch (error) {
-          console.error(`Error processing state ${state.reference} on page ${currentPage}:`, error);
+          console.error(
+            `Error processing state ${state.reference} on page ${currentPage}:`,
+            error
+          );
 
           hasMore = false;
         }
       }
-
 
       if (uniqueAgencies.size > 0) {
         let batch = writeBatch(db);
@@ -136,15 +134,15 @@ async function generateAgenciesCollection() {
         for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
           const docId = agencyName
             .toLowerCase()
-            .replace(/[/\\]/g, '%2F')
-            .replace(/[^a-z0-9-]/g, '-');
+            .replace(/[/\\]/g, "%2F")
+            .replace(/[^a-z0-9-]/g, "-");
 
           const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
 
           const agencyDoc = {
             name: agencyName,
             state: agencyData.state,
-            last_updated: Timestamp.now()
+            last_updated: Timestamp.now(),
           };
 
           batch.set(agencyRef, agencyDoc);
@@ -157,64 +155,58 @@ async function generateAgenciesCollection() {
           }
         }
 
-
         if (batchCount > 0) {
           await batch.commit();
         }
       }
 
+      let batch = writeBatch(db);
+      let batchCount = 0;
 
-    let batch = writeBatch(db);
-    let batchCount = 0;
+      for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
+        const docId = agencyName
+          .toLowerCase()
+          .replace(/[/\\]/g, "%2F")
+          .replace(/[^a-z0-9-]/g, "-");
 
-    for (const [agencyName, agencyData] of uniqueAgencies.entries()) {
+        const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
 
-      const docId = agencyName
-        .toLowerCase()
-        .replace(/[/\\]/g, '%2F')
-        .replace(/[^a-z0-9-]/g, '-');
+        const agencyDoc = {
+          name: agencyName,
+          state: agencyData.state,
+          last_updated: Timestamp.now(),
+        };
 
-      const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
+        batch.set(agencyRef, agencyDoc);
+        batchCount++;
 
-      const agencyDoc = {
-        name: agencyName,
-        state: agencyData.state,
-        last_updated: Timestamp.now()
-      };
+        if (batchCount >= BATCH_SIZE) {
+          await batch.commit();
+          batch = writeBatch(db);
+          batchCount = 0;
 
-      batch.set(agencyRef, agencyDoc);
-      batchCount++;
-
-      if (batchCount >= BATCH_SIZE) {
-        await batch.commit();
-        batch = writeBatch(db);
-        batchCount = 0;
-
-
-        if (typeof global.gc === 'function') {
-          global.gc();
+          if (typeof global.gc === "function") {
+            global.gc();
+          }
         }
       }
-    }
 
-
-    if (batchCount > 0) {
-      await batch.commit();
-    }
+      if (batchCount > 0) {
+        await batch.commit();
+      }
     }
   } catch (error) {
-    console.error('Error generating agencies collection:', error);
+    console.error("Error generating agencies collection:", error);
     throw error;
   }
 }
-
 
 async function main() {
   try {
     await generateAgenciesCollection();
     process.exit(0);
   } catch (error) {
-    console.error('Fatal error:', error);
+    console.error("Fatal error:", error);
     process.exit(1);
   }
 }

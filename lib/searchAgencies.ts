@@ -16,6 +16,9 @@ const CACHE_EXPIRY_MS = 4 * 60 * 60 * 1000;
 
 const INITIAL_LIMIT = 100;
 
+// const AGENCY_COLLECTION = 'statistics_per_agency';
+const AGENCY_COLLECTION = 'agencies';
+
 
 const isLoadingFullList: { [state: string]: boolean } = {};
 
@@ -35,7 +38,7 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
   try {
     
     
-    const agenciesRef = collection(db, 'agencies');
+    const agenciesRef = collection(db, AGENCY_COLLECTION);
     const q = query(
       agenciesRef,
       // where('state', '==', state.toLowerCase()),
@@ -86,7 +89,7 @@ export async function getAllAgencies(state: string): Promise<{ name: string, cou
  */
 async function loadAllAgenciesForState(state: string): Promise<void> {
   try {
-    const agenciesRef = collection(db, 'statistics_per_agency');
+    const agenciesRef = collection(db, AGENCY_COLLECTION);
     
     
     const q = query(
@@ -95,8 +98,6 @@ async function loadAllAgenciesForState(state: string): Promise<void> {
       where('state', 'in', [state.toLowerCase(), `${state.toLowerCase()}-discipline`]),
       orderBy('name')
     );
-
-    console.log("Q", q);
 
     const snapshot = await getDocs(q);
     const agencies: { name: string, count: number }[] = [];
@@ -155,7 +156,7 @@ export async function searchAgencies(searchTerm: string, state?: string): Promis
   if (!state) {
     
     try {
-      const agenciesRef = collection(db, 'statistics_per_agency');
+      const agenciesRef = collection(db, AGENCY_COLLECTION);
       const q = query(
         agenciesRef,
         orderBy('name'),
