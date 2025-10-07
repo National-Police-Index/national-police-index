@@ -497,7 +497,7 @@ export default function OfficerProfilePage() {
                                 <b>
                                   <Link
                                     href={`/agencies/${encodeURIComponent(
-                                      latestRecord.agency_name
+                                      event.agency_name
                                     )}`}
                                     className={styles.timelineAgency}
                                   >
