@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import styles from './TeamCard.module.scss';
 
 interface TeamMember {
@@ -16,9 +15,9 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
       if (linkMatch) {
         const [_, text, url] = linkMatch;
         return (
-          <Link key={index} href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
+          <a key={index} href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
             {text}
-          </Link>
+          </a>
         );
       }
       return (

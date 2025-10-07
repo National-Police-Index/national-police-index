@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import styles from './Pagination.module.scss';
@@ -133,7 +132,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
         {/* First page */}
         <li className={`${isFirstPage ? 'cursor-not-allowed' : ''} ${styles.arrow}`}>
           {isNotFirstPage ? 
-            (<Link
+            (<a
               href={isFirstPage ? '#' : createPageUrl(1)}
               className={`block ${isFirstPage
                 ? 'cursor-not-allowed opacity-50'
@@ -142,7 +141,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
               aria-disabled={isFirstPage}
             >
               <First disabled={false} />
-            </Link>) :
+            </a>) :
             (
               <First disabled={true} />
             )}
@@ -151,7 +150,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
         {/* Previous page */}
         <li className={`${isFirstPage ? 'cursor-not-allowed' : ''} ${styles.arrow}`}>
           {isNotFirstPage ? 
-            (<Link
+            (<a
               href={isFirstPage ? '#' : createPageUrl(prevPage)}
               className={`block ${isFirstPage
                 ? 'cursor-not-allowed opacity-50'
@@ -160,7 +159,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
               aria-disabled={isFirstPage}
             >
               <Prev disabled={false} />
-            </Link>) :
+            </a>) :
             (
               <Prev disabled={true} />
             )}
@@ -179,7 +178,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           if (page !== currentPage) {
             return (
               <li key={page}>
-                <Link
+                <a
                   href={createPageUrl(page)}
                   className={`leading-tight ${currentPage === page
                     ? 'z-10 font-normal font-["Inter"] underline' // Should not happen with this logic, but kept for safety
@@ -187,7 +186,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
                     }`}
                 >
                   {page}
-                </Link>
+                </a>
               </li>
             )
           } else {
@@ -202,7 +201,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
         {/* Next page */}
         <li className={`${isLastPage ? 'cursor-not-allowed' : ''} ${styles.arrow}`}>
           {isNotLastPage ? 
-            (<Link
+            (<a
               href={isLastPage ? '#' : createPageUrl(nextPage)}
               className={`${isLastPage
                 ? 'cursor-not-allowed opacity-50'
@@ -211,7 +210,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
               aria-disabled={isLastPage}
             >
               <Next disabled={false} />
-            </Link>) :
+            </a>) :
             (
               <Next disabled={true} />
             )
@@ -221,7 +220,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
         {/* Last page */}
         <li className={`${isLastPage ? 'cursor-not-allowed' : ''} ${styles.arrow}`}>
           {isNotLastPage ?
-            (<Link
+            (<a
               href={isLastPage ? '#' : createPageUrl(totalPages)}
               className={`block ${isLastPage
                 ? 'cursor-not-allowed opacity-50'
@@ -230,7 +229,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
               aria-disabled={isLastPage}
             >
               <Last disabled={false} />
-            </Link>) :
+            </a>) :
             (
               <Last disabled={true} />
             )}

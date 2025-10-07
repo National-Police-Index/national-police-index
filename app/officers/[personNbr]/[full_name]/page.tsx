@@ -1,13 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { PoliceOfficer } from "@/types";
 import { useOfficerByPersonNbr } from "@/hooks/useOfficerByPersonNbr";
 import { useStaticText } from "@/hooks/useStaticText";
 import PageHeader from "@/components/PageHeader";
 import styles from "./page.module.scss";
 import { US_STATES } from "@/constants/states";
+
 
 type PoliceOfficerWithEventType = PoliceOfficer & {
   eventType: "Start" | "End" | "Discipline";
@@ -495,14 +495,14 @@ export default function OfficerProfilePage() {
                                 className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineEvent}`}
                               >
                                 <b>
-                                  <Link
+                                  <a 
                                     href={`/agencies/${encodeURIComponent(
                                       event.agency_name
                                     )}`}
                                     className={styles.timelineAgency}
                                   >
                                     {event.agency_name}
-                                  </Link>
+                                  </a>
                                 </b>
                                 <small>
                                   {event.eventType === "Discipline" &&

@@ -1,6 +1,5 @@
 'use client';
 import { useRef, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { PoliceOfficer } from '@/types';
 import { useStaticText } from '@/hooks/useStaticText';
@@ -49,7 +48,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
 
 
   return (
-    <Link
+    <a
       href={`/officers/${officer.document_id}/${officerSlug}`}
       className={`group flex w-full max-w-sm ${styles.officerCard} ${moreActive ? styles.moreActive : ''}`}
     >
@@ -84,6 +83,6 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
           </button>
         )}
       </div>
-    </Link>
+    </a>
   );
 }

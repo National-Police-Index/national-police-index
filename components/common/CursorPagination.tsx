@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import styles from "./Pagination.module.scss";
 
@@ -120,7 +119,7 @@ export default function CursorPagination({
             }`}
           >
             {hasPreviousPage ? (
-              <Link
+              <a
                 href={!hasPreviousPage ? "#" : createPageUrl("prev")}
                 className={`block ${
                   !hasPreviousPage
@@ -130,7 +129,7 @@ export default function CursorPagination({
                 aria-disabled={!hasPreviousPage}
               >
                 <Prev disabled={false} />
-              </Link>
+              </a>
             ) : (
               <Prev disabled={true} />
             )}
@@ -148,7 +147,7 @@ export default function CursorPagination({
             }`}
           >
             {hasNextPage ? (
-              <Link
+              <a
                 href={!hasNextPage ? "#" : createPageUrl("next")}
                 className={`${
                   !hasNextPage
@@ -158,7 +157,7 @@ export default function CursorPagination({
                 aria-disabled={!hasNextPage}
               >
                 <Next disabled={false} />
-              </Link>
+              </a>
             ) : (
               <Next disabled={true} />
             )}
