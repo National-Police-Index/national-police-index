@@ -66,7 +66,6 @@ async function generateAgenciesCollection() {
     const dbLaunchRef = collectionGroup(db, DB_LAUNCH_COLLECTION);
 
     for (const state of US_STATES.reverse()
-      .filter((item) => item.reference == "kansas")
       .filter((item) => item.hasData)) {
       const uniqueAgencies = new Map<string, AgencyData>();
 

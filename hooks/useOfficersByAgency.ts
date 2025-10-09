@@ -171,22 +171,6 @@ export function useOfficersByAgency({
             }
           }
         }
-
-        const oldStatsRef = doc(db, "agency_statistics", normalizedAgencyId);
-        const oldStatsDoc = await getDoc(oldStatsRef);
-
-        if (oldStatsDoc.exists()) {
-          const statsData = oldStatsDoc.data();
-          const totalOfficersStat = statsData.stats?.find(
-            (stat: any) => stat.label === "Total Officers"
-          );
-          if (totalOfficersStat) {
-            const count = parseInt(totalOfficersStat.value, 10);
-
-            setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
-            return count;
-          }
-        }
       }
 
       try {
@@ -209,7 +193,7 @@ export function useOfficersByAgency({
           const startDate = new Date(searchParameters.startDate);
           countQuery = query(
             countQuery,
-            where("start_date", ">=", startDate.toISOString())
+            where("start_date_iso", ">=", startDate.toISOString())
           );
         }
 
@@ -217,12 +201,12 @@ export function useOfficersByAgency({
           const endDate = new Date(searchParameters.endDate);
           countQuery = query(
             countQuery,
-            where("end_date", "<=", endDate.toISOString())
+            where("end_date_iso", "<=", endDate.toISOString())
           );
         }
 
         if (searchParameters.activeOnly === "true") {
-          countQuery = query(countQuery, where("end_date", "==", ""));
+          countQuery = query(countQuery, where("end_date_iso", "==", ""));
         }
 
         const countSnapshot = await getDocs(countQuery);
@@ -267,7 +251,9 @@ export function useOfficersByAgency({
       fetchStateRef.current.isFetching = true;
       fetchStateRef.current.lastParams = searchParamsString;
       fetchStateRef.current.fetchCount++;
-      fetchOfficers();
+      if (normalizedAgencyId) {
+        fetchOfficers();
+      }
     }, 300);
 
     async function fetchOfficers() {
@@ -288,27 +274,6 @@ export function useOfficersByAgency({
             if (statsData.total_officers !== undefined) {
               officerCount = statsData.total_officers;
               setTotalOfficers(officerCount);
-            }
-          }
-
-          if (officerCount === null) {
-            const oldStatsRef = doc(
-              db,
-              "agency_statistics",
-              normalizedAgencyId
-            );
-            const oldStatsDoc = await getDoc(oldStatsRef);
-
-            if (oldStatsDoc.exists()) {
-              const statsData = oldStatsDoc.data();
-              const totalOfficersStat = statsData.stats?.find(
-                (stat: any) => stat.label === "Total Officers"
-              );
-
-              if (totalOfficersStat) {
-                officerCount = parseInt(totalOfficersStat.value, 10);
-                setTotalOfficers(officerCount);
-              }
             }
           }
         } catch (statsError) {
@@ -340,18 +305,18 @@ export function useOfficersByAgency({
         }
 
         if (searchParameters.startDate) {
-          q = query(q, where("start_date", ">=", searchParameters.startDate));
+          const startDate = new Date(searchParameters.startDate);
+          q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
         }
 
         if (searchParameters.endDate) {
-          q = query(q, where("end_date", "<=", searchParameters.endDate));
+          const endDate = new Date(searchParameters.endDate);
+          q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
         }
 
         if (searchParameters.activeOnly === "true") {
-          q = query(q, where("end_date", "==", ""));
+          q = query(q, where("end_date_iso", "==", ""));
         }
-
-        // const pageSize = searchParameters.pageSize || 16;
 
         const pageSize = searchParameters.query
           ? 100
@@ -359,7 +324,7 @@ export function useOfficersByAgency({
         const page = currentPage;
         const direction = searchParameters.direction;
 
-        q = query(q, limit(pageSize * (searchParameters.query ? 1 : 10)));
+        q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
         if (direction === "next" && lastDoc) {
           q = query(q, startAfter(lastDoc));
@@ -394,7 +359,6 @@ export function useOfficersByAgency({
           ? searchParameters.query.trim().toLowerCase().split(" ")
           : false;
 
-
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -420,7 +384,6 @@ export function useOfficersByAgency({
               }
             }
 
-
             if (!groupedOfficers.has(person_nbr)) {
               groupedOfficers.set(person_nbr, []);
               uniqueCount++;
@@ -432,6 +395,7 @@ export function useOfficersByAgency({
 
           attempts++;
         }
+        setTotalOfficers(uniqueCount);
 
         if (snapshot.docs.length > 0) {
           const firstDoc = snapshot.docs[0];

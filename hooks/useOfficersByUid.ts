@@ -192,7 +192,7 @@ export function useOfficersByUid({
           const startDate = new Date(searchParameters.startDate);
           countQuery = query(
             countQuery,
-            where("start_date", ">=", startDate.toISOString())
+            where("start_date_iso", ">=", startDate.toISOString())
           );
         }
 
@@ -200,7 +200,7 @@ export function useOfficersByUid({
           const endDate = new Date(searchParameters.endDate);
           countQuery = query(
             countQuery,
-            where("end_date", "<=", endDate.toISOString())
+            where("end_date_iso", "<=", endDate.toISOString())
           );
         }
 
@@ -302,11 +302,13 @@ export function useOfficersByUid({
         }
 
         if (searchParameters.startDate) {
-          q = query(q, where("start_date", ">=", searchParameters.startDate));
+          const startDate = new Date(searchParameters.startDate);
+          q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
         }
 
         if (searchParameters.endDate) {
-          q = query(q, where("end_date", "<=", searchParameters.endDate));
+          const endDate = new Date(searchParameters.endDate);
+          q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
         }
 
         const sortField =
@@ -322,7 +324,7 @@ export function useOfficersByUid({
             searchParameters.sortOrder === "desc" ? "desc" : "asc"
           )
         );
-        q = query(q, limit(pageSize * (searchParameters.query ? 1 : 10)));
+        q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
