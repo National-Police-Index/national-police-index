@@ -46,7 +46,7 @@ export const US_STATES = [
     { name: 'Oregon', reference: 'oregon', abbreviation: 'OR', hasData: true, key: 'a7', dataFlag: 'full' },
     { name: 'Pennsylvania', reference: 'pennsylvania', abbreviation: 'PA', hasData: false, key: 'a14', dataFlag: 'no_data_lb', url: 'https://www.spotlightpa.org/news/2023/08/pennsylvania-police-officer-data-denied/' },
     { name: "Puerto Rico", reference: "puerto-rico", abbreviation: "PR", hasData: false, key: "a51", dataFlag: "coming_soon", },
-    { name: 'Rhode Island', reference: 'rhode-island', abbreviation: 'RI', hasData: true, key: 'a42', dataFlag: 'full' },
+    { name: 'Rhode Island', reference: 'rhode-island', abbreviation: 'RI', hasData: false, key: 'a42', dataFlag: 'no_data_tb' },
     { name: 'South Carolina', reference: 'south-carolina', abbreviation: 'SC', hasData: true, key: 'a33', dataFlag: 'full' },
     { name: 'South Dakota', reference: 'south-dakota', abbreviation: 'SD', hasData: false, key: 'a10', dataFlag: 'no_data_lb' },
     { name: 'Tennessee', reference: 'tennessee', abbreviation: 'TN', hasData: true, key: 'a31', dataFlag: 'full' },
