@@ -364,9 +364,9 @@ export const US_STATES: USState[] = [
     name: "Rhode Island",
     reference: "rhode-island",
     abbreviation: "RI",
-    hasData: true,
+    hasData: false,
     key: "a42",
-    dataFlag: "full",
+    dataFlag: "no_data_tb",
   },
   {
     name: "South Carolina",
