@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { GoogleAnalytics } from '@next/third-parties/google';
 import "./globals.scss";
 
 const inter = Inter({
@@ -32,6 +33,7 @@ export const metadata: Metadata = {
 
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import AnalyticsProvider from '@/components/AnalyticsProvider';
 
 export default function RootLayout({
   children,
@@ -41,13 +43,18 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.variable} antialiased h-full`}>
-        <div className="min-h-fulld flex flex-col wrapper">
-          <Header />
-          <main className="flex-grow w-full ">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <AnalyticsProvider>
+          <div className="min-h-fulld flex flex-col wrapper">
+            <Header />
+            <main className="flex-grow w-full ">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AnalyticsProvider>
+        {process.env.NEXT_PUBLIC_GA_TRACKING_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_TRACKING_ID} />
+        )}
       </body>
     </html>
   );

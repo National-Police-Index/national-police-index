@@ -13,6 +13,7 @@ import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import parse from 'html-react-parser';
+import { trackStateSearch, trackPagination } from '@/lib/analytics';
 
 function toTitleCase(str: string) {
   return str.replace(/-+/g, ' ').replace(
@@ -146,6 +147,17 @@ export default function StatePageClient() {
       setSearchLoading(false);
     }
   }, [officersLoading]);
+
+  // Track search results when data loads
+  useEffect(() => {
+    if (!officersLoading && !statsLoading && officerGroups.length >= 0) {
+      trackStateSearch(
+        stateData.name,
+        officerGroups.length > 0,
+        totalGroups || 0
+      );
+    }
+  }, [officersLoading, statsLoading, officerGroups.length, totalGroups, stateData.name]);
   const error = statsError || officersError;
   const totalPages = totalGroups ? Math.ceil(totalGroups / pageSize) : 0;
 
@@ -213,6 +225,9 @@ export default function StatePageClient() {
                         onPageSizeChange={(newSize) => {
                           const params = new URLSearchParams(searchParams.toString());
                           params.set('pageSize', newSize.toString());
+                          
+                          // Track page size change
+                          trackPagination(apiCurrentPage, stateData.name, totalGroups);
                           
                           window.location.href = `/states/${state}?${params.toString()}`;
                         }}

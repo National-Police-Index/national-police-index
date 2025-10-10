@@ -8,6 +8,7 @@ import { Combobox, Transition } from "@headlessui/react";
 import { Checkbox } from "../ui/Checkbox";
 import { SearchFilters as SearchFiltersType } from "@/types";
 import { getAllAgencies, filterAgenciesByTerm } from "@/lib/searchAgencies";
+import { trackFilterUsage } from "@/lib/analytics";
 import styles from "./styles.module.scss";
 import debounce from "lodash/debounce";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
@@ -64,6 +65,28 @@ export default function SearchFilters({
   const setFilters = (filters: SearchFiltersType) => {
     setReset(true);
     setRawFilters({ ...filters });
+    
+    // Track filter usage
+    if (state) {
+      if (filters.agency) {
+        trackFilterUsage('agency', filters.agency, state);
+      }
+      if (filters.startDate) {
+        trackFilterUsage('start_date', filters.startDate.toISOString().split('T')[0], state);
+      }
+      if (filters.endDate) {
+        trackFilterUsage('end_date', filters.endDate.toISOString().split('T')[0], state);
+      }
+      if (filters.activeOnly && filters.activeOnly !== 'false') {
+        trackFilterUsage('active_only', filters.activeOnly, state);
+      }
+      if (filters.sortBy) {
+        trackFilterUsage('sort_by', filters.sortBy, state);
+      }
+      if (filters.sortOrder) {
+        trackFilterUsage('sort_order', filters.sortOrder, state);
+      }
+    }
   };
 
   const filterAgenciesByQuery = useCallback(

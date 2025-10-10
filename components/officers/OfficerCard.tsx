@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { PoliceOfficer } from '@/types';
 import { useStaticText } from '@/hooks/useStaticText';
+import { trackOfficerView } from '@/lib/analytics';
 import styles from './OfficeCard.module.scss';
 
 interface OfficerCardProps {
@@ -47,10 +48,19 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
   }
 
 
+  const handleOfficerClick = () => {
+    trackOfficerView(
+      officer.document_id || officer.person_nbr,
+      officer.state || 'unknown',
+      'search_results'
+    );
+  };
+
   return (
     <a
       href={`/officers/${officer.document_id}/${officerSlug}`}
       className={`group flex w-full max-w-sm ${styles.officerCard} ${moreActive ? styles.moreActive : ''}`}
+      onClick={handleOfficerClick}
     >
       <div className="w-[24px] min-w-[1.5rem] bg-[#2F5E50] rounded-tl-2xl rounded-bl-2xl" />
       <div className={`flex-1 flex flex-col justify-start items-start ${styles.cardContent}`}>
