@@ -5,8 +5,9 @@ import Image from 'next/image';
 
 // Import images
 import invist from '@/images/invist-logo-black.png';
-import ipno from '@/images/ipno.jpg';
+import ipno from '@/images/IJLA_Specialty_FullColor.png';
 import hrdag from '@/images/hrdag.png';
+import mljlab from '@/images/mljlab.svg';
 
 import styles from './styles.module.scss';
 
@@ -60,6 +61,12 @@ export default function Footer() {
             <Image
               src={hrdag}
               alt="Human Rights Data Analysis Group logo"
+            />
+          </a>
+          <a className="relative -ml-8" href="https://mljlab.org" target="_blank" rel="noopener noreferrer">
+            <Image
+              src={mljlab}
+              alt="MLJ Lab logo"
             />
           </a>
         </div>
