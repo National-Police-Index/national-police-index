@@ -1,6 +1,7 @@
 {
   "projects": {
-    "production": "police-index"
+    "production": "police-index",
+    "default": "police-index"
   },
   "targets": {},
   "etags": {}
