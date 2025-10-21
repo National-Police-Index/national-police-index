@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { US_STATES } from '@/constants/states';
 import { State, US_STATES_MAP } from '@/constants/states-map';
+import { trackMapInteraction } from '@/lib/analytics';
 import styles from './USMap.module.scss';
 
 export interface StateMapEntry {
@@ -49,6 +50,10 @@ export default function USMap() {
 
   const handleStateClick = (stateReference: string) => {
     const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
+    
+    // Track map interaction
+    trackMapInteraction(stateData?.name || stateReference, 'click');
+    
     if (stateData?.hasData) {
       // Use window.location.href instead of router.push for proper history handling
       window.location.href = `/states/${stateReference.toLowerCase()}`;
@@ -63,6 +68,8 @@ export default function USMap() {
     const stateData = US_STATES.find(s => s.reference.toLowerCase() === stateReference.toLowerCase());
 
     if (stateData) {
+      // Track hover interaction
+      trackMapInteraction(stateData.name, 'hover');
       const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';
 
       const eTarget = (e.target as HTMLElement).getBoundingClientRect();
