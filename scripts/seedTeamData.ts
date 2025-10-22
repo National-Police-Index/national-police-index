@@ -74,6 +74,12 @@ const teamMembers = [
     pronouns: '',
     description: 'California Reporting Project',
     order: 10
+  },
+  {
+    name: '79X Solutions',
+    pronouns: '',
+    description: 'Software development firm that has contributed to the site.',
+    order: 10
   }
 ];
 
