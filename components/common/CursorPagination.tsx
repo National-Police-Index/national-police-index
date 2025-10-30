@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import styles from "./Pagination.module.scss";
+import Link from "next/link";
 
 interface CursorPaginationProps {
   currentPage: number;
@@ -147,7 +148,7 @@ export default function CursorPagination({
             }`}
           >
             {hasNextPage ? (
-              <a
+              <Link
                 href={!hasNextPage ? "#" : createPageUrl("next")}
                 className={`${
                   !hasNextPage
@@ -157,7 +158,7 @@ export default function CursorPagination({
                 aria-disabled={!hasNextPage}
               >
                 <Next disabled={false} />
-              </a>
+              </Link>
             ) : (
               <Next disabled={true} />
             )}

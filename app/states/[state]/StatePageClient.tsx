@@ -225,6 +225,8 @@ export default function StatePageClient() {
                         onPageSizeChange={(newSize) => {
                           const params = new URLSearchParams(searchParams.toString());
                           params.set('pageSize', newSize.toString());
+                          params.set('page', "1");
+                          params.set('direction', "");
                           
                           // Track page size change
                           trackPagination(apiCurrentPage, stateData.name, totalGroups);
