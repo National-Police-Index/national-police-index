@@ -285,11 +285,31 @@ async function generateAgencyStats(state: string) {
 }
 
 
-export async function updateAgencyStatistics() {
+export async function updateAgencyStatistics(stateReference?: string) {
   try {
-    await Promise.all(US_STATES.filter(item => item.hasData).map(async (item) => {
+    // If a specific state is provided, only process that state
+    const statesToProcess = stateReference 
+      ? US_STATES.filter(item => item.hasData && item.reference === stateReference)
+      : US_STATES.filter(item => item.hasData);
+
+    if (statesToProcess.length === 0) {
+      if (stateReference) {
+        console.error(`State "${stateReference}" not found or has no data`);
+        throw new Error(`Invalid state reference: ${stateReference}`);
+      } else {
+        console.log('No states with data found');
+        return;
+      }
+    }
+
+    console.log(`Processing ${statesToProcess.length} state(s): ${statesToProcess.map(s => s.name).join(', ')}`);
+
+    await Promise.all(statesToProcess.map(async (item) => {
+      console.log(`Generating stats for ${item.name}...`);
       await generateAgencyStats(item.reference);
     }));
+
+    console.log('Agency statistics update completed successfully');
   } catch (error) {
     console.error('Error updating agency statistics:', error);
     throw error;
@@ -297,7 +317,8 @@ export async function updateAgencyStatistics() {
 }
 
 
-updateAgencyStatistics()
+const stateArg = process.argv[2];
+updateAgencyStatistics(stateArg)
   .then(() => process.exit(0))
   .catch((error) => {
     console.error('Fatal error:', error);
