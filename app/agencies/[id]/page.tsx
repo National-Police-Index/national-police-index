@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useStaticText } from '@/hooks/useStaticText';
 import { useAgencyStats } from '@/hooks/useAgencyStats';
 import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
+import { useAgencyAnalytics } from '@/hooks/useAgencyAnalytics';
 import SearchFilters from '@/components/search/SearchFilters';
 import PageHeader from '@/components/PageHeader';
 import CursorPagination from '@/components/common/CursorPagination';
@@ -39,6 +40,17 @@ export default function AgencyPage() {
   const stateData = US_STATES.find(
     s => s.reference.toLowerCase() === stats?.state.toLowerCase()
   );
+
+  // Analytics tracking for agency page
+  const analyticsData = stats ? {
+    agencyId: id,
+    agencyName: stats.name,
+    state: stateData?.name || stats.state,
+    officerCount: stats.stats?.find(stat => stat.label === 'Total Officers')?.value ? 
+      parseInt(stats.stats.find(stat => stat.label === 'Total Officers')?.value || '0', 10) : undefined
+  } : null;
+
+  useAgencyAnalytics(analyticsData);
 
   const { loading: officersLoading, error: officersError, officerGroups, totalGroups, hasNextPage, hasPreviousPage, currentPage: apiCurrentPage } = useOfficersByAgency({
     agencyName: stats?.name || '',

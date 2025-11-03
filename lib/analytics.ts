@@ -45,12 +45,45 @@ export const trackStateSearch = (state: string, hasResults: boolean, resultCount
   });
 };
 
-// Track officer profile views
-export const trackOfficerView = (officerId: string, state: string, source?: string) => {
-  trackEvent('view_officer_profile', 'engagement', `${state}_${officerId}`, undefined, {
+// Track officer profile views with detailed location info
+export const trackOfficerView = (
+  officerId: string, 
+  state: string, 
+  agency?: string,
+  officerName?: string,
+  source?: string
+) => {
+  trackEvent('view_officer_profile', 'engagement', `${state}_${agency || 'unknown'}_${officerId}`, undefined, {
     officer_id: officerId,
+    officer_name: officerName,
     state: state,
+    agency: agency || 'unknown',
     source: source || 'search_results',
+    // Custom dimensions for better analytics segmentation
+    custom_parameter_1: state, // State dimension
+    custom_parameter_2: agency || 'unknown', // Agency dimension
+    custom_parameter_3: `${state}/${agency || 'unknown'}`, // Combined location
+  });
+};
+
+// Track agency page views with state information
+export const trackAgencyView = (
+  agencyId: string,
+  agencyName: string,
+  state: string,
+  officerCount?: number,
+  source?: string
+) => {
+  trackEvent('view_agency_profile', 'engagement', `${state}_${agencyName}`, undefined, {
+    agency_id: agencyId,
+    agency_name: agencyName,
+    state: state,
+    officer_count: officerCount,
+    source: source || 'direct',
+    // Custom dimensions for analytics segmentation
+    custom_parameter_1: state, // State dimension
+    custom_parameter_2: agencyName, // Agency dimension
+    custom_parameter_3: `${state}/${agencyName}`, // Combined location
   });
 };
 
@@ -123,12 +156,35 @@ export const trackConversion = (conversionType: 'successful_search' | 'profile_e
   });
 };
 
-// Page view tracking (automatic with GA4, but useful for SPA navigation)
-export const trackPageView = (url: string, title?: string) => {
+// Enhanced page view tracking with location context
+export const trackPageView = (
+  url: string, 
+  title?: string, 
+  pageType?: 'officer' | 'agency' | 'state' | 'home',
+  state?: string,
+  agency?: string,
+  officerId?: string
+) => {
   if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
     window.gtag('config', GA_TRACKING_ID, {
       page_location: url,
       page_title: title,
+      // Custom parameters for detailed tracking
+      custom_parameter_1: state || 'unknown', // State dimension
+      custom_parameter_2: agency || 'unknown', // Agency dimension  
+      custom_parameter_3: pageType || 'unknown', // Page type
+      custom_parameter_4: officerId || 'unknown', // Officer ID
     });
+
+    // Also send a custom event for better segmentation
+    if (pageType && state) {
+      trackEvent('page_view_detailed', 'navigation', `${pageType}_${state}`, undefined, {
+        page_type: pageType,
+        state: state,
+        agency: agency,
+        officer_id: officerId,
+        url: url,
+      });
+    }
   }
 };
