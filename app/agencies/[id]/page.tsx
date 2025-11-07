@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useParams, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useStaticText } from '@/hooks/useStaticText';
-import { useAgencyStats } from '@/hooks/useAgencyStats';
-import { useOfficersByAgency } from '@/hooks/useOfficersByAgency';
-import { useAgencyAnalytics } from '@/hooks/useAgencyAnalytics';
-import SearchFilters from '@/components/search/SearchFilters';
-import PageHeader from '@/components/PageHeader';
-import CursorPagination from '@/components/common/CursorPagination';
-import OfficerCard from '@/components/officers/OfficerCard';
-import styles from './styles.module.scss';
-import { US_STATES } from '@/constants/states';
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useStaticText } from "@/hooks/useStaticText";
+import { useAgencyStats } from "@/hooks/useAgencyStats";
+import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
+import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
+import SearchFilters from "@/components/search/SearchFilters";
+import PageHeader from "@/components/PageHeader";
+import CursorPagination from "@/components/common/CursorPagination";
+import OfficerCard from "@/components/officers/OfficerCard";
+import styles from "./styles.module.scss";
+import { US_STATES } from "@/constants/states";
 
 interface SearchParams {
   page?: string;
@@ -27,40 +27,63 @@ interface SearchParams {
 export default function AgencyPage() {
   const params = useParams();
   const id = decodeURIComponent(decodeURIComponent(params.id as string));
-  const { getText } = useStaticText('agency');
+  const { getText } = useStaticText("agency");
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
 
-  const pageSize = 16; 
-  const direction = resolvedSearchParams.direction as 'next' | 'prev' | undefined;
-  const page = resolvedSearchParams.page || '1';
+  const pageSize = 16;
+  const direction = resolvedSearchParams.direction as
+    | "next"
+    | "prev"
+    | undefined;
+  const page = resolvedSearchParams.page || "1";
 
-  const { loading: statsLoading, error: statsError, stats } = useAgencyStats(id);
+  const {
+    loading: statsLoading,
+    error: statsError,
+    stats,
+  } = useAgencyStats(id);
 
   const stateData = US_STATES.find(
-    s => s.reference.toLowerCase() === stats?.state.toLowerCase()
+    (s) => s.reference.toLowerCase() === stats?.state.toLowerCase()
   );
-
   // Analytics tracking for agency page
-  const analyticsData = stats ? {
-    agencyId: id,
-    agencyName: stats.name,
-    state: stateData?.name || stats.state,
-    officerCount: stats.stats?.find(stat => stat.label === 'Total Officers')?.value ? 
-      parseInt(stats.stats.find(stat => stat.label === 'Total Officers')?.value || '0', 10) : undefined
-  } : null;
+  const analyticsData = stats
+    ? {
+        agencyId: id,
+        agencyName: stats.name,
+        state: stateData?.name || stats.state,
+        officerCount: stats.stats?.find(
+          (stat) => stat.label === "Total Officers"
+        )?.value
+          ? parseInt(
+              stats.stats.find((stat) => stat.label === "Total Officers")
+                ?.value || "0",
+              10
+            )
+          : undefined,
+      }
+    : null;
 
   useAgencyAnalytics(analyticsData);
 
-  const { loading: officersLoading, error: officersError, officerGroups, totalGroups, hasNextPage, hasPreviousPage, currentPage: apiCurrentPage } = useOfficersByAgency({
-    agencyName: stats?.name || '',
+  const {
+    loading: officersLoading,
+    error: officersError,
+    officerGroups,
+    totalGroups,
+    hasNextPage,
+    hasPreviousPage,
+    currentPage: apiCurrentPage,
+  } = useOfficersByAgency({
+    agencyName: stats?.name || "",
     agencyId: id,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),
       page,
-      direction
-    }
+      direction,
+    },
   });
 
   const [searchLoading, setSearchLoading] = useState(false);
@@ -79,28 +102,41 @@ export default function AgencyPage() {
 
   const loading = statsLoading || officersLoading || searchLoading;
   const error = statsError || officersError;
-  
+
   return (
     <div className="w-full mx-auto">
       <PageHeader
         home={false}
-        title={getText('officers-title', `Officers in {state}`).replace('{state}', stats?.name || '') + (stateData ? ` - ${stateData?.name}` : '')}
-        description={`Searching and exploring police officer records in ${stats?.name || ''}`}
-        statistics={statsLoading ? (
-          
-          Array(4).fill(0).map((_, i) => ({
-            value: -1,
-            label: i === 0 ? 'Calculating statistics...' : ''
-          }))
-        ) : stats?.stats?.filter(stat => stat.value !== '0').map(stat => ({
-          value: parseInt(stat.value),
-          label: stat.label
-        }))}
+        title={
+          getText("officers-title", `Officers in {state}`).replace(
+            "{state}",
+            stats?.name || ""
+          ) + (stateData ? ` - ${stateData?.name}` : "")
+        }
+        description={`Searching and exploring police officer records in ${
+          stats?.name || ""
+        }`}
+        statistics={
+          statsLoading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => ({
+                  value: -1,
+                  label: i === 0 ? "Calculating statistics..." : "",
+                }))
+            : stats?.stats
+                ?.filter((stat) => stat.value !== "0")
+                .map((stat) => ({
+                  value: parseInt(stat.value),
+                  label: stat.label,
+                }))
+        }
       />
 
-      <div className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}>
+      <div
+        className={`relative w-full bg-white rounded-tl-3xl rounded-tr-3xl z-1 ${styles.pageContentWrapper}`}
+      >
         <div className="container-a mx-auto">
-
           <SearchFilters
             state={stats?.state}
             agencyMode={true}
@@ -116,7 +152,8 @@ export default function AgencyPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-[#122823]">
-                    Calculating agency statistics on-the-fly. This may take a moment for agencies with many records.
+                    Calculating agency statistics on-the-fly. This may take a
+                    moment for agencies with many records.
                   </p>
                 </div>
               </div>
@@ -141,7 +178,10 @@ export default function AgencyPage() {
               <>
                 <div className={`flex flex-wrap gap-6 ${styles.cards}`}>
                   {officerGroups.map((group) => (
-                    <OfficerCard key={group.person_nbr} officer={group.records[0]} />
+                    <OfficerCard
+                      key={group.person_nbr}
+                      officer={group.records[0]}
+                    />
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
@@ -154,9 +194,13 @@ export default function AgencyPage() {
                       hasPreviousPage={hasPreviousPage}
                       hasNextPage={hasNextPage}
                       onPageSizeChange={(newSize) => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('pageSize', newSize.toString());
-                        window.location.href = `/agencies/${encodeURIComponent(id)}?${params.toString()}`;
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
+                        params.set("pageSize", newSize.toString());
+                        window.location.href = `/agencies/${encodeURIComponent(
+                          id
+                        )}?${params.toString()}`;
                       }}
                     />
                   </div>

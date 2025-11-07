@@ -253,8 +253,6 @@ export default function OfficerProfilePage() {
     }
   };
 
-  console.log("OFFICER info", records);
-
   const officerRecords = {} as { [key: string]: PoliceOfficerWithEventType };
   const timeline = records.reduce((acc = {}, record) => {
     const startDate = record.start_date ? new Date(record.start_date) : null;
@@ -508,7 +506,7 @@ export default function OfficerProfilePage() {
                               >
                                 <b>
                                   <a 
-                                    href={`/agencies/${encodeURIComponent(
+                                    href={`/agencies/${(stateData?.name || "").toLowerCase()}/${encodeURIComponent(
                                       event.agency_name
                                     )}`}
                                     className={styles.timelineAgency}
