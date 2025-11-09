@@ -41,12 +41,15 @@ export async function generateMetadata({ params }: { params: Props }): Promise<M
   }
 
  
-  const title = officerName
+  // Include state, agency, and officer for better analytics tracking
+  const title = officerName && state && agencyName
+    ? `${state} / ${agencyName} / ${officerName} (${nbr}) | National Police Index`
+    : officerName && state
     ? `${state} / ${officerName} (${nbr}) | National Police Index`
     : `Officer Profile ${decodedPersonNbr} | National Police Index`;
 
   const description = officerName && agencyName
-    ? `View employment history and records for ${officerName} (ID: ${decodedPersonNbr})${agencyName ? ` at ${agencyName}` : ''}.`
+    ? `View employment history and records for ${officerName} (ID: ${decodedPersonNbr}) at ${agencyName}${state ? ` in ${state}` : ''}.`
     : `View officer profile and employment history for ID: ${decodedPersonNbr}.`;
 
   return {

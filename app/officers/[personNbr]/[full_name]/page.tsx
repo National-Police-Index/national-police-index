@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { PoliceOfficer } from "@/types";
 import { useOfficerByPersonNbr } from "@/hooks/useOfficerByPersonNbr";
 import { useStaticText } from "@/hooks/useStaticText";
+import { useOfficerAnalytics } from "@/hooks/useOfficerAnalytics";
 import PageHeader from "@/components/PageHeader";
 import styles from "./page.module.scss";
 import { US_STATES } from "@/constants/states";
@@ -42,6 +43,17 @@ export default function OfficerProfilePage() {
       s.reference.toLowerCase() ===
       officerData?.latestRecord.state.toLowerCase()
   );
+
+  // Analytics tracking for officer page
+  const analyticsData = officerData ? {
+    personNbr: officerData.latestRecord.person_nbr,
+    fullName: officerData.latestRecord.full_name || 
+      `${officerData.latestRecord.first_name || ''} ${officerData.latestRecord.last_name || ''}`.trim(),
+    state: stateData?.name || officerData.latestRecord.state,
+    agencyName: officerData.latestRecord.agency_name
+  } : null;
+
+  useOfficerAnalytics(analyticsData);
 
   if (loading) {
     return (
