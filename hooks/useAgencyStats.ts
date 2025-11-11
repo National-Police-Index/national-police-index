@@ -32,7 +32,7 @@ function createDefaultStats(agencyName: string): AgencyStats {
   };
 }
 
-export function useAgencyStats(agencyName: string) {
+export function useAgencyStats(agencyName: string, stateId: string = '') {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState<AgencyStats | null>(null);

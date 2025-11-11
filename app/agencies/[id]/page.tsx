@@ -1,7 +1,7 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { useStaticText } from "@/hooks/useStaticText";
 import { useAgencyStats } from "@/hooks/useAgencyStats";
 import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
@@ -26,7 +26,20 @@ interface SearchParams {
 
 export default function AgencyPage() {
   const params = useParams();
+  const pathname = usePathname();
+
+  let stateId = useMemo(() => {
+    return pathname.split("/")?.slice(2, 3)?.join("/");
+  }, [pathname]);
+
   const id = decodeURIComponent(decodeURIComponent(params.id as string));
+  if (!stateId) {
+    stateId = decodeURIComponent(
+      decodeURIComponent(params.state as string)
+    );
+  }
+  
+  console.log("State ID", stateId);
   const { getText } = useStaticText("agency");
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
@@ -42,11 +55,15 @@ export default function AgencyPage() {
     loading: statsLoading,
     error: statsError,
     stats,
-  } = useAgencyStats(id);
+  } = useAgencyStats(id, stateId);
 
-  const stateData = US_STATES.find(
-    (s) => s.reference.toLowerCase() === stats?.state.toLowerCase()
-  );
+  let stateData = US_STATES.find((s) => s.reference.toLowerCase() === stateId);
+  if (!stateData) {
+    stateData = US_STATES.find(
+      (s) => s.reference.toLowerCase() === stats?.state.toLowerCase()
+    );
+  }
+  console.log("stateData", stateId, stateData);
   // Analytics tracking for agency page
   const analyticsData = stats
     ? {
