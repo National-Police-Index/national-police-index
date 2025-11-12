@@ -34,12 +34,9 @@ export default function AgencyPage() {
 
   const id = decodeURIComponent(decodeURIComponent(params.id as string));
   if (!stateId) {
-    stateId = decodeURIComponent(
-      decodeURIComponent(params.state as string)
-    );
+    stateId = decodeURIComponent(decodeURIComponent(params.state as string));
   }
-  
-  console.log("State ID", stateId);
+
   const { getText } = useStaticText("agency");
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams) as SearchParams;
@@ -95,6 +92,7 @@ export default function AgencyPage() {
   } = useOfficersByAgency({
     agencyName: stats?.name || "",
     agencyId: id,
+    state: stateId,
     searchParams: {
       ...resolvedSearchParams,
       pageSize: pageSize.toString(),

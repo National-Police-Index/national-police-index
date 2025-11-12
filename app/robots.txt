@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://nationalpoliceindex.org/sitemap.xml
+Sitemap: https://national.cpdp.co/sitemap.xml 

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { calculateAgencyStats } from "@/lib/calculateAgencyStats";
 
@@ -32,7 +39,7 @@ function createDefaultStats(agencyName: string): AgencyStats {
   };
 }
 
-export function useAgencyStats(agencyName: string, stateId: string = '') {
+export function useAgencyStats(agencyName: string, stateId: string = "") {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [stats, setStats] = useState<AgencyStats | null>(null);
@@ -48,11 +55,24 @@ export function useAgencyStats(agencyName: string, stateId: string = '') {
           .replace(/[/\\]/g, "%2F")
           .replace(/[^a-z0-9-]/g, "-");
 
-        const statsRef = doc(db, "statistics_per_agency", agencyId);
-        const statsDoc = await getDoc(statsRef);
+        //  const statsRef = doc(db, "statistics_per_agency", agencyId);
+        // const statsDoc = await getDoc(statsRef);
+        // if (statsDoc.exists()) {
+        //  const statsData = statsDoc.data() as AgencyStats;
 
-        if (statsDoc.exists()) {
-          const statsData = statsDoc.data() as AgencyStats;
+        let statsQuery = query(
+          collection(db, "statistics_per_agency"),
+          where("name", "==", agencyName)
+        );
+
+        if (stateId) {
+          statsQuery = query(statsQuery, where("state", "==", stateId));
+        }
+
+        const statsSnapshot = await getDocs(statsQuery);
+
+        if (!statsSnapshot.empty) {
+          const statsData = statsSnapshot.docs[0].data() as AgencyStats;
 
           if (!statsData.stats) {
             statsData.stats = [];
@@ -66,7 +86,10 @@ export function useAgencyStats(agencyName: string, stateId: string = '') {
             const statsData = oldStatsDoc.data() as AgencyStats;
             setStats(statsData);
           } else {
-            const calculatedStats = await calculateAgencyStats(agencyName);
+            const calculatedStats = await calculateAgencyStats(
+              agencyName,
+              stateId
+            );
 
             if (calculatedStats) {
               setStats(calculatedStats);
@@ -79,7 +102,10 @@ export function useAgencyStats(agencyName: string, stateId: string = '') {
         console.error(`Error in useAgencyStats for ${agencyName}:`, err);
 
         try {
-          const calculatedStats = await calculateAgencyStats(agencyName);
+          const calculatedStats = await calculateAgencyStats(
+            agencyName,
+            stateId
+          );
 
           if (calculatedStats) {
             setStats(calculatedStats);

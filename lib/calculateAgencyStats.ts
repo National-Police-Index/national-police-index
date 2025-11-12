@@ -1,16 +1,16 @@
-import { 
-  collectionGroup, 
-  query, 
-  getDocs, 
-  doc, 
-  setDoc, 
+import {
+  collectionGroup,
+  query,
+  getDocs,
+  doc,
+  setDoc,
   where,
-  orderBy
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+  orderBy,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { US_STATES } from "@/constants/states";
 
-
-const STATS_COLLECTION = 'statistics_per_agency'; 
+const STATS_COLLECTION = "statistics_per_agency";
 
 interface StatItem {
   label: string;
@@ -32,87 +32,93 @@ interface AgencyStats {
  * This is a lighter version of the batch script in scripts/generateAgencyStats.ts
  * designed for on-demand calculation of a single agency's stats
  */
-export async function calculateAgencyStats(agencyName: string): Promise<AgencyStats | null> {
+export async function calculateAgencyStats(
+  agencyName: string,
+  stateId?: string
+): Promise<AgencyStats | null> {
   try {
-    
-    
-    const agencyId = agencyName
-      .toLowerCase()
-      .replace(/[/\\]/g, '%2F') 
-      .replace(/[^a-z0-9-]/g, '-');
-    
-    
-    const officersRef = collectionGroup(db, 'db_launch');
-    
-    
-    const officersQuery = query(
-      officersRef,
-      where('agency_name', '==', agencyName),
-      orderBy('person_nbr')
-    );
-    
-    const officersSnapshot = await getDocs(officersQuery);
-    
-    
     let totalOfficers = 0;
     let activeOfficers = 0;
     let inactiveOfficers = 0;
     let disciplinaryActions = 0;
-    let state = '';
-    
-    
+    let state = "";
+
+    const agencyId = agencyName
+      .toLowerCase()
+      .replace(/[/\\]/g, "%2F")
+      .replace(/[^a-z0-9-]/g, "-");
+
+    const officersRef = collectionGroup(db, "db_launch");
+
+    let officersQuery = query(
+      officersRef,
+      where("agency_name", "==", agencyName),
+      orderBy("person_nbr")
+    );
+
+    if (stateId) {
+      officersQuery = query(officersQuery, where("state", "==", stateId));
+
+      const stateData = US_STATES.find((s) => s.reference === state);
+      state = stateData?.name || "";
+    }
+
+    const officersSnapshot = await getDocs(officersQuery);
+
     const uniqueOfficers = new Map();
     const officersWithDiscipline = new Set();
-    
-    
-    officersSnapshot.forEach(doc => {
+
+    officersSnapshot.forEach((doc) => {
       const data = doc.data();
-      
-      
+
       if (!state && data.state) {
         state = data.state.toLowerCase();
       }
-      
+
       const personNbr = data.person_nbr;
-      
-      
+
       if (personNbr && !uniqueOfficers.has(personNbr)) {
         uniqueOfficers.set(personNbr, data);
         totalOfficers++;
-        
-        
-        const isCurrentlyActive = data.is_active === true || 
-                                 (!data.end_date || data.end_date === '');
-        
+
+        const isCurrentlyActive =
+          data.is_active === true || !data.end_date || data.end_date === "";
+
         if (isCurrentlyActive) {
           activeOfficers++;
         } else {
           inactiveOfficers++;
         }
-        
-        
-        if (data.has_discipline === true || 
-            (data.discipline && data.discipline.length > 0) || 
-            (data.separation_reason && 
-             ['Terminated', 'Fired', 'Dismissed', 'Resigned under investigation', 
-              'Resigned in lieu of termination'].includes(data.separation_reason))) {
-          
+
+        if (
+          data.has_discipline === true ||
+          (data.discipline && data.discipline.length > 0) ||
+          (data.separation_reason &&
+            [
+              "Terminated",
+              "Fired",
+              "Dismissed",
+              "Resigned under investigation",
+              "Resigned in lieu of termination",
+            ].includes(data.separation_reason))
+        ) {
           officersWithDiscipline.add(personNbr);
         }
       }
     });
-    
+
     disciplinaryActions = officersWithDiscipline.size;
-    
-    
+
     const stats: StatItem[] = [
-      { label: 'Total Officers', value: totalOfficers.toString() },
-      { label: 'Active Officers', value: activeOfficers.toString() },
-      { label: 'Inactive Officers', value: inactiveOfficers.toString() },
-      { label: 'Officers with Discipline', value: disciplinaryActions.toString() }
+      { label: "Total Officers", value: totalOfficers.toString() },
+      { label: "Active Officers", value: activeOfficers.toString() },
+      { label: "Inactive Officers", value: inactiveOfficers.toString() },
+      {
+        label: "Officers with Discipline",
+        value: disciplinaryActions.toString(),
+      },
     ];
-    
-    
+
     const agencyStats: AgencyStats = {
       name: agencyName,
       description: `Statistics for ${agencyName}`,
@@ -120,12 +126,14 @@ export async function calculateAgencyStats(agencyName: string): Promise<AgencySt
       state,
       total_officers: totalOfficers,
       last_updated: new Date(),
-      is_partial: false
+      is_partial: false,
     };
-    
-   
-    await setDoc(doc(db, STATS_COLLECTION, agencyId), agencyStats);
-    
+
+    await setDoc(
+      doc(db, STATS_COLLECTION, `${agencyId}-${stateId}`),
+      agencyStats
+    );
+
     return agencyStats;
   } catch (error) {
     console.error(`Error calculating statistics for ${agencyName}:`, error);

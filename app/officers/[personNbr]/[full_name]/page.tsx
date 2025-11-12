@@ -506,7 +506,7 @@ export default function OfficerProfilePage() {
                               >
                                 <b>
                                   <a 
-                                    href={`/agencies/${(stateData?.name || "").toLowerCase()}/${encodeURIComponent(
+                                    href={`/states/${(stateData?.reference|| "").toLowerCase()}/${encodeURIComponent(
                                       event.agency_name
                                     )}`}
                                     className={styles.timelineAgency}
