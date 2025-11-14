@@ -359,4 +359,4 @@ statistics_per_agency:
 
 ---
 
-*Last updated: November 2024*
+*Last updated: November 2025*
