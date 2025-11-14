@@ -43,6 +43,7 @@ graph TB
 
 **Document Structure**:
 ```typescript
+// Defined in types/index.ts
 interface PoliceOfficer {
   agency_name: string;           // Agency name
   current_certificate_status: string;
@@ -76,17 +77,17 @@ interface PoliceOfficer {
 ```
 
 **Scripts that use it**:
-- `addSearchQueries.ts` - Adds search fields
-- `addSearchQueriesAdvanced.ts` - Advanced search
-- `addSearchQueriesByState.ts` - Search by state
-- `normalizeDatesByState.ts` - Normalizes dates
-- `normalizeStateData.ts` - Normalizes data by state
-- `normalizeWashingtonData.ts` - Washington-specific normalization
+- [`addSearchQueries.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueries.ts) - Adds search fields
+- [`addSearchQueriesAdvanced.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesAdvanced.ts) - Advanced search
+- [`addSearchQueriesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesByState.ts) - Search by state
+- [`normalizeDatesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeDatesByState.ts) - Normalizes dates
+- [`normalizeStateData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeStateData.ts) - Normalizes data by state
+- [`normalizeWashingtonData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeWashingtonData.ts) - Washington-specific normalization
 
 **Usage in application**:
-- Hook `useOfficersByUid` - Officer search by state
-- Hook `useOfficersByAgency` - Officer search by agency
-- Hook `useOfficerByPersonNbr` - Search by person number
+- Hook [`useOfficersByUid`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useOfficersByUid.ts) - Officer search by state
+- Hook [`useOfficersByAgency`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useOfficersByAgency.ts) - Officer search by agency
+- Hook [`useOfficerByPersonNbr`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useOfficerByPersonNbr.ts) - Search by person number
 
 ### 2. `statistics_per_agency` (Agency Statistics)
 **Purpose**: Stores precalculated statistics for each police agency.
@@ -111,12 +112,12 @@ interface StatItem {
 ```
 
 **Scripts that generate it**:
-- `generateAgencyStats.ts` - Generates initial statistics
-- `updateAgencyActiveStats.ts` - Updates active officer counts
+- [`generateAgencyStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgencyStats.ts) - Generates initial statistics
+- [`updateAgencyActiveStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/updateAgencyActiveStats.ts) - Updates active officer counts
 
 **Usage in application**:
-- Hook `useAgencyStats` - Gets agency statistics
-- Hook `useOfficersByAgency` - Uses for quick counts
+- Hook [`useAgencyStats`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useAgencyStats.ts) - Gets agency statistics
+- Hook [`useOfficersByAgency`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useOfficersByAgency.ts) - Uses for quick counts
 - Agency pages to display statistics
 
 ### 3. `statistics_per_state` (State Statistics)
@@ -135,11 +136,11 @@ interface StateStats {
 ```
 
 **Scripts that generate it**:
-- `generateStateStats.ts` - Generates state statistics
-- `generate-stats.ts` - General generation script
+- [`generateStateStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateStateStats.ts) - Generates state statistics
+- [`generate-stats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generate-stats.ts) - General generation script
 
 **Usage in application**:
-- Hook `useStateStats` - Gets state statistics
+- Hook [`useStateStats`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useStateStats.ts) - Gets state statistics
 - State pages to display general statistics
 
 ### 4. `agencies` (Agency Catalog)
@@ -155,11 +156,11 @@ interface AgencyData {
 ```
 
 **Scripts that generate it**:
-- `generateAgenciesCollection.ts` - Generates catalog from db_launch
+- [`generateAgenciesCollection.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgenciesCollection.ts) - Generates catalog from db_launch
 
 **Usage in application**:
-- Component `SearchFilters` - For agency autocomplete
-- Function `searchAgencies` - Agency search
+- Component [`SearchFilters`](https://github.com/National-Police-Index/national-police-index/blob/main/components/search/SearchFilters.tsx) - For agency autocomplete
+- Function [`searchAgencies`](https://github.com/National-Police-Index/national-police-index/blob/main/lib/searchAgencies.ts) - Agency search
 
 ### 5. `static_texts` (Static Texts)
 **Purpose**: Stores all static texts of the application for internationalization.
@@ -178,13 +179,13 @@ interface StaticText {
 ```
 
 **Scripts that manage it**:
-- `generateStaticTexts.ts` - Generates initial texts
-- `importStaticTexts.ts` - Imports texts from JSON
-- `exportStaticTexts.ts` - Exports texts to JSON
+- [`generateStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateStaticTexts.ts) - Generates initial texts
+- [`importStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/importStaticTexts.ts) - Imports texts from JSON
+- [`exportStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/exportStaticTexts.ts) - Exports texts to JSON
 
 **Usage in application**:
-- Hook `useStaticText` - Gets texts by page
-- Function `getStaticText` - Gets static texts
+- Hook [`useStaticText`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useStaticText.ts) - Gets texts by page
+- Function [`getStaticText`](https://github.com/National-Police-Index/national-police-index/blob/main/lib/getStaticText.ts) - Gets static texts
 
 ### 6. `posts` (Articles/Blog)
 **Purpose**: Stores blog articles or editorial content.
@@ -205,11 +206,11 @@ interface Post {
 ```
 
 **Scripts that manage it**:
-- `migrate.ts` - Initial post migration
+- [`migrate.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/migrate.ts) - Initial post migration
 
 **Usage in application**:
-- Hook `usePosts` - Gets posts with filters
-- Component `PostsSection` - Shows posts on main page
+- Hook [`usePosts`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/usePosts.ts) - Gets posts with filters
+- Component [`PostsSection`](https://github.com/National-Police-Index/national-police-index/blob/main/components/PostsSection.tsx) - Shows posts on main page
 
 ### 7. `team` (Team Members)
 **Purpose**: Team member information for the "About" page.
@@ -228,11 +229,11 @@ interface TeamMember {
 ```
 
 **Scripts that manage it**:
-- `seedTeamData.ts` - Initializes team data
+- [`seedTeamData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/seedTeamData.ts) - Initializes team data
 
 **Usage in application**:
-- Hook `useTeam` - Gets team members
-- "About" page to display team
+- Hook [`useTeam`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useTeam.ts) - Gets team members
+- ["About" page](https://github.com/National-Police-Index/national-police-index/blob/main/app/about/page.tsx) to display team
 
 ## Temporary and System Collections
 
@@ -249,7 +250,7 @@ interface TempAgency {
 ```
 
 **Scripts that use it**:
-- `generateAgencyStats.ts` - To avoid duplicates during processing
+- [`generateAgencyStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgencyStats.ts) - To avoid duplicates during processing
 
 ### 9. `system` (System Configuration)
 **Purpose**: Stores system configuration and state.
@@ -259,8 +260,8 @@ interface TempAgency {
 - `active_stats_progress` - Active statistics update progress
 
 **Scripts that use it**:
-- `generateStaticTexts.ts` - Updates text version
-- `updateAgencyActiveStats.ts` - Saves processing progress
+- [`generateStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateStaticTexts.ts) - Updates text version
+- [`updateAgencyActiveStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/updateAgencyActiveStats.ts) - Saves processing progress
 
 ## Deprecated Collections
 
@@ -268,7 +269,7 @@ interface TempAgency {
 **Purpose**: Test collection for officers (not used in production).
 
 **Scripts that use it**:
-- `seedOfficers.ts` - Test script (deprecated)
+- [`seedOfficers.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/seedOfficers.ts) - Test script (deprecated)
 
 **Status**: This collection is not used in the current application. Real data is in `db_launch`.
 
@@ -311,28 +312,28 @@ statistics_per_agency:
 ## Maintenance Scripts
 
 ### Active Scripts
-- `generateAgencyStats.ts` - Generates/updates agency statistics
-- `generateStateStats.ts` - Generates/updates state statistics
-- `updateAgencyActiveStats.ts` - Updates active officer counts
-- `generateAgenciesCollection.ts` - Regenerates agency catalog
-- `addSearchQueriesByState.ts` - Adds search fields by state
+- [`generateAgencyStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgencyStats.ts) - Generates/updates agency statistics
+- [`generateStateStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateStateStats.ts) - Generates/updates state statistics
+- [`updateAgencyActiveStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/updateAgencyActiveStats.ts) - Updates active officer counts
+- [`generateAgenciesCollection.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgenciesCollection.ts) - Regenerates agency catalog
+- [`addSearchQueriesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesByState.ts) - Adds search fields by state
 
 ### Normalization Scripts
-- `normalizeDatesByState.ts` - Normalizes dates by state
-- `normalizeStateData.ts` - Normalizes general data by state
-- `normalizeWashingtonData.ts` - Washington-specific normalization
+- [`normalizeDatesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeDatesByState.ts) - Normalizes dates by state
+- [`normalizeStateData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeStateData.ts) - Normalizes general data by state
+- [`normalizeWashingtonData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeWashingtonData.ts) - Washington-specific normalization
 
 ### Content Scripts
-- `generateStaticTexts.ts` - Generates static texts
-- `importStaticTexts.ts` - Imports texts from files
-- `exportStaticTexts.ts` - Exports texts to files
-- `seedTeamData.ts` - Initializes team data
+- [`generateStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateStaticTexts.ts) - Generates static texts
+- [`importStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/importStaticTexts.ts) - Imports texts from files
+- [`exportStaticTexts.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/exportStaticTexts.ts) - Exports texts to files
+- [`seedTeamData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/seedTeamData.ts) - Initializes team data
 
 ### Deprecated Scripts ⚠️
-- `seedOfficers.ts` - Test data (do not use in production)
-- `migrate.ts` - Initial migration (one-time use)
-- `addSearchQueries.ts` - Replaced by more specific versions
-- `addSearchQueriesAdvanced.ts` - Functionality integrated into other scripts
+- [`seedOfficers.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/seedOfficers.ts) - Test data (do not use in production)
+- [`migrate.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/migrate.ts) - Initial migration (one-time use)
+- [`addSearchQueries.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueries.ts) - Replaced by more specific versions
+- [`addSearchQueriesAdvanced.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesAdvanced.ts) - Functionality integrated into other scripts
 
 ## Performance Considerations
 
