@@ -80,22 +80,15 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
 
           setStats(statsData);
         } else {
-          const oldStatsRef = doc(db, "agency_statistics", agencyId);
-          const oldStatsDoc = await getDoc(oldStatsRef);
-          if (oldStatsDoc.exists()) {
-            const statsData = oldStatsDoc.data() as AgencyStats;
-            setStats(statsData);
-          } else {
-            const calculatedStats = await calculateAgencyStats(
-              agencyName,
-              stateId
-            );
+          const calculatedStats = await calculateAgencyStats(
+            agencyName,
+            stateId
+          );
 
-            if (calculatedStats) {
-              setStats(calculatedStats);
-            } else {
-              setStats(createDefaultStats(agencyName));
-            }
+          if (calculatedStats) {
+            setStats(calculatedStats);
+          } else {
+            setStats(createDefaultStats(agencyName));
           }
         }
       } catch (err) {
