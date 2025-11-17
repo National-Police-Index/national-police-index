@@ -65,26 +65,34 @@ export default function SearchFilters({
   const setFilters = (filters: SearchFiltersType) => {
     setReset(true);
     setRawFilters({ ...filters });
-    
+
     // Track filter usage
     if (state) {
       if (filters.agency) {
-        trackFilterUsage('agency', filters.agency, state);
+        trackFilterUsage("agency", filters.agency, state);
       }
       if (filters.startDate) {
-        trackFilterUsage('start_date', filters.startDate.toISOString().split('T')[0], state);
+        trackFilterUsage(
+          "start_date",
+          filters.startDate.toISOString().split("T")[0],
+          state
+        );
       }
       if (filters.endDate) {
-        trackFilterUsage('end_date', filters.endDate.toISOString().split('T')[0], state);
+        trackFilterUsage(
+          "end_date",
+          filters.endDate.toISOString().split("T")[0],
+          state
+        );
       }
-      if (filters.activeOnly && filters.activeOnly !== 'false') {
-        trackFilterUsage('active_only', filters.activeOnly, state);
+      if (filters.activeOnly && filters.activeOnly !== "false") {
+        trackFilterUsage("active_only", filters.activeOnly, state);
       }
       if (filters.sortBy) {
-        trackFilterUsage('sort_by', filters.sortBy, state);
+        trackFilterUsage("sort_by", filters.sortBy, state);
       }
       if (filters.sortOrder) {
-        trackFilterUsage('sort_order', filters.sortOrder, state);
+        trackFilterUsage("sort_order", filters.sortOrder, state);
       }
     }
   };
@@ -198,6 +206,12 @@ export default function SearchFilters({
       params.set("activeOnly", filters.activeOnly);
     } else {
       params.delete("activeOnly");
+    }
+
+    if (filters.sortBy) {
+      params.set("sortBy", filters.sortBy);
+    } else {
+      params.delete("sortBy");
     }
 
     if (filters.sortOrder) {
