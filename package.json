@@ -7,7 +7,7 @@
     "build": "next build",
     "build:sitemap": "cd scripts && npx tsc && node ../dist/scripts/scripts/generateSitemap.js",
     "start": "next start",
-    "lint": "biome check --write",
+    "format": "biome check --write",
     "migrate": "tsx scripts/migrate.ts",
     "generate-stats": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateStateStats.ts california",
     "generate-stats-agencies": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateAgencyStats.ts",
