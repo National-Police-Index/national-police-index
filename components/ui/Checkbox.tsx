@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from "react";
 
 interface CheckboxProps {
   id: string;
@@ -14,8 +14,8 @@ export function Checkbox({
   checked,
   onChange,
   label,
-  className = '',
-  labelClassName = '',
+  className = "",
+  labelClassName = "",
 }: CheckboxProps) {
   return (
     <div className={`flex items-center ${className}`}>
@@ -23,7 +23,9 @@ export function Checkbox({
         type="checkbox"
         id={id}
         checked={checked}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(e.target.checked)
+        }
       />
       <label htmlFor={id} className={labelClassName}>
         {label}

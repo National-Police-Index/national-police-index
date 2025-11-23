@@ -6,10 +6,16 @@ interface PostCardProps {
   url: string;
 }
 
-import styles from './styles.module.scss';
-import Image from 'next/image';
+import Image from "next/image";
+import styles from "./styles.module.scss";
 
-export default function PostCard({ title, image, description, date, url }: PostCardProps) {
+export default function PostCard({
+  title,
+  image,
+  description,
+  date,
+  url,
+}: PostCardProps) {
   return (
     <a
       href={url}
@@ -27,7 +33,9 @@ export default function PostCard({ title, image, description, date, url }: PostC
         />
         <div className="absolute inset-0 bg-[#2F5E50] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
       </div>
-      <div className={`w-full flex flex-col justify-start items-start gap-2 ${styles.textWrapper}`}>
+      <div
+        className={`w-full flex flex-col justify-start items-start gap-2 ${styles.textWrapper}`}
+      >
         <div className="justify-start text-[#122823] font-normal font-['Inter'] leading-[1.5] tracking-[-.005em] transition-colors duration-300">
           {description}
         </div>
@@ -36,6 +44,5 @@ export default function PostCard({ title, image, description, date, url }: PostC
         </div>
       </div>
     </a>
-
   );
 }

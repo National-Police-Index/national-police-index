@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, getDocs } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
 
 interface StaticText {
   id: string;
@@ -32,7 +32,7 @@ export function useStaticText(page: string) {
           return;
         }
 
-        const textsRef = collection(db, 'static_texts');
+        const textsRef = collection(db, "static_texts");
         const snapshot = await getDocs(textsRef);
         const fetchedTexts: { [key: string]: string } = {};
 
@@ -47,7 +47,11 @@ export function useStaticText(page: string) {
         staticTextsCache = fetchedTexts;
         setTexts(fetchedTexts);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch static texts'));
+        setError(
+          err instanceof Error
+            ? err
+            : new Error("Failed to fetch static texts"),
+        );
       } finally {
         setLoading(false);
       }
@@ -57,7 +61,7 @@ export function useStaticText(page: string) {
   }, [page]);
 
   // Helper function to get text by section
-  const getText = (section: string, defaultText: string = '') => {
+  const getText = (section: string, defaultText: string = "") => {
     const key = `${page}.${section}`;
     return texts[key] || defaultText;
   };

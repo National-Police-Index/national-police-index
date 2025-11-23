@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
 import { calculateAgencyStats } from "@/lib/calculateAgencyStats";
+import { db } from "@/lib/firebase";
 
 interface StatItem {
   label: string;
@@ -88,7 +88,7 @@ export function useAgencyStats(agencyName: string) {
             setError(
               err instanceof Error
                 ? err
-                : new Error("Failed to fetch agency statistics")
+                : new Error("Failed to fetch agency statistics"),
             );
           }
         } catch (calcErr) {
@@ -96,7 +96,7 @@ export function useAgencyStats(agencyName: string) {
           setError(
             err instanceof Error
               ? err
-              : new Error("Failed to fetch agency statistics")
+              : new Error("Failed to fetch agency statistics"),
           );
         }
       } finally {

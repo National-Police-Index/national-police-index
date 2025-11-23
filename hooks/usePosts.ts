@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, where, QueryConstraint } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import type { Post } from '@/types/post';
+import {
+  collection,
+  getDocs,
+  orderBy,
+  type QueryConstraint,
+  query,
+  where,
+} from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import type { Post } from "@/types/post";
 
 interface UsePostsOptions {
   state?: string;
@@ -19,22 +26,17 @@ export function usePosts({ state, limit = 10 }: UsePostsOptions = {}) {
     async function fetchPosts() {
       try {
         setLoading(true);
-        const constraints: QueryConstraint[] = [
-          orderBy('createdAt', 'asc')
-        ];
+        const constraints: QueryConstraint[] = [orderBy("createdAt", "asc")];
 
         if (state) {
-          constraints.push(where('state', '==', state));
+          constraints.push(where("state", "==", state));
         }
 
-        const q = query(
-          collection(db, 'posts'),
-          ...constraints
-        );
+        const q = query(collection(db, "posts"), ...constraints);
 
         const querySnapshot = await getDocs(q);
         const fetchedPosts = querySnapshot.docs
-          .map(doc => ({
+          .map((doc) => ({
             id: doc.id,
             ...doc.data(),
             createdAt: doc.data().createdAt?.toDate(),
@@ -44,7 +46,9 @@ export function usePosts({ state, limit = 10 }: UsePostsOptions = {}) {
 
         setPosts(fetchedPosts);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch posts'));
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch posts"),
+        );
       } finally {
         setLoading(false);
       }

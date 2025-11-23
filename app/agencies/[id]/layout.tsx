@@ -1,9 +1,6 @@
-import { Metadata } from "next";
+import { doc, getDoc } from "firebase/firestore";
+import type { Metadata } from "next";
 import { db } from "@/lib/firebase";
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
 
 type Props = Promise<{ children: React.ReactNode; id: string }>;
 
@@ -46,7 +43,7 @@ export async function generateMetadata({
       // Get officer count if available
       if (agencyData?.stats) {
         const officerStats = agencyData.stats.find(
-          (stat: any) => stat.label === "Total Officers"
+          (stat: any) => stat.label === "Total Officers",
         );
         if (officerStats) {
           officerCount = parseInt(officerStats.value, 10);

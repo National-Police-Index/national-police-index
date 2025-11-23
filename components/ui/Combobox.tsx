@@ -1,45 +1,45 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
-import { Listbox } from '@headlessui/react'
+import { Listbox } from "@headlessui/react";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { useState } from "react";
 
 interface ComboboxOption {
-  value: string
-  label: string
-  count?: number
+  value: string;
+  label: string;
+  count?: number;
 }
 
 interface ComboboxProps {
-  value: string
-  onChange: (value: string) => void
-  options: ComboboxOption[]
-  placeholder?: string
-  className?: string
-  disabled?: boolean
-  loading?: boolean
+  value: string;
+  onChange: (value: string) => void;
+  options: ComboboxOption[];
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 export function Combobox({
   value,
   onChange,
   options,
-  placeholder = 'Select an option',
-  className = '',
+  placeholder = "Select an option",
+  className = "",
   disabled = false,
-  loading = false
+  loading = false,
 }: ComboboxProps) {
-  const [query] = useState('')
+  const [query] = useState("");
 
   const filteredOptions =
-    query === ''
+    query === ""
       ? options
       : options.filter((option) =>
-        option.label
-          .toLowerCase()
-          .replace(/\W/g, '')
-          .includes(query.toLowerCase().replace(/\W/g, ''))
-      )
+          option.label
+            .toLowerCase()
+            .replace(/\W/g, "")
+            .includes(query.toLowerCase().replace(/\W/g, "")),
+        );
 
   return (
     <div className={`relative ${className}`}>
@@ -50,7 +50,8 @@ export function Combobox({
               <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
                 <span className="block truncate">
                   {value
-                    ? options.find((option) => option.value === value)?.label || value
+                    ? options.find((option) => option.value === value)?.label ||
+                      value
                     : placeholder}
                 </span>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -67,7 +68,7 @@ export function Combobox({
                     <Listbox.Option
                       key={option.value}
                       className={({ active }) =>
-                        `relative cursor-default select-none py-2 pl-3 pr-9 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'}`
+                        `relative cursor-default select-none py-2 pl-3 pr-9 ${active ? "bg-indigo-100 text-indigo-900" : "text-gray-900"}`
                       }
                       value={option.value}
                     >
@@ -75,8 +76,9 @@ export function Combobox({
                         <>
                           <div className="flex items-center">
                             <span
-                              className={`font-normal ${selected ? 'font-semibold' : 'font-normal'
-                                }`}
+                              className={`font-normal ${
+                                selected ? "font-semibold" : "font-normal"
+                              }`}
                             >
                               {option.label}
                             </span>
@@ -89,10 +91,14 @@ export function Combobox({
 
                           {selected ? (
                             <span
-                              className={`absolute inset-y-0 right-0 flex items-center pr-4 ${active ? 'text-indigo-600' : 'text-indigo-600'
-                                }`}
+                              className={`absolute inset-y-0 right-0 flex items-center pr-4 ${
+                                active ? "text-indigo-600" : "text-indigo-600"
+                              }`}
                             >
-                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                              <CheckIcon
+                                className="h-5 w-5"
+                                aria-hidden="true"
+                              />
                             </span>
                           ) : null}
                         </>
@@ -112,6 +118,5 @@ export function Combobox({
         </div>
       )}
     </div>
-  )
+  );
 }
-

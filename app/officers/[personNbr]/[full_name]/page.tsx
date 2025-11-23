@@ -1,14 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { PoliceOfficer } from "@/types";
+import PageHeader from "@/components/PageHeader";
+import { US_STATES } from "@/constants/states";
+import { useOfficerAnalytics } from "@/hooks/useOfficerAnalytics";
 import { useOfficerByPersonNbr } from "@/hooks/useOfficerByPersonNbr";
 import { useStaticText } from "@/hooks/useStaticText";
-import { useOfficerAnalytics } from "@/hooks/useOfficerAnalytics";
-import PageHeader from "@/components/PageHeader";
+import type { PoliceOfficer } from "@/types";
 import styles from "./page.module.scss";
-import { US_STATES } from "@/constants/states";
-
 
 type PoliceOfficerWithEventType = PoliceOfficer & {
   eventType: "Start" | "End" | "Discipline";
@@ -28,30 +27,33 @@ const toSentenceCase = (str: string) => {
     .replace(
       /\w\S*/g,
       (text: string) =>
-        text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+        text.charAt(0).toUpperCase() + text.substring(1).toLowerCase(),
     );
 };
 
 export default function OfficerProfilePage() {
   const { personNbr } = useParams();
   const { loading, error, officerData } = useOfficerByPersonNbr(
-    personNbr as string
+    personNbr as string,
   );
   const { getText } = useStaticText("officer");
   const stateData = US_STATES.find(
     (s) =>
       s.reference.toLowerCase() ===
-      officerData?.latestRecord.state.toLowerCase()
+      officerData?.latestRecord.state.toLowerCase(),
   );
 
   // Analytics tracking for officer page
-  const analyticsData = officerData ? {
-    personNbr: officerData.latestRecord.person_nbr,
-    fullName: officerData.latestRecord.full_name || 
-      `${officerData.latestRecord.first_name || ''} ${officerData.latestRecord.last_name || ''}`.trim(),
-    state: stateData?.name || officerData.latestRecord.state,
-    agencyName: officerData.latestRecord.agency_name
-  } : null;
+  const analyticsData = officerData
+    ? {
+        personNbr: officerData.latestRecord.person_nbr,
+        fullName:
+          officerData.latestRecord.full_name ||
+          `${officerData.latestRecord.first_name || ""} ${officerData.latestRecord.last_name || ""}`.trim(),
+        state: stateData?.name || officerData.latestRecord.state,
+        agencyName: officerData.latestRecord.agency_name,
+      }
+    : null;
 
   useOfficerAnalytics(analyticsData);
 
@@ -108,7 +110,7 @@ export default function OfficerProfilePage() {
   const createEventObject = (
     record: PoliceOfficer,
     eventType: "Start" | "End" | "Discipline",
-    dateString: string
+    dateString: string,
   ): PoliceOfficerWithEventType => {
     const isDiscipline =
       record.state.endsWith("iscipline") && (record.offense || record.sanction);
@@ -131,7 +133,7 @@ export default function OfficerProfilePage() {
    */
   const ensureYearEntry = (
     acc: { [year: string]: PoliceOfficerWithEventType[] },
-    year: number | null
+    year: number | null,
   ): void => {
     if (year && !acc[year]) {
       acc[year] = [];
@@ -143,7 +145,7 @@ export default function OfficerProfilePage() {
    */
   const areDuplicateEvents = (
     existingEvent: PoliceOfficerWithEventType,
-    newEvent: PoliceOfficerWithEventType
+    newEvent: PoliceOfficerWithEventType,
   ): boolean => {
     if (
       existingEvent.eventType === "Discipline" &&
@@ -179,7 +181,7 @@ export default function OfficerProfilePage() {
         const date1 = new Date(existingEvent.sanction_date);
         const date2 = new Date(newEvent.sanction_date);
         const diffDays = Math.abs(
-          (date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24)
+          (date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24),
         );
         if (diffDays <= 7) {
           return true;
@@ -211,7 +213,7 @@ export default function OfficerProfilePage() {
   const updateOffenseInfo = (
     acc: { [year: string]: PoliceOfficerWithEventType[] },
     yearKey: string,
-    event: PoliceOfficerWithEventType
+    event: PoliceOfficerWithEventType,
   ): boolean => {
     for (let i = 0; i < (acc[yearKey] || []).length; i++) {
       const existingEvent = acc[yearKey][i];
@@ -242,7 +244,7 @@ export default function OfficerProfilePage() {
     officerRecords: { [key: string]: PoliceOfficerWithEventType },
     event: PoliceOfficerWithEventType,
     year: number | null,
-    dateKey: string
+    dateKey: string,
   ): void => {
     if (!year) return;
     ensureYearEntry(acc, year);
@@ -254,73 +256,82 @@ export default function OfficerProfilePage() {
   };
 
   const officerRecords = {} as { [key: string]: PoliceOfficerWithEventType };
-  const timeline = records.reduce((acc = {}, record) => {
-    const startDate = record.start_date ? new Date(record.start_date) : null;
-    const endDate = record.end_date ? new Date(record.end_date) : null;
-    const sanctionDate =
-      record.sanction_date && !isNaN(Date.parse(record.sanction_date || ""))
-        ? new Date(record.sanction_date)
-        : record?.case_closed_date
-        ? new Date(record?.case_closed_date)
-        : null;
+  const timeline = records.reduce(
+    (acc = {}, record) => {
+      const startDate = record.start_date ? new Date(record.start_date) : null;
+      const endDate = record.end_date ? new Date(record.end_date) : null;
+      const sanctionDate =
+        record.sanction_date && !isNaN(Date.parse(record.sanction_date || ""))
+          ? new Date(record.sanction_date)
+          : record?.case_closed_date
+            ? new Date(record?.case_closed_date)
+            : null;
 
-    const startYear = startDate?.getFullYear() || null;
-    const endYear = endDate?.getFullYear() || null;
-    const disciplineYear = sanctionDate?.getFullYear() || null;
+      const startYear = startDate?.getFullYear() || null;
+      const endYear = endDate?.getFullYear() || null;
+      const disciplineYear = sanctionDate?.getFullYear() || null;
 
-    if (startDate && !(record.offense || record.sanction)) {
-      const startDateString = safeFormatDate(startDate);
-      const startEvent = createEventObject(record, "Start", startDateString);
-      addEventToTimeline(
-        acc,
-        officerRecords,
-        startEvent,
-        startYear,
-        startDateString
-      );
-    }
+      if (startDate && !(record.offense || record.sanction)) {
+        const startDateString = safeFormatDate(startDate);
+        const startEvent = createEventObject(record, "Start", startDateString);
+        addEventToTimeline(
+          acc,
+          officerRecords,
+          startEvent,
+          startYear,
+          startDateString,
+        );
+      }
 
-    if (endDate && !(record.offense || record.sanction)) {
-      const endDateString = safeFormatDate(endDate);
-      const endEvent = createEventObject(record, "End", endDateString);
-      addEventToTimeline(acc, officerRecords, endEvent, endYear, endDateString);
-    }
+      if (endDate && !(record.offense || record.sanction)) {
+        const endDateString = safeFormatDate(endDate);
+        const endEvent = createEventObject(record, "End", endDateString);
+        addEventToTimeline(
+          acc,
+          officerRecords,
+          endEvent,
+          endYear,
+          endDateString,
+        );
+      }
 
-    if (
-      record.state.endsWith("iscipline") &&
-      (record.offense || record.sanction)
-    ) {
-      const dateToUse = sanctionDate;
-      const yearToUse = disciplineYear;
+      if (
+        record.state.endsWith("iscipline") &&
+        (record.offense || record.sanction)
+      ) {
+        const dateToUse = sanctionDate;
+        const yearToUse = disciplineYear;
 
-      const dateStringToUse = dateToUse
-        ? new Date(
-            Date.UTC(
-              dateToUse.getUTCFullYear(),
-              dateToUse.getUTCMonth(),
-              dateToUse.getUTCDate()
+        const dateStringToUse = dateToUse
+          ? new Date(
+              Date.UTC(
+                dateToUse.getUTCFullYear(),
+                dateToUse.getUTCMonth(),
+                dateToUse.getUTCDate(),
+              ),
             )
-          )
-            .toISOString()
-            .slice(0, 10)
-        : "";
+              .toISOString()
+              .slice(0, 10)
+          : "";
 
-      const disciplineEvent = createEventObject(
-        record,
-        "Discipline",
-        dateStringToUse
-      );
-      addEventToTimeline(
-        acc,
-        officerRecords,
-        disciplineEvent,
-        yearToUse,
-        dateStringToUse
-      );
-    }
+        const disciplineEvent = createEventObject(
+          record,
+          "Discipline",
+          dateStringToUse,
+        );
+        addEventToTimeline(
+          acc,
+          officerRecords,
+          disciplineEvent,
+          yearToUse,
+          dateStringToUse,
+        );
+      }
 
-    return acc;
-  }, {} as { [key: string]: PoliceOfficerWithEventType[] });
+      return acc;
+    },
+    {} as { [key: string]: PoliceOfficerWithEventType[] },
+  );
 
   return (
     <div className="w-full mx-auto">
@@ -330,12 +341,15 @@ export default function OfficerProfilePage() {
         statistics={[
           {
             value: Object.keys(
-              (records || []).reduce((acc, record) => {
-                const start_date = record.start_date;
-                if (!acc[start_date]) acc[start_date] = 0;
-                acc[start_date]++;
-                return acc;
-              }, {} as { [key: string]: number })
+              (records || []).reduce(
+                (acc, record) => {
+                  const start_date = record.start_date;
+                  if (!acc[start_date]) acc[start_date] = 0;
+                  acc[start_date]++;
+                  return acc;
+                },
+                {} as { [key: string]: number },
+              ),
             ).length,
             label: "Departments the officer has worked at over their career",
             tooltip:
@@ -351,9 +365,7 @@ export default function OfficerProfilePage() {
         className={`w-full relative bg-white rounded-tl-3xl rounded-tr-3xl ${styles.contentSection} `}
       >
         <div className="container-a mx-auto ">
-          <div
-            className={`w-full flex ${styles.content}`}
-          >
+          <div className={`w-full flex ${styles.content}`}>
             <div className="w-full px-4 py-8 flex flex-col justify-start items-start ">
               {/* <div className="self-stretch flex justify-center items-center">
                 <div className="flex-1 justify-start text-[#122823] text-xl font-bold font-['Inter'] leading-7">{fullName}</div>
@@ -405,7 +417,7 @@ export default function OfficerProfilePage() {
                         day: "numeric",
                         year: "numeric",
                         timeZone: "UTC",
-                      }
+                      },
                     )}
                     {latestRecord.end_date &&
                       latestRecord.end_date !== "0000-00-00" && (
@@ -419,7 +431,7 @@ export default function OfficerProfilePage() {
                               day: "numeric",
                               year: "numeric",
                               timeZone: "UTC",
-                            }
+                            },
                           )}
                         </span>
                       )}
@@ -479,8 +491,8 @@ export default function OfficerProfilePage() {
                                     event.eventType === "Start"
                                       ? event.start_date || ""
                                       : event.eventType === "End"
-                                      ? event.end_date || ""
-                                      : event.sanction_date || ""
+                                        ? event.end_date || ""
+                                        : event.sanction_date || "",
                                   ).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -492,8 +504,8 @@ export default function OfficerProfilePage() {
                                     event.eventType === "Start"
                                       ? event.start_date || ""
                                       : event.eventType === "End"
-                                      ? event.end_date || ""
-                                      : event.sanction_date || ""
+                                        ? event.end_date || ""
+                                        : event.sanction_date || "",
                                   ).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -505,9 +517,9 @@ export default function OfficerProfilePage() {
                                 className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineEvent}`}
                               >
                                 <b>
-                                  <a 
+                                  <a
                                     href={`/agencies/${(stateData?.name || "").toLowerCase()}/${encodeURIComponent(
-                                      event.agency_name
+                                      event.agency_name,
                                     )}`}
                                     className={styles.timelineAgency}
                                   >
@@ -527,22 +539,22 @@ export default function OfficerProfilePage() {
                                         event.sanction
                                       : ""
                                     : event.eventType === "Start" &&
-                                      event.start_date
-                                    ? event.rank
-                                      ? toSentenceCase(event.rank)
-                                      : ""
-                                    : event.eventType === "End" &&
-                                      event.end_date
-                                    ? (event.rank
+                                        event.start_date
+                                      ? event.rank
                                         ? toSentenceCase(event.rank)
-                                        : "") +
-                                      (event.rank && event.separation_reason
-                                        ? ", "
-                                        : "") +
-                                      (event.separation_reason
-                                        ? event.separation_reason
-                                        : "")
-                                    : ""}
+                                        : ""
+                                      : event.eventType === "End" &&
+                                          event.end_date
+                                        ? (event.rank
+                                            ? toSentenceCase(event.rank)
+                                            : "") +
+                                          (event.rank && event.separation_reason
+                                            ? ", "
+                                            : "") +
+                                          (event.separation_reason
+                                            ? event.separation_reason
+                                            : "")
+                                        : ""}
                                 </small>
                               </div>
                               <div

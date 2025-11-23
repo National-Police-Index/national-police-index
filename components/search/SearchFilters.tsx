@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Combobox, Transition } from "@headlessui/react";
-import { Checkbox } from "../ui/Checkbox";
-import { SearchFilters as SearchFiltersType } from "@/types";
-import { getAllAgencies, filterAgenciesByTerm } from "@/lib/searchAgencies";
-import { trackFilterUsage } from "@/lib/analytics";
-import styles from "./styles.module.scss";
+import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import debounce from "lodash/debounce";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { Fragment } from "react";
+import { trackFilterUsage } from "@/lib/analytics";
+import { filterAgenciesByTerm, getAllAgencies } from "@/lib/searchAgencies";
+import type { SearchFilters as SearchFiltersType } from "@/types";
+import { Checkbox } from "../ui/Checkbox";
+import styles from "./styles.module.scss";
 
 interface SearchFiltersProps {
   state?: string;
@@ -28,7 +28,7 @@ export default function SearchFilters({
   const router = useRouter();
   const [agencyQuery, setAgencyQuery] = useState("");
   const [agencies, setAgencies] = useState<{ name: string; count: number }[]>(
-    []
+    [],
   );
   const [filteredAgencies, setFilteredAgencies] = useState<
     { name: string; count: number }[]
@@ -40,7 +40,7 @@ export default function SearchFilters({
   const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState<string>(
-    searchParams.get("query") || ""
+    searchParams.get("query") || "",
   );
 
   const [filters, setRawFilters] = useState<SearchFiltersType>({
@@ -65,26 +65,34 @@ export default function SearchFilters({
   const setFilters = (filters: SearchFiltersType) => {
     setReset(true);
     setRawFilters({ ...filters });
-    
+
     // Track filter usage
     if (state) {
       if (filters.agency) {
-        trackFilterUsage('agency', filters.agency, state);
+        trackFilterUsage("agency", filters.agency, state);
       }
       if (filters.startDate) {
-        trackFilterUsage('start_date', filters.startDate.toISOString().split('T')[0], state);
+        trackFilterUsage(
+          "start_date",
+          filters.startDate.toISOString().split("T")[0],
+          state,
+        );
       }
       if (filters.endDate) {
-        trackFilterUsage('end_date', filters.endDate.toISOString().split('T')[0], state);
+        trackFilterUsage(
+          "end_date",
+          filters.endDate.toISOString().split("T")[0],
+          state,
+        );
       }
-      if (filters.activeOnly && filters.activeOnly !== 'false') {
-        trackFilterUsage('active_only', filters.activeOnly, state);
+      if (filters.activeOnly && filters.activeOnly !== "false") {
+        trackFilterUsage("active_only", filters.activeOnly, state);
       }
       if (filters.sortBy) {
-        trackFilterUsage('sort_by', filters.sortBy, state);
+        trackFilterUsage("sort_by", filters.sortBy, state);
       }
       if (filters.sortOrder) {
-        trackFilterUsage('sort_order', filters.sortOrder, state);
+        trackFilterUsage("sort_order", filters.sortOrder, state);
       }
     }
   };
@@ -117,13 +125,13 @@ export default function SearchFilters({
       } else {
         const lowerQuery = query.toLowerCase();
         const filtered = agencies.filter((agency) =>
-          agency.name.toLowerCase().includes(lowerQuery)
+          agency.name.toLowerCase().includes(lowerQuery),
         );
         setFilteredAgencies(filtered);
         setIsLoadingAgencies(false);
       }
     },
-    [agencies, state]
+    [agencies, state],
   );
 
   useEffect(() => {
@@ -148,7 +156,7 @@ export default function SearchFilters({
 
   const debouncedFilter = useMemo(
     () => debounce(filterAgenciesByQuery, 300),
-    [filterAgenciesByQuery]
+    [filterAgenciesByQuery],
   );
 
   useEffect(() => {

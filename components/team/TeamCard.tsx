@@ -1,4 +1,4 @@
-import styles from './TeamCard.module.scss';
+import styles from "./TeamCard.module.scss";
 
 interface TeamMember {
   name: string;
@@ -15,13 +15,20 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
       if (linkMatch) {
         const [_, text, url] = linkMatch;
         return (
-          <a key={index} href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
+          <a
+            key={index}
+            href={url}
+            className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}
+          >
             {text}
           </a>
         );
       }
       return (
-        <span key={index} className="text-[#122823] text-sm font-normal font-['Inter'] leading-tight">
+        <span
+          key={index}
+          className="text-[#122823] text-sm font-normal font-['Inter'] leading-tight"
+        >
           {part}
         </span>
       );
@@ -29,7 +36,9 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
   };
 
   return (
-    <div className={`w-full p-4 bg-zinc-100 rounded-2xl inline-flex flex-col justify-start items-start gap-2 ${styles.card}`}>
+    <div
+      className={`w-full p-4 bg-zinc-100 rounded-2xl inline-flex flex-col justify-start items-start gap-2 ${styles.card}`}
+    >
       <div className="self-stretch pb-2 border-b-[0.50px] border-[#2F5E50] inline-flex justify-start items-center gap-2">
         <div className="justify-start text-[#122823] text-base font-[500] font-['Inter'] leading-normal">
           {name}

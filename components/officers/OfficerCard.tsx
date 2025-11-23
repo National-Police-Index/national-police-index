@@ -1,9 +1,9 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
 import { format } from "date-fns";
-import { PoliceOfficer } from "@/types";
+import { useEffect, useRef, useState } from "react";
 import { useStaticText } from "@/hooks/useStaticText";
 import { trackOfficerView } from "@/lib/analytics";
+import type { PoliceOfficer } from "@/types";
 import styles from "./OfficeCard.module.scss";
 
 interface OfficerCardProps {
@@ -57,7 +57,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
     trackOfficerView(
       officer.document_id || officer.person_nbr,
       officer.state || "unknown",
-      "search_results"
+      "search_results",
     );
   };
 

@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
+  collection,
   collectionGroup,
-  query,
-  where,
-  getDocs,
-  orderBy,
-  limit,
-  startAfter,
-  QueryDocumentSnapshot,
+  type DocumentData,
   doc,
   getDoc,
-  collection,
-  DocumentData,
+  getDocs,
+  limit,
+  orderBy,
+  type QueryDocumentSnapshot,
+  query,
+  startAfter,
+  where,
 } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { db } from "@/lib/firebase";
-import { PoliceOfficer } from "@/types";
+import type { PoliceOfficer } from "@/types";
 
 interface OfficerGroup {
   person_nbr: string;
@@ -48,7 +48,7 @@ export function useOfficersByUid({
 }: UseOfficersByUidProps) {
   const searchParamsString = useMemo(
     () => JSON.stringify(searchParams),
-    [searchParams]
+    [searchParams],
   );
   const searchParameters = useMemo(
     () => ({
@@ -71,7 +71,7 @@ export function useOfficersByUid({
       searchParams.pageSize,
       searchParams.direction,
       searchParams.page,
-    ]
+    ],
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -83,7 +83,7 @@ export function useOfficersByUid({
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
   const [currentPage, setCurrentPage] = useState<number>(
-    parseInt(searchParams.currentPage || "1", 10)
+    parseInt(searchParams.currentPage || "1", 10),
   );
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
@@ -150,7 +150,7 @@ export function useOfficersByUid({
             return count;
           } else if (data.stats) {
             const officerStats = data.stats.find(
-              (stat: any) => stat.label === "Total Officers"
+              (stat: any) => stat.label === "Total Officers",
             );
             if (officerStats) {
               const count = parseInt(officerStats.value, 10);
@@ -166,7 +166,7 @@ export function useOfficersByUid({
         let countQuery = query(collection(db, "db_launch"));
         countQuery = query(
           countQuery,
-          where("state", "==", state.toLowerCase())
+          where("state", "==", state.toLowerCase()),
         );
         countQuery = query(countQuery, limit(10000));
 
@@ -176,15 +176,15 @@ export function useOfficersByUid({
             where(
               "searchQueries",
               "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20),
+            ),
           );
         }
 
         if (searchParameters.agency) {
           countQuery = query(
             countQuery,
-            where("agency_name", "==", searchParameters.agency)
+            where("agency_name", "==", searchParameters.agency),
           );
         }
 
@@ -192,7 +192,7 @@ export function useOfficersByUid({
           const startDate = new Date(searchParameters.startDate);
           countQuery = query(
             countQuery,
-            where("start_date_iso", ">=", startDate.toISOString())
+            where("start_date_iso", ">=", startDate.toISOString()),
           );
         }
 
@@ -200,7 +200,7 @@ export function useOfficersByUid({
           const endDate = new Date(searchParameters.endDate);
           countQuery = query(
             countQuery,
-            where("end_date_iso", "<=", endDate.toISOString())
+            where("end_date_iso", "<=", endDate.toISOString()),
           );
         }
 
@@ -238,7 +238,7 @@ export function useOfficersByUid({
       });
       return uniqueOfficers.size;
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -292,8 +292,8 @@ export function useOfficersByUid({
             where(
               "searchQueries",
               "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20),
+            ),
           );
         }
 
@@ -315,14 +315,14 @@ export function useOfficersByUid({
           searchParameters.sortBy === "date"
             ? "start_date"
             : searchParameters.sortBy === "agency"
-            ? "agency_name"
-            : "last_name";
+              ? "agency_name"
+              : "last_name";
         q = query(
           q,
           orderBy(
             sortField,
-            searchParameters.sortOrder === "desc" ? "desc" : "asc"
-          )
+            searchParameters.sortOrder === "desc" ? "desc" : "asc",
+          ),
         );
         q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
@@ -454,8 +454,8 @@ export function useOfficersByUid({
             direction === "next"
               ? currentPageNum + 1
               : direction === "prev"
-              ? Math.max(1, currentPageNum - 1)
-              : currentPageNum;
+                ? Math.max(1, currentPageNum - 1)
+                : currentPageNum;
         }
 
         setCurrentPage(newPage);
@@ -468,9 +468,9 @@ export function useOfficersByUid({
             records: records.sort(
               (a, b) =>
                 new Date(b.start_date).getTime() -
-                new Date(a.start_date).getTime()
+                new Date(a.start_date).getTime(),
             ),
-          })
+          }),
         );
 
         if (isMounted) {
@@ -479,7 +479,7 @@ export function useOfficersByUid({
       } catch (err) {
         if (isMounted) {
           setError(
-            err instanceof Error ? err : new Error("Failed to fetch officers")
+            err instanceof Error ? err : new Error("Failed to fetch officers"),
           );
         }
       } finally {

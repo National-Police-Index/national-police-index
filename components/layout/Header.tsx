@@ -1,12 +1,12 @@
-'use client';
-import Link from 'next/link';
-import { useState, useMemo, useEffect, useRef } from 'react';
-import styles from './styles.module.scss';
-import { useStaticText } from '@/hooks/useStaticText';
-import { US_STATES } from '@/constants/states';
+"use client";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { US_STATES } from "@/constants/states";
+import { useStaticText } from "@/hooks/useStaticText";
+import styles from "./styles.module.scss";
 
 export default function Header() {
-  const { getText } = useStaticText('header');
+  const { getText } = useStaticText("header");
   const [mounted, setMounted] = useState(false);
   const [isStatesOpen, setIsStatesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function Header() {
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setIsMobileMenuOpen(false);
       }
     };
@@ -42,28 +42,28 @@ export default function Header() {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    document.addEventListener('keydown', handleEscape);
-    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener("resize", handleResize);
+    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
     const body = document.body;
     if (isMobileMenuOpen) {
-      body.style.overflow = 'hidden';
+      body.style.overflow = "hidden";
     } else {
-      body.style.overflow = 'auto';
+      body.style.overflow = "auto";
     }
   }, [isMobileMenuOpen]);
 
   const stateColumns = useMemo(() => {
-    const statesWithData = US_STATES.filter(state => state.hasData);
+    const statesWithData = US_STATES.filter((state) => state.hasData);
     const columns = [];
     const itemsPerColumn = Math.ceil(statesWithData.length / 7);
 
@@ -90,9 +90,9 @@ export default function Header() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -108,22 +108,29 @@ export default function Header() {
         setTimeout(() => {
           setIsStatesOpen(false);
           setIsMobileMenuOpen(false);
-        }, 100)
+        }, 100);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
-    <header ref={headerRef} className={`mx-auto ${styles.header} ${isMobileMenuOpen ? styles.headerOpen : ''}`}>
-      <div className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ''}`}>
-
-        <Link href="/" className={`justify-start text-[#122823] font-bold font-['Inter'] p-2 m-[-8px] ${styles.siteTitle}`}>
-          {getText('site-name', 'National Police Index')}
+    <header
+      ref={headerRef}
+      className={`mx-auto ${styles.header} ${isMobileMenuOpen ? styles.headerOpen : ""}`}
+    >
+      <div
+        className={`container-a w-full py-6 flex justify-between items-center ${styles.headerContent} ${isStatesOpen ? styles.headerContentOpen : ""}`}
+      >
+        <Link
+          href="/"
+          className={`justify-start text-[#122823] font-bold font-['Inter'] p-2 m-[-8px] ${styles.siteTitle}`}
+        >
+          {getText("site-name", "National Police Index")}
         </Link>
 
         {/* Desktop Navigation */}
@@ -137,20 +144,37 @@ export default function Header() {
                 headerRef.current?.classList.remove(styles.showMenu);
                 setTimeout(() => {
                   setIsStatesOpen(false);
-                }, 100)
+                }, 100);
               }
             }}
             className="flex justify-start items-center gap-4 cursor-pointer"
           >
             <span className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed">
-              {getText('nav-states', 'States')}
+              {getText("nav-states", "States")}
             </span>
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
-              <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="12"
+              height="8"
+              viewBox="0 0 12 8"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className={`transform transition-transform ${isStatesOpen ? "rotate-180" : ""}`}
+            >
+              <path
+                d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952"
+                stroke="#122823"
+                strokeWidth="2"
+                strokeMiterlimit="10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
-          <Link href="/about" className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]">
-            {getText('nav-about', 'About')}
+          <Link
+            href="/about"
+            className="text-[#122823] text-lg font-normal font-['Inter'] leading-relaxed hover:text-[#2F5E50]"
+          >
+            {getText("nav-about", "About")}
           </Link>
         </div>
 
@@ -169,9 +193,17 @@ export default function Header() {
             stroke="currentColor"
           >
             {isMobileMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
             )}
           </svg>
         </button>
@@ -179,9 +211,13 @@ export default function Header() {
 
       {/* Desktop States Dropdown */}
       {mounted && isStatesOpen && (
-        <div className={`md:block absolute left-0 right-0 w-full z-50 ${styles.mainMenu}`}>
+        <div
+          className={`md:block absolute left-0 right-0 w-full z-50 ${styles.mainMenu}`}
+        >
           <div className="container-a mx-auto pb-14 relative">
-            <div className={`w-full flex flex-col justify-start items-start gap-2 mb-6 ${styles.mainMenuHeader}`}>
+            <div
+              className={`w-full flex flex-col justify-start items-start gap-2 mb-6 ${styles.mainMenuHeader}`}
+            >
               <div className="w-full text-lg font-normal font-['Inter'] leading-[1.5]">
                 State
               </div>
@@ -222,7 +258,10 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mounted && isMobileMenuOpen && (
-        <div ref={menuRef} className={`container-a py-6 md:hidden mx-auto inset-0 z-50 ${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''} ${isStatesOpen ? styles.mobileStatesOpen : ''}`}>
+        <div
+          ref={menuRef}
+          className={`container-a py-6 md:hidden mx-auto inset-0 z-50 ${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ""} ${isStatesOpen ? styles.mobileStatesOpen : ""}`}
+        >
           <div className="flex flex-col relative">
             <div className="">
               <nav className="flex flex-col gap-4">
@@ -238,14 +277,28 @@ export default function Header() {
                   className="flex items-center flex-row gap-4 text-[#122823] font-normal leading-relaxed font-['Inter'] cursor-pointer"
                 >
                   <span>State Data</span>
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transform transition-transform ${isStatesOpen ? 'rotate-180' : ''}`}>
-                    <path d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952" stroke="#122823" strokeWidth="2" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="12"
+                    height="8"
+                    viewBox="0 0 12 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`transform transition-transform ${isStatesOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      d="M11 1.75952L6.88384 5.87568C6.39773 6.36179 5.60227 6.36179 5.11616 5.87568L1 1.75952"
+                      stroke="#122823"
+                      strokeWidth="2"
+                      strokeMiterlimit="10"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
 
                 {isStatesOpen && (
                   <div className="flex flex-col gap-2 pb-8">
-                    {US_STATES.filter(state => state.hasData).map((state) => (
+                    {US_STATES.filter((state) => state.hasData).map((state) => (
                       <Link
                         key={state.reference}
                         href={`/states/${state.reference.toLowerCase()}`}
@@ -270,7 +323,6 @@ export default function Header() {
                     </Link>
                   </div>
                 )}
-
               </nav>
             </div>
           </div>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { trackAgencyView, trackPageView } from '@/lib/analytics';
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { trackAgencyView, trackPageView } from "@/lib/analytics";
 
 interface AgencyData {
   agencyId: string;
@@ -15,25 +15,19 @@ export const useAgencyAnalytics = (agencyData: AgencyData | null) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (agencyData && typeof window !== 'undefined') {
+    if (agencyData && typeof window !== "undefined") {
       const { agencyId, agencyName, state, officerCount } = agencyData;
-      
+
       // Track agency profile view with state information
-      trackAgencyView(
-        agencyId,
-        agencyName,
-        state,
-        officerCount,
-        'direct_url'
-      );
+      trackAgencyView(agencyId, agencyName, state, officerCount, "direct_url");
 
       // Track enhanced page view
       trackPageView(
         window.location.href,
         document.title,
-        'agency',
+        "agency",
         state,
-        agencyName
+        agencyName,
       );
     }
   }, [agencyData, pathname]);
@@ -46,9 +40,9 @@ export const useAgencyAnalytics = (agencyData: AgencyData | null) => {
           agencyData.agencyName,
           agencyData.state,
           agencyData.officerCount,
-          action
+          action,
         );
       }
-    }
+    },
   };
 };

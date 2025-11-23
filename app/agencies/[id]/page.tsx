@@ -2,16 +2,16 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useStaticText } from "@/hooks/useStaticText";
-import { useAgencyStats } from "@/hooks/useAgencyStats";
-import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
-import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
-import SearchFilters from "@/components/search/SearchFilters";
-import PageHeader from "@/components/PageHeader";
 import CursorPagination from "@/components/common/CursorPagination";
 import OfficerCard from "@/components/officers/OfficerCard";
-import styles from "./styles.module.scss";
+import PageHeader from "@/components/PageHeader";
+import SearchFilters from "@/components/search/SearchFilters";
 import { US_STATES } from "@/constants/states";
+import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
+import { useAgencyStats } from "@/hooks/useAgencyStats";
+import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
+import { useStaticText } from "@/hooks/useStaticText";
+import styles from "./styles.module.scss";
 
 interface SearchParams {
   page?: string;
@@ -45,7 +45,7 @@ export default function AgencyPage() {
   } = useAgencyStats(id);
 
   const stateData = US_STATES.find(
-    (s) => s.reference.toLowerCase() === stats?.state.toLowerCase()
+    (s) => s.reference.toLowerCase() === stats?.state.toLowerCase(),
   );
   // Analytics tracking for agency page
   const analyticsData = stats
@@ -54,12 +54,12 @@ export default function AgencyPage() {
         agencyName: stats.name,
         state: stateData?.name || stats.state,
         officerCount: stats.stats?.find(
-          (stat) => stat.label === "Total Officers"
+          (stat) => stat.label === "Total Officers",
         )?.value
           ? parseInt(
               stats.stats.find((stat) => stat.label === "Total Officers")
                 ?.value || "0",
-              10
+              10,
             )
           : undefined,
       }
@@ -110,7 +110,7 @@ export default function AgencyPage() {
         title={
           getText("officers-title", `Officers in {state}`).replace(
             "{state}",
-            stats?.name || ""
+            stats?.name || "",
           ) + (stateData ? ` - ${stateData?.name}` : "")
         }
         description={`Searching and exploring police officer records in ${
@@ -195,11 +195,11 @@ export default function AgencyPage() {
                       hasNextPage={hasNextPage}
                       onPageSizeChange={(newSize) => {
                         const params = new URLSearchParams(
-                          searchParams.toString()
+                          searchParams.toString(),
                         );
                         params.set("pageSize", newSize.toString());
                         window.location.href = `/agencies/${encodeURIComponent(
-                          id
+                          id,
                         )}?${params.toString()}`;
                       }}
                     />
