@@ -6,8 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!./scripts"],
-    "ignoreUnknown": false
+    "includes": ["**", "!!scripts"],
+    "ignoreUnknown": true
   },
   "formatter": {
     "enabled": true,
