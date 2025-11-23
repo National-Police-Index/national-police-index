@@ -1,0 +1,17 @@
+name: Format-and-Fail
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  biomejs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: biomejs/setup-biome@v2
+        with:
+          version: '2.3.5'
+      - run: biome ci ./web biome.json package.json README.md
