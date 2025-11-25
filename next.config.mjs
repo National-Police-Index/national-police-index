@@ -7,11 +7,11 @@ const config = {
     return [
       {
         source: "/agencies/:state/:id",
-        destination: "/agencies/:id",
+        destination: "/states/:state/:id",
       },
       {
-        source: "/officers/:state/:agency/:personNbr/:full_name",
-        destination: "/officers/:personNbr/:full_name",
+        source: "/officers/:state/:personNbr/:full_name",
+        destination: "/officers/:personNbr/:full_name?state=:state",
       },
     ];
   },

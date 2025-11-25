@@ -68,6 +68,7 @@ export function useOfficersByUid({
       searchParams.startDate,
       searchParams.endDate,
       searchParams.sortOrder,
+      searchParams.sortBy,
       searchParams.pageSize,
       searchParams.direction,
       searchParams.page,

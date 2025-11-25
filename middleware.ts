@@ -1,13 +1,16 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  
+
   // Redirect /state/ to /states/ to fix analytics duplicate URLs
-  if (url.pathname.startsWith('/state/') && !url.pathname.startsWith('/states/')) {
+  if (
+    url.pathname.startsWith("/state/") &&
+    !url.pathname.startsWith("/states/")
+  ) {
     // Replace /state/ with /states/
-    url.pathname = url.pathname.replace(/^\/state\//, '/states/');
+    url.pathname = url.pathname.replace(/^\/state\//, "/states/");
     return NextResponse.redirect(url, 301); // Permanent redirect
   }
 
@@ -23,6 +26,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
