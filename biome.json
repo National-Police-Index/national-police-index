@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!scripts", "!!public", "!!lib"],
+    "includes": ["**", "!!scripts", "!!public", "!!lib", "!!node_modules"],
     "ignoreUnknown": true
   },
   "formatter": {
