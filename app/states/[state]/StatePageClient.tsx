@@ -30,7 +30,7 @@ function parseDescription(text: string | undefined): React.ReactNode {
 
   if (text.includes("<")) {
     return parse(text, {
-      replace: (domNode: any) => {
+      replace: (domNode: HTMLElement) => {
         if (domNode.type === "tag") {
           if (domNode.name === "a") {
             const props = domNode.attribs || {};
@@ -189,7 +189,7 @@ export default function StatePageClient() {
         statistics={stats?.stats
           .filter((stat) => stat.value !== "0")
           .map((stat) => ({
-            value: parseInt(stat.value),
+            value: parseInt(stat.value, 10),
             label: stat.label,
             literal: stat.literal,
           }))}

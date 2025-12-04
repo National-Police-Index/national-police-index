@@ -40,7 +40,7 @@ export async function generateMetadata({
       // Get officer count if available
       if (agencyData?.stats) {
         const officerStats = agencyData.stats.find(
-          (stat: any) => stat.label === "Total Officers",
+          (stat: HTMLElement) => stat.label === "Total Officers",
         );
         if (officerStats) {
           officerCount = parseInt(officerStats.value, 10);
