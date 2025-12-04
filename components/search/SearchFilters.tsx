@@ -75,7 +75,7 @@ export default function SearchFilters({
         trackFilterUsage(
           "start_date",
           filters.startDate.toISOString().split("T")[0],
-          state,
+          state
         );
       }
       if (filters.endDate) {
@@ -206,6 +206,12 @@ export default function SearchFilters({
       params.set("activeOnly", filters.activeOnly);
     } else {
       params.delete("activeOnly");
+    }
+
+    if (filters.sortBy) {
+      params.set("sortBy", filters.sortBy);
+    } else {
+      params.delete("sortBy");
     }
 
     if (filters.sortOrder) {

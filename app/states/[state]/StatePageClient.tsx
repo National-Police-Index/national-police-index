@@ -1,19 +1,19 @@
 "use client";
 
-import parse from "html-react-parser";
-import { notFound, useParams, useSearchParams } from "next/navigation";
-import type React from "react";
-import { useEffect, useState } from "react";
-import CursorPagination from "@/components/common/CursorPagination";
-import OfficerCard from "@/components/officers/OfficerCard";
-import PageHeader from "@/components/PageHeader";
-import SearchFilters from "@/components/search/SearchFilters";
-import { STATE_DESCRIPTIONS, US_STATES } from "@/constants/states";
+import { useParams, useSearchParams, notFound } from "next/navigation";
+import { useStaticText } from "@/hooks/useStaticText";
 import { useOfficersByUid } from "@/hooks/useOfficersByUid";
 import { useStateStats } from "@/hooks/useStateStats";
-import { useStaticText } from "@/hooks/useStaticText";
-import { trackPagination, trackStateSearch } from "@/lib/analytics";
+import SearchFilters from "@/components/search/SearchFilters";
+import { US_STATES, STATE_DESCRIPTIONS } from "@/constants/states";
+import PageHeader from "@/components/PageHeader";
+import CursorPagination from "@/components/common/CursorPagination";
+import OfficerCard from "@/components/officers/OfficerCard";
 import styles from "./styles.module.scss";
+import { useEffect, useState } from "react";
+import React from "react";
+import parse from "html-react-parser";
+import { trackStateSearch, trackPagination } from "@/lib/analytics";
 
 function toTitleCase(str: string) {
   return str
@@ -21,7 +21,7 @@ function toTitleCase(str: string) {
     .replace(
       /\w\S*/g,
       (text: string) =>
-        text.charAt(0).toUpperCase() + text.substring(1).toLowerCase(),
+        text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
     );
 }
 
@@ -82,7 +82,7 @@ export default function StatePageClient() {
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams);
   const stateData = US_STATES.find(
-    (s) => s.reference.toLowerCase() === state.toLowerCase(),
+    (s) => s.reference.toLowerCase() === state.toLowerCase()
   );
 
   if (!stateData?.hasData) {
@@ -169,7 +169,7 @@ export default function StatePageClient() {
       "Warning: Expected",
       pageSize,
       "officers but only got",
-      officerGroups.length,
+      officerGroups.length
     );
   }
 
@@ -179,17 +179,17 @@ export default function StatePageClient() {
         home={false}
         title={getText("officers-title", "{state}").replace(
           "{state}",
-          toTitleCase(stateData.name),
+          toTitleCase(stateData.name)
         )}
         description={
           parseDescription(
-            STATE_DESCRIPTIONS[state as keyof typeof STATE_DESCRIPTIONS],
+            STATE_DESCRIPTIONS[state as keyof typeof STATE_DESCRIPTIONS]
           ) || `Search and explore police officer records in ${stateData.name}`
         }
         statistics={stats?.stats
           .filter((stat) => stat.value !== "0")
           .map((stat) => ({
-            value: parseInt(stat.value, 10),
+            value: parseInt(stat.value),
             label: stat.label,
             literal: stat.literal,
           }))}
@@ -244,7 +244,7 @@ export default function StatePageClient() {
                         hasNextPage={hasNextPage}
                         onPageSizeChange={(newSize) => {
                           const params = new URLSearchParams(
-                            searchParams.toString(),
+                            searchParams.toString()
                           );
                           params.set("pageSize", newSize.toString());
                           params.set("page", "1");
@@ -254,7 +254,7 @@ export default function StatePageClient() {
                           trackPagination(
                             apiCurrentPage,
                             stateData.name,
-                            totalGroups,
+                            totalGroups
                           );
 
                           window.location.href = `/states/${state}?${params.toString()}`;

@@ -63,7 +63,7 @@ export default function OfficerCard({ officer }: OfficerCardProps) {
 
   return (
     <a
-      href={`/officers/${officer.state}/${officer.agency_name}/${officer.document_id}/${officerSlug}`}
+      href={`/officers/${officer.state}/${officer.document_id}/${officerSlug}`}
       className={`group flex w-full max-w-sm ${styles.officerCard} ${
         moreActive ? styles.moreActive : ""
       }`}

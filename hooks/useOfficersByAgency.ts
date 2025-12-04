@@ -2,7 +2,12 @@
 
 import {
   collectionGroup,
-  DocumentData,
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
   doc,
   getDoc,
   getDocs,
@@ -25,6 +30,7 @@ interface OfficerGroup {
 interface UseOfficersByAgencyProps {
   agencyName: string;
   agencyId?: string;
+  state?: string;
   searchParams?: {
     query?: string;
     startDate?: string;
@@ -40,6 +46,7 @@ interface UseOfficersByAgencyProps {
 export function useOfficersByAgency({
   agencyName,
   agencyId,
+  state,
   searchParams = { pageSize: "16" },
 }: UseOfficersByAgencyProps) {
   const searchParameters = useMemo(
@@ -72,6 +79,7 @@ export function useOfficersByAgency({
     () =>
       JSON.stringify({
         agencyName,
+        state,
         query: searchParameters.query,
         startDate: searchParameters.startDate,
         endDate: searchParameters.endDate,
@@ -81,7 +89,7 @@ export function useOfficersByAgency({
         direction: searchParameters.direction,
         page: searchParameters.page,
       }),
-    [agencyName, searchParameters],
+    [agencyName, state, searchParameters]
   );
 
   const normalizedAgencyId = agencyName
@@ -120,6 +128,7 @@ export function useOfficersByAgency({
   const filtersCacheKey = useMemo(() => {
     return JSON.stringify({
       agencyName,
+      state,
       query: searchParameters.query,
       startDate: searchParameters.startDate,
       endDate: searchParameters.endDate,
@@ -129,6 +138,7 @@ export function useOfficersByAgency({
     });
   }, [
     agencyName,
+    state,
     searchParameters.query,
     searchParameters.startDate,
     searchParameters.endDate,
@@ -148,34 +158,86 @@ export function useOfficersByAgency({
         !searchParameters.startDate &&
         !searchParameters.endDate
       ) {
+        // If we have a state parameter, we need to query the collection to find the correct agency
+        if (state) {
+          try {
+            const statsQuery = query(
+              collection(db, "statistics_per_agency"),
+              where("name", "==", agencyName),
+              where("state", "==", state)
+            );
+            const statsSnapshot = await getDocs(statsQuery);
+
+            if (!statsSnapshot.empty) {
+              const data = statsSnapshot.docs[0].data();
+
+              if (data.total_officers) {
+                const count = parseInt(data.total_officers, 10);
+                setCountCache((prev) => ({
+                  ...prev,
+                  [filtersCacheKey]: count,
+                }));
+                return count;
+              } else if (data.stats) {
+                const officerStats = data.stats.find(
+                  (stat: any) => stat.label === "Total Officers"
+                );
+                if (officerStats) {
+                  const count = parseInt(officerStats.value, 10);
+                  setCountCache((prev) => ({
+                    ...prev,
+                    [filtersCacheKey]: count,
+                  }));
+                  return count;
+                }
+              }
+            }
+          } catch (queryError) {
+            console.warn(
+              "Error querying statistics_per_agency with state filter:",
+              queryError
+            );
+            // Fall back to the original method
+          }
+        }
+
+        // Original method without state filter (fallback)
+        /*
         const statsRef = doc(db, "statistics_per_agency", normalizedAgencyId);
         const statsDoc = await getDoc(statsRef);
 
         if (statsDoc.exists()) {
           const data = statsDoc.data();
-
-          if (data.total_officers) {
-            const count = parseInt(data.total_officers, 10);
-
-            setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
-            return count;
-          } else if (data.stats) {
-            const officerStats = data.stats.find(
-              (stat: any) => stat.label === "Total Officers",
-            );
-            if (officerStats) {
-              const count = parseInt(officerStats.value, 10);
-
+          
+          // If we have a state parameter, verify it matches
+          if (state && data.state && data.state.toLowerCase() !== state.toLowerCase()) {
+            // Skip this document as it doesn't match the requested state
+          } else {
+            if (data.total_officers) {
+              const count = parseInt(data.total_officers, 10);
               setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
               return count;
+            } else if (data.stats) {
+              const officerStats = data.stats.find(
+                (stat: any) => stat.label === "Total Officers"
+              );
+              if (officerStats) {
+                const count = parseInt(officerStats.value, 10);
+                setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
+                return count;
+              }
             }
           }
         }
+        */
       }
 
       try {
         let countQuery = query(collectionGroup(db, "db_launch"));
         countQuery = query(countQuery, where("agency_name", "==", agencyName));
+        if (state) {
+          countQuery = query(countQuery, where("state", "==", state));
+        }
         countQuery = query(countQuery, limit(10000));
 
         if (searchParameters.query) {
@@ -230,6 +292,7 @@ export function useOfficersByAgency({
     }
   }, [
     agencyName,
+    state,
     normalizedAgencyId,
     filtersCacheKey,
     countCache,
@@ -266,14 +329,56 @@ export function useOfficersByAgency({
         setTotalCount(totalCount);
 
         try {
-          const statsRef = doc(db, "statistics_per_agency", normalizedAgencyId);
-          const statsDoc = await getDoc(statsRef);
+          // If we have a state parameter, query by name and state
+          if (state) {
+            try {
+              const statsQuery = query(
+                collection(db, "statistics_per_agency"),
+                where("name", "==", agencyName),
+                where("state", "==", state)
+              );
+              const statsSnapshot = await getDocs(statsQuery);
 
-          if (statsDoc.exists()) {
-            const statsData = statsDoc.data();
-            if (statsData.total_officers !== undefined) {
-              officerCount = statsData.total_officers;
-              setTotalOfficers(officerCount);
+              if (!statsSnapshot.empty) {
+                const statsData = statsSnapshot.docs[0].data();
+                if (statsData.total_officers !== undefined) {
+                  officerCount = statsData.total_officers;
+                  setTotalOfficers(officerCount);
+                }
+              }
+            } catch (queryError) {
+              console.warn(
+                "Error querying statistics_per_agency with state filter:",
+                queryError
+              );
+              // Fall back to the original method
+            }
+          }
+
+          // Original method without state filter (fallback or when no state provided)
+          if (officerCount === null) {
+            const statsRef = doc(
+              db,
+              "statistics_per_agency",
+              normalizedAgencyId
+            );
+            const statsDoc = await getDoc(statsRef);
+
+            if (statsDoc.exists()) {
+              const statsData = statsDoc.data();
+              // If we have a state parameter, verify it matches
+              if (
+                state &&
+                statsData.state &&
+                statsData.state.toLowerCase() !== state.toLowerCase()
+              ) {
+                // Skip this document as it doesn't match the requested state
+              } else {
+                if (statsData.total_officers !== undefined) {
+                  officerCount = statsData.total_officers;
+                  setTotalOfficers(officerCount);
+                }
+              }
             }
           }
         } catch (statsError) {
@@ -291,6 +396,10 @@ export function useOfficersByAgency({
           where("agency_name", "==", agencyName),
           orderBy(sortField, sortDirection),
         );
+
+        if (state) {
+          q = query(q, where("state", "==", state));
+        }
 
         if (searchParameters.query) {
           q = query(

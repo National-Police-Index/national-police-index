@@ -1,5 +1,5 @@
 "use client";
-import type React from "react";
+import React from "react";
 import styles from "./styles.module.scss";
 
 interface Statistic {
@@ -26,7 +26,9 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <div
-      className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${styles.pageHeader} ${home && styles.homeHeader}`}
+      className={`container-a mx-auto flex lg:flex-row flex-col justify-between lg:items-end items-start ${
+        styles.pageHeader
+      } ${home && styles.homeHeader}`}
     >
       <div className="w-full flex flex-col justify-start items-start">
         <h1
@@ -55,7 +57,12 @@ export default function PageHeader({
         >
           {/* Filter out duplicates by keeping only the last occurrence of each label */}
           {statistics
-            .filter((stat) => stat.label !== "Total Records Processed")
+            .filter(
+              (stat) =>
+                !["Total Records Processed", "Inactive Officers"].includes(
+                  stat.label
+                )
+            )
             .filter((stat) => stat.value !== 0 && stat.value)
             .reduce((unique: Statistic[], stat) => {
               // Remove any previous statistics with the same label
@@ -94,7 +101,7 @@ export default function PageHeader({
                     ? stat.label || "Loading..."
                     : stat.label.replace(
                         "Total Officers",
-                        "Current and Former Officers",
+                        "Current and Former Officers"
                       )}
                 </div>
                 {stat.tooltip && (

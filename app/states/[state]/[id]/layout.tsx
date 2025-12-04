@@ -1,45 +1,48 @@
 import { doc, getDoc } from "firebase/firestore";
 import type { Metadata } from "next";
 import { db } from "@/lib/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { US_STATES } from "@/constants/states";
 
-type Props = Promise<{ children: React.ReactNode; id: string }>;
+type Props = Promise<{ children: React.ReactNode; id: string; state: string }>;
 
 export async function generateMetadata({
   params,
 }: {
   params: Props;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id, state } = await params;
   // Decode the agency ID from the URL
   const decodedAgencyId = decodeURIComponent(id);
   let agencyName = decodedAgencyId; // Default to the ID if we can't fetch the name
   let officerCount = 0;
   let stateName = "";
 
+  const stateData = US_STATES.find((s) => s.reference === state);
+  if (stateData?.name) {
+    stateName = stateData?.name;
+  }
+
   try {
     // Try to get agency stats from Firestore
-    const agencyId = decodedAgencyId
-      .toLowerCase()
-      .replace(/[/\\]/g, "%2F")
-      .replace(/[^a-z0-9-]/g, "-");
+    const statsQuery = query(
+      collection(db, "statistics_per_agency"),
+      where("name", "==", agencyName),
+      where("state", "==", state)
+    );
+    const statsSnapshot = await getDocs(statsQuery);
 
-    const statsRef = doc(db, "statistics_per_agency", agencyId);
-    const statsDoc = await getDoc(statsRef);
-
-    if (statsDoc.exists()) {
-      const agencyData = statsDoc.data();
-      // Use the agency name from stats if available
+    if (!statsSnapshot.empty) {
+      const agencyData = statsSnapshot.docs[0].data();
 
       if (agencyData?.name) {
         agencyName = agencyData.name;
       }
-
-      // Get state information
-      if (agencyData?.state) {
-        stateName =
-          agencyData.state.charAt(0).toUpperCase() + agencyData.state.slice(1);
-      }
-
       // Get officer count if available
       if (agencyData?.stats) {
         const officerStats = agencyData.stats.find(
