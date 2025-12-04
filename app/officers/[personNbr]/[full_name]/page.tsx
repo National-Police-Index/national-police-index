@@ -517,9 +517,9 @@ export default function OfficerProfilePage() {
                                 className={`flex-1 justify-start text-sm font-normal font-['Inter'] ${styles.timelineEvent}`}
                               >
                                 <b>
-                                  <a 
-                                    href={`/states/${(stateData?.reference|| "").toLowerCase()}/${encodeURIComponent(
-                                      event.agency_name
+                                  <a
+                                    href={`/states/${(stateData?.reference || "").toLowerCase()}/${encodeURIComponent(
+                                      event.agency_name,
                                     )}`}
                                     className={styles.timelineAgency}
                                   >

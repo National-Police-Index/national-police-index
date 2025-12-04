@@ -75,7 +75,7 @@ export default function SearchFilters({
         trackFilterUsage(
           "start_date",
           filters.startDate.toISOString().split("T")[0],
-          state
+          state,
         );
       }
       if (filters.endDate) {

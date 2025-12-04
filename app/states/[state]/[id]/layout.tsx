@@ -1,13 +1,14 @@
-import { doc, getDoc } from "firebase/firestore";
-import type { Metadata } from "next";
-import { db } from "@/lib/firebase";
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
   where,
 } from "firebase/firestore";
+import type { Metadata } from "next";
 import { US_STATES } from "@/constants/states";
+import { db } from "@/lib/firebase";
 
 type Props = Promise<{ children: React.ReactNode; id: string; state: string }>;
 
@@ -33,7 +34,7 @@ export async function generateMetadata({
     const statsQuery = query(
       collection(db, "statistics_per_agency"),
       where("name", "==", agencyName),
-      where("state", "==", state)
+      where("state", "==", state),
     );
     const statsSnapshot = await getDocs(statsQuery);
 

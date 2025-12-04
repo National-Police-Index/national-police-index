@@ -2,21 +2,17 @@
 
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useStaticText } from "@/hooks/useStaticText";
-import { useAgencyStats } from "@/hooks/useAgencyStats";
-import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
-import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
-import SearchFilters from "@/components/search/SearchFilters";
-import PageHeader from "@/components/PageHeader";
 import CursorPagination from "@/components/common/CursorPagination";
 import OfficerCard from "@/components/officers/OfficerCard";
 import PageHeader from "@/components/PageHeader";
+import PageHeader from "@/components/PageHeader";
+import SearchFilters from "@/components/search/SearchFilters";
 import SearchFilters from "@/components/search/SearchFilters";
 import { US_STATES } from "@/constants/states";
-import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
-import { useAgencyStats } from "@/hooks/useAgencyStats";
-import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
-import { useStaticText } from "@/hooks/useStaticText";
+import { useAgencyAnalytics, useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
+import { useAgencyStats, useAgencyStats } from "@/hooks/useAgencyStats";
+import { useOfficersByAgency, useOfficersByAgency } from "@/hooks/useOfficersByAgency";
+import { useStaticText, useStaticText } from "@/hooks/useStaticText";
 import styles from "./styles.module.scss";
 
 interface SearchParams {
