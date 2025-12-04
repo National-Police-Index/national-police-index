@@ -20,7 +20,10 @@ export default async function Home() {
         )}
         statistics={[
           {
-            value: parseInt(getText(texts, "home", "states-count-value", "27")),
+            value: parseInt(
+              getText(texts, "home", "states-count-value", "27"),
+              10,
+            ),
             label: getText(
               texts,
               "home",

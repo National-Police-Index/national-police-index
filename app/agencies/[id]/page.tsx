@@ -98,7 +98,7 @@ export default function AgencyPage() {
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [officersLoading]);
+  }, [officersLoading, searchLoading]);
 
   const loading = statsLoading || officersLoading || searchLoading;
   const error = statsError || officersError;
@@ -127,7 +127,7 @@ export default function AgencyPage() {
             : stats?.stats
                 ?.filter((stat) => stat.value !== "0")
                 .map((stat) => ({
-                  value: parseInt(stat.value),
+                  value: parseInt(stat.value, 10),
                   label: stat.label,
                 }))
         }

@@ -36,11 +36,7 @@ function parseDescription(text: string | undefined): React.ReactNode {
             const props = domNode.attribs || {};
 
             let linkText = props.href;
-            if (
-              domNode.children &&
-              domNode.children[0] &&
-              "data" in domNode.children[0]
-            ) {
+            if (domNode.children?.[0] && "data" in domNode.children[0]) {
               linkText = domNode.children[0].data;
             }
 
@@ -193,7 +189,7 @@ export default function StatePageClient() {
         statistics={stats?.stats
           .filter((stat) => stat.value !== "0")
           .map((stat) => ({
-            value: parseInt(stat.value),
+            value: parseInt(stat.value, 10),
             label: stat.label,
             literal: stat.literal,
           }))}
