@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import type React from "react";
 import styles from "./styles.module.scss";
 
 interface Statistic {
@@ -60,8 +60,8 @@ export default function PageHeader({
             .filter(
               (stat) =>
                 !["Total Records Processed", "Inactive Officers"].includes(
-                  stat.label
-                )
+                  stat.label,
+                ),
             )
             .filter((stat) => stat.value !== 0 && stat.value)
             .reduce((unique: Statistic[], stat) => {
@@ -101,7 +101,7 @@ export default function PageHeader({
                     ? stat.label || "Loading..."
                     : stat.label.replace(
                         "Total Officers",
-                        "Current and Former Officers"
+                        "Current and Former Officers",
                       )}
                 </div>
                 {stat.tooltip && (

@@ -1,18 +1,15 @@
-
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
   collectionGroup,
-  getDocs,
-  writeBatch,
+  type DocumentData,
   doc,
-  DocumentData,
-  QueryDocumentSnapshot
-} from 'firebase/firestore';
+  getDocs,
+  getFirestore,
+  type QueryDocumentSnapshot,
+  writeBatch,
+} from "firebase/firestore";
 
-
-import { firebaseConfig } from '../lib/firebase';
-
+import { firebaseConfig } from "../lib/firebase";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -24,11 +21,7 @@ interface OfficerDocument extends DocumentData {
 
 async function addSearchQueries(): Promise<void> {
   try {
-
-
-    const querySnapshot = await getDocs(collectionGroup(db, 'db_launch'));
-
-
+    const querySnapshot = await getDocs(collectionGroup(db, "db_launch"));
 
     let batch = writeBatch(db);
     let batchCount = 0;
@@ -39,34 +32,27 @@ async function addSearchQueries(): Promise<void> {
     for (const docSnapshot of querySnapshot.docs as QueryDocumentSnapshot<OfficerDocument>[]) {
       const docData = docSnapshot.data();
 
-
       if (!docData.full_name) {
         skippedCount++;
         continue;
       }
 
-
       const fullName = docData.full_name;
       const searchQueries = fullName
         .trim()
         .split(/\s+/)
-        .filter(term => term.length > 0)
-        .map(term => term.toLowerCase());
-
+        .filter((term) => term.length > 0)
+        .map((term) => term.toLowerCase());
 
       searchQueries.push(fullName.toLowerCase());
 
-
       const uniqueSearchQueries = [...new Set(searchQueries)];
 
-
       const docRef = doc(db, docSnapshot.ref.path);
-
 
       batch.update(docRef, { searchQueries: uniqueSearchQueries });
       batchCount++;
       updatedCount++;
-
 
       if (batchCount >= BATCH_SIZE) {
         await batch.commit();
@@ -75,17 +61,14 @@ async function addSearchQueries(): Promise<void> {
       }
     }
 
-
     if (batchCount > 0) {
       await batch.commit();
     }
-
   } catch (error) {
-    console.error('Error updating documents:', error);
+    console.error("Error updating documents:", error);
   }
 }
 
-
 addSearchQueries()
-  .then(() => console.log('Script completed successfully'))
-  .catch(error => console.error('Script failed:', error));
+  .then(() => console.log("Script completed successfully"))
+  .catch((error) => console.error("Script failed:", error));

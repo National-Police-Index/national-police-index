@@ -1,24 +1,22 @@
-
-import { initializeApp } from 'firebase/app';
+import dotenv from "dotenv";
+import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
   collectionGroup,
-  getDocs,
-  writeBatch,
+  type DocumentData,
   doc,
-  DocumentData,
-  QueryDocumentSnapshot,
+  getDocs,
+  getFirestore,
   limit,
-  startAfter,
+  type QueryDocumentSnapshot,
   query,
-  where
-} from 'firebase/firestore';
-import fs from 'fs';
-import path from 'path';
+  startAfter,
+  where,
+  writeBatch,
+} from "firebase/firestore";
+import fs from "fs";
+import path from "path";
 
-
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,7 +26,6 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -41,18 +38,58 @@ interface OfficerDocument extends DocumentData {
   state?: string;
 }
 
-
 const US_STATES = [
-  'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut',
-  'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa',
-  'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan',
-  'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new-hampshire',
-  'new-jersey', 'new-mexico', 'new-york', 'north-carolina', 'north-dakota', 'ohio',
-  'oklahoma', 'oregon', 'pennsylvania', 'rhode-island', 'south-carolina', 'south-dakota',
-  'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west-virginia',
-  'wisconsin', 'wyoming'
+  "alabama",
+  "alaska",
+  "arizona",
+  "arkansas",
+  "california",
+  "colorado",
+  "connecticut",
+  "delaware",
+  "florida",
+  "georgia",
+  "hawaii",
+  "idaho",
+  "illinois",
+  "indiana",
+  "iowa",
+  "kansas",
+  "kentucky",
+  "louisiana",
+  "maine",
+  "maryland",
+  "massachusetts",
+  "michigan",
+  "minnesota",
+  "mississippi",
+  "missouri",
+  "montana",
+  "nebraska",
+  "nevada",
+  "new-hampshire",
+  "new-jersey",
+  "new-mexico",
+  "new-york",
+  "north-carolina",
+  "north-dakota",
+  "ohio",
+  "oklahoma",
+  "oregon",
+  "pennsylvania",
+  "rhode-island",
+  "south-carolina",
+  "south-dakota",
+  "tennessee",
+  "texas",
+  "utah",
+  "vermont",
+  "virginia",
+  "washington",
+  "west-virginia",
+  "wisconsin",
+  "wyoming",
 ];
-
 
 const CONFIG = {
   batchSize: 500,
@@ -60,10 +97,9 @@ const CONFIG = {
   dryRun: false,
   includeFirstLast: false,
   logFrequency: 100,
-  logFile: '../search_queries_progress.json',
+  logFile: "../search_queries_progress.json",
   specificState: process.argv[2] || null,
 };
-
 
 interface StateProgress {
   state: string;
@@ -80,43 +116,40 @@ interface ProgressData {
   lastUpdatedAt: string;
 }
 
-
 function loadProgressData(): ProgressData {
   try {
     if (fs.existsSync(CONFIG.logFile)) {
-      const data = fs.readFileSync(CONFIG.logFile, 'utf8');
+      const data = fs.readFileSync(CONFIG.logFile, "utf8");
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Error loading progress data:', error);
+    console.error("Error loading progress data:", error);
   }
-
 
   return {
     states: [],
     startedAt: new Date().toISOString(),
-    lastUpdatedAt: new Date().toISOString()
+    lastUpdatedAt: new Date().toISOString(),
   };
 }
-
 
 function saveProgressData(progressData: ProgressData): void {
   try {
     progressData.lastUpdatedAt = new Date().toISOString();
     fs.writeFileSync(CONFIG.logFile, JSON.stringify(progressData, null, 2));
   } catch (error) {
-    console.error('Error saving progress data:', error);
+    console.error("Error saving progress data:", error);
   }
 }
 
-
-async function processState(state: string, progressData: ProgressData): Promise<StateProgress> {
-
-  const existingProgress = progressData.states.find(s => s.state === state);
+async function processState(
+  state: string,
+  progressData: ProgressData,
+): Promise<StateProgress> {
+  const existingProgress = progressData.states.find((s) => s.state === state);
   if (existingProgress && existingProgress.completed) {
     return existingProgress;
   }
-
 
   const stateProgress: StateProgress = existingProgress || {
     state,
@@ -124,7 +157,7 @@ async function processState(state: string, progressData: ProgressData): Promise<
     documentsProcessed: 0,
     documentsUpdated: 0,
     documentsSkipped: 0,
-    lastProcessedAt: new Date().toISOString()
+    lastProcessedAt: new Date().toISOString(),
   };
 
   try {
@@ -134,13 +167,11 @@ async function processState(state: string, progressData: ProgressData): Promise<
     let totalDocuments = 0;
     let lastDoc: QueryDocumentSnapshot<OfficerDocument> | null = null;
 
-
     let hasMoreDocs = true;
 
     while (hasMoreDocs) {
-
-      let dbQuery = collectionGroup(db, 'db_launch');
-      dbQuery = query(dbQuery, where('state', '==', state));
+      let dbQuery = collectionGroup(db, "db_launch");
+      dbQuery = query(dbQuery, where("state", "==", state));
 
       if (lastDoc) {
         dbQuery = query(dbQuery, startAfter(lastDoc), limit(CONFIG.queryLimit));
@@ -158,7 +189,6 @@ async function processState(state: string, progressData: ProgressData): Promise<
 
       totalDocuments += batchSize;
 
-
       let batch = writeBatch(db);
       let batchCount = 0;
 
@@ -166,28 +196,23 @@ async function processState(state: string, progressData: ProgressData): Promise<
         const docData = docSnapshot.data();
         processed++;
 
-
-        let fullName = docData.full_name || '';
+        let fullName = docData.full_name || "";
         if (!fullName && docData.first_name && docData.last_name) {
           fullName = `${docData.first_name} ${docData.last_name}`.trim();
         }
-
 
         if (!fullName) {
           skippedCount++;
           continue;
         }
 
-
         const searchQueries: string[] = [];
-
 
         fullName
           .trim()
           .split(/\s+/)
-          .filter(term => term.length > 0)
-          .forEach(term => searchQueries.push(term.toLowerCase()));
-
+          .filter((term) => term.length > 0)
+          .forEach((term) => searchQueries.push(term.toLowerCase()));
 
         if (CONFIG.includeFirstLast && docData.first_name) {
           searchQueries.push(docData.first_name.toLowerCase());
@@ -197,12 +222,9 @@ async function processState(state: string, progressData: ProgressData): Promise<
           searchQueries.push(docData.last_name.toLowerCase());
         }
 
-
         const uniqueSearchQueries = [...new Set(searchQueries)];
 
-
         const docRef = doc(db, docSnapshot.ref.path);
-
 
         if (!CONFIG.dryRun) {
           batch.update(docRef, { searchQueries: uniqueSearchQueries });
@@ -211,17 +233,15 @@ async function processState(state: string, progressData: ProgressData): Promise<
         batchCount++;
         updatedCount++;
 
-
         if (processed % CONFIG.logFrequency === 0) {
-
-
           stateProgress.documentsProcessed = processed;
           stateProgress.documentsUpdated = updatedCount;
           stateProgress.documentsSkipped = skippedCount;
           stateProgress.lastProcessedAt = new Date().toISOString();
 
-
-          const stateIndex = progressData.states.findIndex(s => s.state === state);
+          const stateIndex = progressData.states.findIndex(
+            (s) => s.state === state,
+          );
           if (stateIndex >= 0) {
             progressData.states[stateIndex] = stateProgress;
           } else {
@@ -231,7 +251,6 @@ async function processState(state: string, progressData: ProgressData): Promise<
           saveProgressData(progressData);
         }
 
-
         if (batchCount >= CONFIG.batchSize && !CONFIG.dryRun) {
           await batch.commit();
           batch = writeBatch(db);
@@ -239,20 +258,18 @@ async function processState(state: string, progressData: ProgressData): Promise<
         }
       }
 
-
       if (batchCount > 0 && !CONFIG.dryRun) {
         await batch.commit();
       }
 
-
-      lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] as QueryDocumentSnapshot<OfficerDocument>;
-
+      lastDoc = querySnapshot.docs[
+        querySnapshot.docs.length - 1
+      ] as QueryDocumentSnapshot<OfficerDocument>;
 
       if (querySnapshot.docs.length < CONFIG.queryLimit) {
         hasMoreDocs = false;
       }
     }
-
 
     stateProgress.completed = true;
     stateProgress.documentsProcessed = processed;
@@ -265,29 +282,24 @@ async function processState(state: string, progressData: ProgressData): Promise<
     Documents processed: ${processed}
     Documents updated: ${updatedCount}
     Documents skipped: ${skippedCount}
-    Dry run mode: ${CONFIG.dryRun ? 'ON (no changes made)' : 'OFF (changes committed)'}
+    Dry run mode: ${CONFIG.dryRun ? "ON (no changes made)" : "OFF (changes committed)"}
     =================================================
     `);
 
     return stateProgress;
-
   } catch (error) {
     console.error(`Error processing state ${state}:`, error);
     return stateProgress;
   }
 }
 
-
 async function addSearchQueriesByState(): Promise<void> {
   try {
-
     const progressData = loadProgressData();
-
 
     let statesToProcess: string[] = [];
 
     if (CONFIG.specificState) {
-
       if (US_STATES.includes(CONFIG.specificState.toLowerCase())) {
         statesToProcess = [CONFIG.specificState.toLowerCase()];
       } else {
@@ -295,16 +307,15 @@ async function addSearchQueriesByState(): Promise<void> {
         return;
       }
     } else {
-
       statesToProcess = US_STATES;
     }
-
 
     for (const state of statesToProcess) {
       const stateProgress = await processState(state, progressData);
 
-
-      const stateIndex = progressData.states.findIndex(s => s.state === state);
+      const stateIndex = progressData.states.findIndex(
+        (s) => s.state === state,
+      );
       if (stateIndex >= 0) {
         progressData.states[stateIndex] = stateProgress;
       } else {
@@ -314,11 +325,21 @@ async function addSearchQueriesByState(): Promise<void> {
       saveProgressData(progressData);
     }
 
-
-    const completedStates = progressData.states.filter(s => s.completed).length;
-    const totalDocumentsProcessed = progressData.states.reduce((sum, s) => sum + s.documentsProcessed, 0);
-    const totalDocumentsUpdated = progressData.states.reduce((sum, s) => sum + s.documentsUpdated, 0);
-    const totalDocumentsSkipped = progressData.states.reduce((sum, s) => sum + s.documentsSkipped, 0);
+    const completedStates = progressData.states.filter(
+      (s) => s.completed,
+    ).length;
+    const totalDocumentsProcessed = progressData.states.reduce(
+      (sum, s) => sum + s.documentsProcessed,
+      0,
+    );
+    const totalDocumentsUpdated = progressData.states.reduce(
+      (sum, s) => sum + s.documentsUpdated,
+      0,
+    );
+    const totalDocumentsSkipped = progressData.states.reduce(
+      (sum, s) => sum + s.documentsSkipped,
+      0,
+    );
 
     console.log(`
     ========== FINAL SUMMARY ==========
@@ -326,16 +347,14 @@ async function addSearchQueriesByState(): Promise<void> {
     Total documents processed: ${totalDocumentsProcessed}
     Total documents updated: ${totalDocumentsUpdated}
     Total documents skipped: ${totalDocumentsSkipped}
-    Dry run mode: ${CONFIG.dryRun ? 'ON (no changes made)' : 'OFF (changes committed)'}
+    Dry run mode: ${CONFIG.dryRun ? "ON (no changes made)" : "OFF (changes committed)"}
     ====================================
     `);
-
   } catch (error) {
-    console.error('Error in main process:', error);
+    console.error("Error in main process:", error);
   }
 }
 
-
 addSearchQueriesByState()
-  .then(() => console.log('Script completed successfully'))
-  .catch(error => console.error('Script failed:', error));
+  .then(() => console.log("Script completed successfully"))
+  .catch((error) => console.error("Script failed:", error));

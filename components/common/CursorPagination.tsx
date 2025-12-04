@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import styles from "./Pagination.module.scss";
-import Link from "next/link";
 
 interface CursorPaginationProps {
   currentPage: number;
@@ -33,7 +33,7 @@ export default function CursorPagination({
       "page",
       direction === "next"
         ? (currentPage + 1).toString()
-        : (currentPage - 1).toString()
+        : (currentPage - 1).toString(),
     );
 
     params.set("direction", direction);

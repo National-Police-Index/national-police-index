@@ -1,13 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
-import { US_STATES } from '@/constants/states';
-import { State, US_STATES_MAP } from '@/constants/states-map';
-import { trackMapInteraction } from '@/lib/analytics';
-import styles from './USMap.module.scss';
+import type React from "react";
+import { useRef, useState } from "react";
+import { US_STATES } from "@/constants/states";
+import { type State, US_STATES_MAP } from "@/constants/states-map";
+import { trackMapInteraction } from "@/lib/analytics";
+import styles from "./USMap.module.scss";
 
 export interface StateMapEntry {
-  renderSvg: (state: State, onClick: (reference: string) => void) => React.ReactElement;
+  renderSvg: (
+    state: State,
+    onClick: (reference: string) => void,
+  ) => React.ReactElement;
 }
 
 type StatesMap = {
@@ -15,19 +19,19 @@ type StatesMap = {
 };
 
 export const DATA_FLAGS = {
-  'full': 'bg-[#A1D1C1]',
-  'coming_soon': 'bg-[#D7F4CE]',
-  'some_data': 'bg-[#FFF5CC]',
-  'no_data_tb': 'bg-[#FFE1C7]',
-  'no_data_lb': 'bg-[#FAD2D2]',
+  full: "bg-[#A1D1C1]",
+  coming_soon: "bg-[#D7F4CE]",
+  some_data: "bg-[#FFF5CC]",
+  no_data_tb: "bg-[#FFE1C7]",
+  no_data_lb: "bg-[#FAD2D2]",
 };
 
 export const DATA_FLAG_MESSAGES = {
-  'full': 'Full Data Available',
-  'coming_soon': 'Data Coming Soon',
-  'some_data': 'Some Data Available',
-  'no_data_tb': 'No Data (Technical Barrier)',
-  'no_data_lb': 'No Data (Legal Barrier)',
+  full: "Full Data Available",
+  coming_soon: "Data Coming Soon",
+  some_data: "Some Data Available",
+  no_data_tb: "No Data (Technical Barrier)",
+  no_data_lb: "No Data (Legal Barrier)",
 };
 
 export default function USMap() {
@@ -43,48 +47,55 @@ export default function USMap() {
     visible: false,
     x: 0,
     y: 0,
-    stateName: '',
-    message: '',
+    stateName: "",
+    message: "",
     direction: undefined,
   });
 
   const handleStateClick = (stateReference: string) => {
-    const stateData = US_STATES.find(state => state.reference.toLowerCase() === stateReference.toLowerCase());
-    
+    const stateData = US_STATES.find(
+      (state) => state.reference.toLowerCase() === stateReference.toLowerCase(),
+    );
+
     // Track map interaction
-    trackMapInteraction(stateData?.name || stateReference, 'click');
-    
+    trackMapInteraction(stateData?.name || stateReference, "click");
+
     if (stateData?.hasData) {
       // Use window.location.href instead of router.push for proper history handling
       window.location.href = `/states/${stateReference.toLowerCase()}`;
     } else {
       if (stateData?.url) {
-        window.open(stateData.url, '_self');
+        window.open(stateData.url, "_self");
       }
     }
   };
 
   const handleMouseEnter = (e: React.MouseEvent, stateReference: string) => {
-    const stateData = US_STATES.find(s => s.reference.toLowerCase() === stateReference.toLowerCase());
+    const stateData = US_STATES.find(
+      (s) => s.reference.toLowerCase() === stateReference.toLowerCase(),
+    );
 
     if (stateData) {
       // Track hover interaction
-      trackMapInteraction(stateData.name, 'hover');
-      const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';
+      trackMapInteraction(stateData.name, "hover");
+      const message =
+        DATA_FLAG_MESSAGES[
+          stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES
+        ] || "";
 
       const eTarget = (e.target as HTMLElement).getBoundingClientRect();
       const wrapperRect = mapWrapperRef.current?.getBoundingClientRect();
       const relativeX = wrapperRect
-        ? eTarget.left - wrapperRect.left + (eTarget.width * .2)
-        : eTarget.left + (eTarget.width * .2)
+        ? eTarget.left - wrapperRect.left + eTarget.width * 0.2
+        : eTarget.left + eTarget.width * 0.2;
       const relativeY = wrapperRect
-        ? eTarget.top - wrapperRect.top + eTarget.height - (eTarget.height * .1)
-        : eTarget.top + eTarget.height - (eTarget.height * .1)
+        ? eTarget.top - wrapperRect.top + eTarget.height - eTarget.height * 0.1
+        : eTarget.top + eTarget.height - eTarget.height * 0.1;
 
       const mapWrapperWidth = mapWrapperRef.current?.offsetWidth || 0;
-      let direction = 'left';
+      let direction = "left";
       if (relativeX > mapWrapperWidth * 0.7) {
-        direction = 'right';
+        direction = "right";
       }
 
       setTooltip({
@@ -99,14 +110,19 @@ export default function USMap() {
   };
 
   const handleMouseLeave = (e: React.MouseEvent) => {
-    setTooltip(prev => {
+    setTooltip((prev) => {
       const relatedTarget = e.relatedTarget as HTMLElement;
       const tooltipElement = document.querySelector(`.${styles.tooltip}`);
-      
-      if (relatedTarget && tooltipElement && relatedTarget instanceof Node && tooltipElement?.contains(relatedTarget)) {
+
+      if (
+        relatedTarget &&
+        tooltipElement &&
+        relatedTarget instanceof Node &&
+        tooltipElement?.contains(relatedTarget)
+      ) {
         return prev;
       }
-      
+
       return { ...prev, visible: false };
     });
   };
@@ -120,7 +136,9 @@ export default function USMap() {
         <div className={styles.mapContainer}>
           <div>
             {US_STATES.map((state, index) => {
-              const mapEntry = (US_STATES_MAP as unknown as StatesMap)[state.key];
+              const mapEntry = (US_STATES_MAP as unknown as StatesMap)[
+                state.key
+              ];
 
               if (!mapEntry) return null;
 
@@ -130,9 +148,9 @@ export default function USMap() {
               return (
                 <div
                   key={index}
-                  className={`${styles.stateItem} ${styles[state.dataFlag]} ${state.url || state.hasData ? styles.clickable : ''}`}
+                  className={`${styles.stateItem} ${styles[state.dataFlag]} ${state.url || state.hasData ? styles.clickable : ""}`}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       handleStateClick(state.reference);
                     }
                   }}
@@ -144,39 +162,56 @@ export default function USMap() {
                   >
                     {originalSvg}
                   </div>
-                  {false && (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`] &&
-                    (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`].renderSvg(state, (reference: string) => handleStateClick(reference))}
+                  {false &&
+                    (US_STATES_MAP as unknown as StatesMap)[`_${state.key}`] &&
+                    (US_STATES_MAP as unknown as StatesMap)[
+                      `_${state.key}`
+                    ].renderSvg(state, (reference: string) =>
+                      handleStateClick(reference),
+                    )}
                 </div>
               );
             })}
           </div>
         </div>
       </div>
-      <div className={`flex flex-row justify-center items-start lg:mx-auto ${styles.legendContainer}`}>
+      <div
+        className={`flex flex-row justify-center items-start lg:mx-auto ${styles.legendContainer}`}
+      >
         <div className="flex justify-start items-center">
           <div className="bg-[#A1D1C1]" />
-          <div className="FullDataAvailable font-normal font-['Inter'] leading-normal">Full Data Available</div>
+          <div className="FullDataAvailable font-normal font-['Inter'] leading-normal">
+            Full Data Available
+          </div>
         </div>
         <div className="flex justify-start items-center">
           <div className="bg-[#D7F4CE]" />
-          <div className="text-center font-normal font-['Inter'] leading-normal">Data Coming Soon</div>
+          <div className="text-center font-normal font-['Inter'] leading-normal">
+            Data Coming Soon
+          </div>
         </div>
         <div className="flex justify-start items-center">
           <div className="bg-[#FFF5CC]" />
-          <div className="text-center font-normal font-['Inter'] leading-normal">Some Data Available</div>
+          <div className="text-center font-normal font-['Inter'] leading-normal">
+            Some Data Available
+          </div>
         </div>
         <div className="flex justify-start items-center">
           <div className="bg-[#FFE1C7]" />
-          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Technical Barrier)</div>
+          <div className="text-center font-normal font-['Inter'] leading-normal">
+            No Data (Technical Barrier)
+          </div>
         </div>
         <div className="inline-flex justify-start items-center">
           <div className="bg-[#FAD2D2]" />
-          <div className="text-center font-normal font-['Inter'] leading-normal">No Data (Legal Barrier)</div>
+          <div className="text-center font-normal font-['Inter'] leading-normal">
+            No Data (Legal Barrier)
+          </div>
         </div>
       </div>
 
       <div
-        className={`absolute z-10 ${styles.tooltip} ${tooltip.direction === 'right' && styles.tooltipRight} ${tooltip.visible && styles.tooltipVisible}`}
+        className={`absolute z-10 ${styles.tooltip} ${tooltip.direction === "right" && styles.tooltipRight} ${tooltip.visible && styles.tooltipVisible}`}
         style={{
           left: tooltip.x,
           top: tooltip.y,

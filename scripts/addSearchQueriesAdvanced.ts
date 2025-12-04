@@ -1,23 +1,19 @@
-
-import { initializeApp } from 'firebase/app';
+import dotenv from "dotenv";
+import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
   collectionGroup,
-  getDocs,
-  writeBatch,
+  type DocumentData,
   doc,
-  DocumentData,
-  QueryDocumentSnapshot,
+  getDocs,
+  getFirestore,
   limit,
+  type QueryDocumentSnapshot,
+  query,
   startAfter,
-  query
-} from 'firebase/firestore';
+  writeBatch,
+} from "firebase/firestore";
 
-
-
-
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -38,7 +34,6 @@ interface OfficerDocument extends DocumentData {
   searchQueries?: string[];
 }
 
-
 const CONFIG = {
   batchSize: 500,
   queryLimit: 1000,
@@ -55,12 +50,10 @@ async function addSearchQueries(): Promise<void> {
     let totalDocuments = 0;
     let lastDoc: QueryDocumentSnapshot<OfficerDocument> | null = null;
 
-
     let hasMoreDocs = true;
 
     while (hasMoreDocs) {
-
-      let dbQuery = collectionGroup(db, 'db_launch');
+      let dbQuery = collectionGroup(db, "db_launch");
       if (lastDoc) {
         dbQuery = query(dbQuery, startAfter(lastDoc), limit(CONFIG.queryLimit));
       } else {
@@ -77,7 +70,6 @@ async function addSearchQueries(): Promise<void> {
 
       totalDocuments += batchSize;
 
-
       let batch = writeBatch(db);
       let batchCount = 0;
 
@@ -85,31 +77,23 @@ async function addSearchQueries(): Promise<void> {
         const docData = docSnapshot.data();
         processed++;
 
-
-        let fullName = docData.full_name || '';
+        let fullName = docData.full_name || "";
         if (!fullName && docData.first_name && docData.last_name) {
           fullName = `${docData.first_name} ${docData.last_name}`.trim();
         }
-
 
         if (!fullName) {
           skippedCount++;
           continue;
         }
 
-
         const searchQueries: string[] = [];
-
 
         fullName
           .trim()
           .split(/\s+/)
-          .filter(term => term.length > 0)
-          .forEach(term => searchQueries.push(term.toLowerCase()));
-
-
-
-
+          .filter((term) => term.length > 0)
+          .forEach((term) => searchQueries.push(term.toLowerCase()));
 
         if (CONFIG.includeFirstLast && docData.first_name) {
           searchQueries.push(docData.first_name.toLowerCase());
@@ -119,12 +103,9 @@ async function addSearchQueries(): Promise<void> {
           searchQueries.push(docData.last_name.toLowerCase());
         }
 
-
         const uniqueSearchQueries = [...new Set(searchQueries)];
 
-
         const docRef = doc(db, docSnapshot.ref.path);
-
 
         if (!CONFIG.dryRun) {
           batch.update(docRef, { searchQueries: uniqueSearchQueries });
@@ -133,10 +114,8 @@ async function addSearchQueries(): Promise<void> {
         batchCount++;
         updatedCount++;
 
-
         if (processed % CONFIG.logFrequency === 0) {
         }
-
 
         if (batchCount >= CONFIG.batchSize && !CONFIG.dryRun) {
           await batch.commit();
@@ -145,14 +124,13 @@ async function addSearchQueries(): Promise<void> {
         }
       }
 
-
       if (batchCount > 0 && !CONFIG.dryRun) {
         await batch.commit();
       }
 
-
-      lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] as QueryDocumentSnapshot<OfficerDocument>;
-
+      lastDoc = querySnapshot.docs[
+        querySnapshot.docs.length - 1
+      ] as QueryDocumentSnapshot<OfficerDocument>;
 
       if (querySnapshot.docs.length < CONFIG.queryLimit) {
         hasMoreDocs = false;
@@ -165,16 +143,14 @@ async function addSearchQueries(): Promise<void> {
     Documents processed: ${processed}
     Documents updated: ${updatedCount}
     Documents skipped: ${skippedCount}
-    Dry run mode: ${CONFIG.dryRun ? 'ON (no changes made)' : 'OFF (changes committed)'}
+    Dry run mode: ${CONFIG.dryRun ? "ON (no changes made)" : "OFF (changes committed)"}
     ============================
     `);
-
   } catch (error) {
-    console.error('Error updating documents:', error);
+    console.error("Error updating documents:", error);
   }
 }
 
-
 addSearchQueries()
-  .then(() => console.log('Script completed successfully'))
-  .catch(error => console.error('Script failed:', error));
+  .then(() => console.log("Script completed successfully"))
+  .catch((error) => console.error("Script failed:", error));

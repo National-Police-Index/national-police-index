@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
-  collectionGroup,
   collection,
+  collectionGroup,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
   query,
   where,
   getDocs,
-  orderBy,
   limit,
-  doc,
-  getDoc,
-  startAfter,
+  orderBy,
   QueryDocumentSnapshot,
-  DocumentData,
+  query,
+  startAfter,
+  where,
 } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { db } from "@/lib/firebase";
-import { PoliceOfficer } from "@/types";
+import type { PoliceOfficer } from "@/types";
 
 interface OfficerGroup {
   person_nbr: string;
@@ -68,7 +72,7 @@ export function useOfficersByAgency({
       searchParams.page,
       searchParams.activeOnly,
       searchParams.direction,
-    ]
+    ],
   );
 
   const searchParamsString = useMemo(
@@ -101,7 +105,7 @@ export function useOfficersByAgency({
   const [totalCount, setTotalCount] = useState(0);
 
   const [currentPage, setCurrentPage] = useState<number>(
-    parseInt(searchParams.page || "1", 10)
+    parseInt(searchParams.page || "1", 10),
   );
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
@@ -242,8 +246,8 @@ export function useOfficersByAgency({
             where(
               "searchQueries",
               "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20),
+            ),
           );
         }
 
@@ -251,7 +255,7 @@ export function useOfficersByAgency({
           const startDate = new Date(searchParameters.startDate);
           countQuery = query(
             countQuery,
-            where("start_date_iso", ">=", startDate.toISOString())
+            where("start_date_iso", ">=", startDate.toISOString()),
           );
         }
 
@@ -259,7 +263,7 @@ export function useOfficersByAgency({
           const endDate = new Date(searchParameters.endDate);
           countQuery = query(
             countQuery,
-            where("end_date_iso", "<=", endDate.toISOString())
+            where("end_date_iso", "<=", endDate.toISOString()),
           );
         }
 
@@ -390,7 +394,7 @@ export function useOfficersByAgency({
         let q = query(
           officersRef,
           where("agency_name", "==", agencyName),
-          orderBy(sortField, sortDirection)
+          orderBy(sortField, sortDirection),
         );
 
         if (state) {
@@ -404,8 +408,8 @@ export function useOfficersByAgency({
             where(
               "searchQueries",
               "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+              searchParameters.query.toLowerCase().split(" ").slice(0, 20),
+            ),
           );
         }
 
@@ -548,7 +552,7 @@ export function useOfficersByAgency({
               const dateB = new Date(b.start_date).getTime();
               return dateB - dateA;
             }),
-          })
+          }),
         );
 
         let newPage;
@@ -559,8 +563,8 @@ export function useOfficersByAgency({
             direction === "next"
               ? currentPage + 1
               : direction === "prev"
-              ? Math.max(1, currentPage - 1)
-              : currentPage;
+                ? Math.max(1, currentPage - 1)
+                : currentPage;
         }
 
         setCurrentPage(newPage);
@@ -571,7 +575,7 @@ export function useOfficersByAgency({
         setOfficerGroups(officerGroups.slice(0, pageSize));
       } catch (err) {
         setError(
-          err instanceof Error ? err : new Error("Failed to fetch officers")
+          err instanceof Error ? err : new Error("Failed to fetch officers"),
         );
       } finally {
         if (isMounted) {

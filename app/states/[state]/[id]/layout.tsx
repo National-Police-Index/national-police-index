@@ -1,12 +1,7 @@
-import { Metadata } from "next";
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import type { Metadata } from "next";
 import { US_STATES } from "@/constants/states";
+import { db } from "@/lib/firebase";
 
 type Props = Promise<{ children: React.ReactNode; id: string; state: string }>;
 
@@ -32,7 +27,7 @@ export async function generateMetadata({
     const statsQuery = query(
       collection(db, "statistics_per_agency"),
       where("name", "==", agencyName),
-      where("state", "==", state)
+      where("state", "==", state),
     );
     const statsSnapshot = await getDocs(statsQuery);
 
@@ -45,7 +40,7 @@ export async function generateMetadata({
       // Get officer count if available
       if (agencyData?.stats) {
         const officerStats = agencyData.stats.find(
-          (stat: any) => stat.label === "Total Officers"
+          (stat: HTMLElement) => stat.label === "Total Officers",
         );
         if (officerStats) {
           officerCount = parseInt(officerStats.value, 10);

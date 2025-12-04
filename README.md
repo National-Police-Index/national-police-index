@@ -65,11 +65,11 @@ npm start
 ```
 Runs the app in production mode
 
-- **Linting**:
+- **Formatting**:
 ```bash
-npm run lint
+npm run format
 ```
-Runs ESLint to check for code quality issues
+Runs BiomeJS to check for code quality issues
 
 ## Project Structure
 

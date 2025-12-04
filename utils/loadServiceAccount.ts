@@ -1,7 +1,8 @@
-import type { ServiceAccount } from 'firebase-admin';
-const fs = require('fs').promises;
-const path = require('path');
-const projectRoot = path.resolve(__dirname, '..');
+import type { ServiceAccount } from "firebase-admin";
+
+const fs = require("fs").promises;
+const path = require("path");
+const projectRoot = path.resolve(__dirname, "..");
 
 export async function loadServiceAccount(): Promise<ServiceAccount> {
   try {
@@ -11,11 +12,14 @@ export async function loadServiceAccount(): Promise<ServiceAccount> {
     }
 
     // If not in environment variable, try to load from file
-    const serviceAccountPath = path.join(projectRoot, 'firebase-service-account.json');
-    const serviceAccountJson = await fs.readFile(serviceAccountPath, 'utf-8');
+    const serviceAccountPath = path.join(
+      projectRoot,
+      "firebase-service-account.json",
+    );
+    const serviceAccountJson = await fs.readFile(serviceAccountPath, "utf-8");
     return JSON.parse(serviceAccountJson) as ServiceAccount;
   } catch (error) {
-    console.error('Error loading service account:', error);
-    throw new Error('Failed to load Firebase service account');
+    console.error("Error loading service account:", error);
+    throw new Error("Failed to load Firebase service account");
   }
 }

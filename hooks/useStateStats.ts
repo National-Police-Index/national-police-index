@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
 
 interface StatItem {
   label: string;
@@ -31,16 +31,24 @@ export function useStateStats(stateRef: string) {
         setError(null);
 
         //const statsRef = doc(db, 'state_statistics', stateRef.toLowerCase());
-        const statsRef = doc(db, 'statistics_per_state', stateRef.toLowerCase());
+        const statsRef = doc(
+          db,
+          "statistics_per_state",
+          stateRef.toLowerCase(),
+        );
         const statsDoc = await getDoc(statsRef);
 
         if (statsDoc.exists()) {
           setStats(statsDoc.data() as StateStats);
         } else {
-          setError(new Error('No statistics found for this state'));
+          setError(new Error("No statistics found for this state"));
         }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch state statistics'));
+        setError(
+          err instanceof Error
+            ? err
+            : new Error("Failed to fetch state statistics"),
+        );
       } finally {
         setLoading(false);
       }

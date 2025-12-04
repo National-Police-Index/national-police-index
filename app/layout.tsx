@@ -1,6 +1,6 @@
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { GoogleAnalytics } from '@next/third-parties/google';
 import "./globals.scss";
 
 const inter = Inter({
@@ -10,8 +10,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "National Police Index | Search Police Officer Records",
-  description: "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
-  keywords: "police records, law enforcement, police certification, police employment history",
+  description:
+    "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
+  keywords:
+    "police records, law enforcement, police certification, police employment history",
   authors: [{ name: "National Police Index" }],
   creator: "National Police Index",
   publisher: "National Police Index",
@@ -22,18 +24,20 @@ export const metadata: Metadata = {
     url: "https://nationalpoliceindex.org",
     siteName: "National Police Index",
     title: "National Police Index | Search Police Officer Records",
-    description: "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
+    description:
+      "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
   },
   twitter: {
     card: "summary_large_image",
     title: "National Police Index | Search Police Officer Records",
-    description: "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
+    description:
+      "Search and explore police officer employment records, certification status, and disciplinary actions across the United States.",
   },
 };
 
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import AnalyticsProvider from '@/components/AnalyticsProvider';
+import AnalyticsProvider from "@/components/AnalyticsProvider";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 
 export default function RootLayout({
   children,
@@ -46,9 +50,7 @@ export default function RootLayout({
         <AnalyticsProvider>
           <div className="min-h-fulld flex flex-col wrapper">
             <Header />
-            <main className="flex-grow w-full ">
-              {children}
-            </main>
+            <main className="flex-grow w-full ">{children}</main>
             <Footer />
           </div>
         </AnalyticsProvider>

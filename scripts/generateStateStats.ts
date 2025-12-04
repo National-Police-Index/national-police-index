@@ -1,27 +1,26 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
+  type CollectionReference,
   collection,
-  query,
-  where,
-  getDocs,
-  writeBatch,
-  doc,
-  QueryDocumentSnapshot,
-  limit,
-  startAfter,
-  orderBy,
   DocumentData,
-  CollectionReference,
-  Query
-} from 'firebase/firestore';
-import { US_STATES } from '../constants/states.js';
+  doc,
+  getDocs,
+  getFirestore,
+  limit,
+  orderBy,
+  type Query,
+  type QueryDocumentSnapshot,
+  query,
+  startAfter,
+  where,
+  writeBatch,
+} from "firebase/firestore";
+import { US_STATES } from "../constants/states.js";
 
 interface State {
   name: string;
   abbreviation: string;
 }
-
 
 const BATCH_SIZE = 20;
 const QUERY_LIMIT = 100;
@@ -29,9 +28,9 @@ const STATE_CHUNK_SIZE = 1;
 const MAX_PAGES_PER_STATE = 20000;
 const GC_INTERVAL = 1;
 
+import dotenv from "dotenv";
 
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -42,11 +41,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-
 const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -54,7 +52,6 @@ for (const envVar of requiredEnvVars) {
     throw new Error(`Missing required environment variable: ${envVar}`);
   }
 }
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -73,8 +70,10 @@ interface StateStats {
   pages_processed?: number;
 }
 
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 30000,
+): Promise<T> {
   let timeoutId: NodeJS.Timeout;
 
   const timeoutPromise = new Promise<T>((_, reject) => {
@@ -93,7 +92,10 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
   }
 }
 
-async function processStateChunk(states: typeof US_STATES, statsCollection: CollectionReference) {
+async function processStateChunk(
+  states: typeof US_STATES,
+  statsCollection: CollectionReference,
+) {
   let batch = writeBatch(db);
   let batchCount = 0;
   let retryCount = 0;
@@ -102,8 +104,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
   for (const state of states) {
     const stateRef = state.reference.toLowerCase();
 
-
-    const officersRef = collection(db, 'db_launch');
+    const officersRef = collection(db, "db_launch");
     let lastDoc: QueryDocumentSnapshot | null = null;
     let totalProcessed = 0;
 
@@ -118,8 +119,8 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
 
         let q: Query = query(
           officersRef,
-          where('state', '==', stateRef),
-          limit(QUERY_LIMIT)
+          where("state", "==", stateRef),
+          limit(QUERY_LIMIT),
         );
 
         if (lastDoc) {
@@ -129,8 +130,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
         const snapshot = await withTimeout(getDocs(q));
         totalProcessed += snapshot.size;
 
-
-        snapshot.forEach(doc => {
+        snapshot.forEach((doc) => {
           const data = doc.data();
           const documentId = data.document_id;
           if (documentId) {
@@ -145,13 +145,12 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
         }
 
         if (pageCount % GC_INTERVAL === 0) {
-
           snapshot.docs.length = 0;
           if (global.gc) {
             global.gc();
           }
 
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
 
@@ -160,42 +159,39 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
         description: `Police officer records and history in ${state.name}`,
         stats: [
           {
-            label: 'Total Officers',
-            value: uniqueDocumentIds.size.toString()
+            label: "Total Officers",
+            value: uniqueDocumentIds.size.toString(),
           },
           {
-            label: 'Total Records Processed',
-            value: totalProcessed.toString()
-          }
+            label: "Total Records Processed",
+            value: totalProcessed.toString(),
+          },
         ],
-        last_updated: new Date()
+        last_updated: new Date(),
       };
-
 
       const statsDoc = doc(statsCollection, stateRef);
       batch.set(statsDoc, stateStats);
       batchCount++;
 
-
       retryCount = 0;
-
 
       if (batchCount === BATCH_SIZE) {
         await batch.commit();
         batch = writeBatch(db);
         batchCount = 0;
       }
-
     } catch (error: unknown) {
-      console.error(`Error processing state ${state.name}:`, error instanceof Error ? error.message : 'Unknown error');
-
+      console.error(
+        `Error processing state ${state.name}:`,
+        error instanceof Error ? error.message : "Unknown error",
+      );
 
       if (retryCount < MAX_RETRIES) {
         retryCount++;
-        await new Promise(resolve => setTimeout(resolve, 5000 * retryCount));
+        await new Promise((resolve) => setTimeout(resolve, 5000 * retryCount));
         continue;
       }
-
 
       if (uniqueDocumentIds.size > 0) {
         const stateStats: StateStats = {
@@ -203,12 +199,12 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
           description: `Partial police officer records and history in ${state.name}`,
           stats: [
             {
-              label: 'Total Officers',
-              value: uniqueDocumentIds.size.toString()
-            }
+              label: "Total Officers",
+              value: uniqueDocumentIds.size.toString(),
+            },
           ],
           last_updated: new Date(),
-          is_partial: true
+          is_partial: true,
         };
 
         try {
@@ -216,19 +212,20 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
           batch.set(statsDoc, stateStats);
           batchCount++;
 
-
           if (batchCount > 0) {
             await batch.commit();
             batch = writeBatch(db);
             batchCount = 0;
           }
         } catch (writeError: unknown) {
-          console.error(`Error storing partial results for ${state.name}:`, writeError instanceof Error ? writeError.message : 'Unknown error');
+          console.error(
+            `Error storing partial results for ${state.name}:`,
+            writeError instanceof Error ? writeError.message : "Unknown error",
+          );
         }
       }
     }
   }
-
 
   if (batchCount > 0) {
     try {
@@ -236,32 +233,40 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
       batch = writeBatch(db);
       batchCount = 0;
     } catch (error) {
-      console.error('Error committing batch:', error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        "Error committing batch:",
+        error instanceof Error ? error.message : "Unknown error",
+      );
       throw error;
     }
   }
 }
 
 async function generateStateStats(startFromState?: string) {
-  const statsCollection = collection(db, 'statistics_per_state');
-
+  const statsCollection = collection(db, "statistics_per_state");
 
   let startIndex = 0;
   if (startFromState) {
-    startIndex = US_STATES.findIndex(state => state.name.toLowerCase() === startFromState.toLowerCase());
+    startIndex = US_STATES.findIndex(
+      (state) => state.name.toLowerCase() === startFromState.toLowerCase(),
+    );
     if (startIndex === -1) {
-      console.error(`State ${startFromState} not found. Starting from the beginning.`);
+      console.error(
+        `State ${startFromState} not found. Starting from the beginning.`,
+      );
       startIndex = 0;
     } else {
       console.log(`Resuming from state: ${US_STATES[startIndex].name}`);
     }
   }
 
-
-  for (let i = startIndex; i < startIndex + 1 /*&& i < US_STATES.length*/; i += STATE_CHUNK_SIZE) {
+  for (
+    let i = startIndex;
+    i < startIndex + 1 /*&& i < US_STATES.length*/;
+    i += STATE_CHUNK_SIZE
+  ) {
     const stateChunk = US_STATES.slice(i, i + STATE_CHUNK_SIZE);
     await processStateChunk(stateChunk, statsCollection);
-
 
     if (global.gc) {
       global.gc();
@@ -269,23 +274,27 @@ async function generateStateStats(startFromState?: string) {
   }
 }
 
-
 export async function updateStateStatistics(startFromState?: string) {
   try {
     await generateStateStats(startFromState);
   } catch (error) {
-    console.error('Error updating state statistics:', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      "Error updating state statistics:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     throw error;
   }
 }
 
-
-if (import.meta.url === new URL(process.argv[1], 'file:').href) {
+if (import.meta.url === new URL(process.argv[1], "file:").href) {
   const startFromState = process.argv[2];
   updateStateStatistics(startFromState)
     .then(() => process.exit(0))
     .catch((error) => {
-      console.error('Script failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        "Script failed:",
+        error instanceof Error ? error.message : "Unknown error",
+      );
       process.exit(1);
     });
 }

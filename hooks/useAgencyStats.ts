@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   collection,
   doc,
@@ -9,8 +8,9 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
 import { calculateAgencyStats } from "@/lib/calculateAgencyStats";
+import { db } from "@/lib/firebase";
 
 interface StatItem {
   label: string;
@@ -62,7 +62,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
 
         let statsQuery = query(
           collection(db, "statistics_per_agency"),
-          where("name", "==", agencyName)
+          where("name", "==", agencyName),
         );
 
         if (stateId) {
@@ -82,7 +82,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
         } else {
           const calculatedStats = await calculateAgencyStats(
             agencyName,
-            stateId
+            stateId,
           );
 
           if (calculatedStats) {
@@ -97,7 +97,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
         try {
           const calculatedStats = await calculateAgencyStats(
             agencyName,
-            stateId
+            stateId,
           );
 
           if (calculatedStats) {
@@ -107,7 +107,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
             setError(
               err instanceof Error
                 ? err
-                : new Error("Failed to fetch agency statistics")
+                : new Error("Failed to fetch agency statistics"),
             );
           }
         } catch (calcErr) {
@@ -115,7 +115,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
           setError(
             err instanceof Error
               ? err
-              : new Error("Failed to fetch agency statistics")
+              : new Error("Failed to fetch agency statistics"),
           );
         }
       } finally {

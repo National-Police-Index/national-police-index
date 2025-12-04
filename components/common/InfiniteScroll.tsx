@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface InfiniteScrollProps {
   loading: boolean;
@@ -14,8 +14,8 @@ export default function InfiniteScroll({
   loading,
   hasMore,
   onLoadMore,
-  className = '',
-  children
+  className = "",
+  children,
 }: InfiniteScrollProps) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -26,7 +26,7 @@ export default function InfiniteScroll({
           onLoadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const currentTarget = observerTarget.current;
