@@ -1,5 +1,5 @@
-import * as admin from 'firebase-admin';
 import type { ServiceAccount } from 'firebase-admin';
+import * as admin from 'firebase-admin';
 
 
 import serviceAccount from '../firebase-service-account.json' assert { type: 'json' };

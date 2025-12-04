@@ -1,20 +1,20 @@
+import dotenv from "dotenv";
 import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
   collectionGroup,
-  getDocs,
-  writeBatch,
+  type DocumentData,
   doc,
-  DocumentData,
-  QueryDocumentSnapshot,
+  getDocs,
+  getFirestore,
   limit,
-  startAfter,
+  type QueryDocumentSnapshot,
   query,
+  startAfter,
+  type Timestamp,
   where,
-  Timestamp,
+  writeBatch,
 } from "firebase/firestore";
 import fs from "fs";
-import dotenv from "dotenv";
 import { US_STATES } from "@/constants/states";
 
 dotenv.config({ path: ".env.local" });
@@ -32,7 +32,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Mirrors the style used in scripts/addSearchQueriesByState.ts
-const _US_STATES = US_STATES.filter(item => !['kansas', 'arizona'].includes(item.reference)).filter((item) => item.hasData).map((item) => item.reference);
+const _US_STATES = US_STATES.filter(
+  (item) => !["kansas", "arizona"].includes(item.reference),
+)
+  .filter((item) => item.hasData)
+  .map((item) => item.reference);
 
 const CONFIG = {
   batchSize: 500,
@@ -154,10 +158,10 @@ function normalizeDate(input: any): string {
       }
 
       // Common US date formats: MM/DD/YYYY or M/D/YY
-      const mdY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+      const mdY = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
       if (mdY) {
-        let month = parseInt(mdY[1], 10);
-        let day = parseInt(mdY[2], 10);
+        const month = parseInt(mdY[1], 10);
+        const day = parseInt(mdY[2], 10);
         let year = parseInt(mdY[3], 10);
         if (year < 100) year += year >= 70 ? 1900 : 2000; // naive 2-digit year handling
         if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
@@ -166,7 +170,7 @@ function normalizeDate(input: any): string {
       }
 
       // YYYY/MM/DD
-      const yMd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      const yMd = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
       if (yMd) {
         const year = parseInt(yMd[1], 10);
         const month = parseInt(yMd[2], 10);
@@ -195,13 +199,13 @@ function normalizeDate(input: any): string {
 
 async function processState(
   state: string,
-  progressData: ProgressData
+  progressData: ProgressData,
 ): Promise<StateProgress> {
-  console.log('Processing', state);
+  console.log("Processing", state);
   const existing = progressData.states.find((s) => s.state === state);
   if (existing && existing.completed) return existing;
 
-  let stateProgress: StateProgress = existing || {
+  const stateProgress: StateProgress = existing || {
     state,
     completed: false,
     documentsProcessed: 0,
@@ -309,7 +313,7 @@ async function processState(
     console.log(
       `Dry run mode: ${
         CONFIG.dryRun ? "ON (no changes made)" : "OFF (changes committed)"
-      }`
+      }`,
     );
     console.log("=================================================");
 
@@ -348,15 +352,15 @@ async function normalizeDatesByState(): Promise<void> {
   const completed = progressData.states.filter((s) => s.completed).length;
   const totalProcessed = progressData.states.reduce(
     (sum, s) => sum + s.documentsProcessed,
-    0
+    0,
   );
   const totalUpdated = progressData.states.reduce(
     (sum, s) => sum + s.documentsUpdated,
-    0
+    0,
   );
   const totalSkipped = progressData.states.reduce(
     (sum, s) => sum + s.documentsSkipped,
-    0
+    0,
   );
 
   console.log(`\n========== FINAL SUMMARY ==========`);
@@ -367,7 +371,7 @@ async function normalizeDatesByState(): Promise<void> {
   console.log(
     `Dry run mode: ${
       CONFIG.dryRun ? "ON (no changes made)" : "OFF (changes committed)"
-    }`
+    }`,
   );
   console.log(`====================================`);
 }

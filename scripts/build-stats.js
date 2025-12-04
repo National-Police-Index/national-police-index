@@ -1,11 +1,11 @@
-import { updateStateStatistics } from 'generateStateStats';
-import { updateAgencyStatistics } from 'generateAgencyStats';
+import { updateAgencyStatistics } from "generateAgencyStats";
+import { updateStateStatistics } from "generateStateStats";
 
 async function generateAllStats() {
   try {
     await updateStateStatistics();
   } catch (error) {
-    console.error('Error generating statistics:', error);
+    console.error("Error generating statistics:", error);
     process.exit(1);
   }
 }
@@ -13,6 +13,6 @@ async function generateAllStats() {
 generateAllStats()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error('Fatal error:', error);
+    console.error("Fatal error:", error);
     process.exit(1);
   });

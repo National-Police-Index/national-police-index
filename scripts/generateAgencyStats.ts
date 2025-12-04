@@ -1,37 +1,32 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
-  collectionGroup,
-  query,
-  getDocs,
-  writeBatch,
-  doc,
   collection,
+  collectionGroup,
+  doc,
+  getDocs,
+  getFirestore,
   limit,
-  startAfter,
-  QueryDocumentSnapshot,
-  DocumentData,
-  CollectionReference,
-  Query,
+  orderBy,
+  type QueryDocumentSnapshot,
+  query,
   setDoc,
+  startAfter,
   where,
-  orderBy
-} from 'firebase/firestore';
-
+  writeBatch,
+} from "firebase/firestore";
 
 const BATCH_SIZE = 20;
 const QUERY_LIMIT = 100;
 const MAX_PAGES_PER_AGENCY = 20000;
 const GC_INTERVAL = 1;
 
+const TEMP_COLLECTION = "temp_agency_discovery";
+const STATS_COLLECTION = "statistics_per_agency";
 
-const TEMP_COLLECTION = 'temp_agency_discovery';
-const STATS_COLLECTION = 'statistics_per_agency';
+import dotenv from "dotenv";
+import { US_STATES } from "@/constants/states";
 
-
-import dotenv from 'dotenv';
-import { US_STATES } from '@/constants/states';
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -42,11 +37,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-
 const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -54,7 +48,6 @@ for (const envVar of requiredEnvVars) {
     throw new Error(`Missing required environment variable: ${envVar}`);
   }
 }
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -75,8 +68,10 @@ interface AgencyStats {
   total_officers?: number;
 }
 
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number = 30000,
+): Promise<T> {
   let timeoutId: NodeJS.Timeout;
 
   const timeoutPromise = new Promise<T>((_, reject) => {
@@ -95,19 +90,16 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
   }
 }
 
-async function loadDiscoveredAgencies(): Promise<Map<string, { name: string; state: string }>> {
+async function loadDiscoveredAgencies(): Promise<
+  Map<string, { name: string; state: string }>
+> {
   const tempCollection = collection(db, TEMP_COLLECTION);
-        let q = query(
-          tempCollection,
-        orderBy('discovered_at', 'desc'),
-        );
-
-
+  const q = query(tempCollection, orderBy("discovered_at", "desc"));
 
   const snapshot = await getDocs(q);
   const agencies = new Map<string, { name: string; state: string }>();
 
-  snapshot.forEach(doc => {
+  snapshot.forEach((doc) => {
     const data = doc.data();
     agencies.set(data.name, { name: data.name, state: data.state });
   });
@@ -117,17 +109,22 @@ async function loadDiscoveredAgencies(): Promise<Map<string, { name: string; sta
 
 async function saveDiscoveredAgency(agencyName: string, state: string) {
   const tempCollection = collection(db, TEMP_COLLECTION);
-  const agencyDoc = doc(tempCollection, agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-'));
-  await setDoc(agencyDoc, { name: agencyName, state, discovered_at: new Date() });
+  const agencyDoc = doc(
+    tempCollection,
+    agencyName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+  );
+  await setDoc(agencyDoc, {
+    name: agencyName,
+    state,
+    discovered_at: new Date(),
+  });
 }
 
 async function generateAgencyStats(state: string) {
   const statsCollection = collection(db, STATS_COLLECTION);
-  const officersRef = collectionGroup(db, 'db_launch');
-
+  const officersRef = collectionGroup(db, "db_launch");
 
   const uniqueAgencies = await loadDiscoveredAgencies();
-
 
   let lastAgencyDoc: QueryDocumentSnapshot | null = null;
   let hasMoreAgencies = true;
@@ -141,7 +138,7 @@ async function generateAgencyStats(state: string) {
       agencyQuery = query(agencyQuery, startAfter(lastAgencyDoc));
     }
 
-    agencyQuery = query(agencyQuery, where('state', '==', state));
+    agencyQuery = query(agencyQuery, where("state", "==", state));
 
     try {
       const agencySnapshot = await withTimeout(getDocs(agencyQuery), 30000);
@@ -157,7 +154,10 @@ async function generateAgencyStats(state: string) {
           try {
             await saveDiscoveredAgency(agencyName, state);
           } catch (error) {
-            console.error(`Failed to save discovered agency ${agencyName}:`, error);
+            console.error(
+              `Failed to save discovered agency ${agencyName}:`,
+              error,
+            );
           }
         }
       }
@@ -168,13 +168,17 @@ async function generateAgencyStats(state: string) {
 
       hasMoreAgencies = docsSize === QUERY_LIMIT;
 
-
-      if (agencyPageCount % GC_INTERVAL === 0 && typeof global.gc === 'function') {
+      if (
+        agencyPageCount % GC_INTERVAL === 0 &&
+        typeof global.gc === "function"
+      ) {
         global.gc();
       }
-
     } catch (error) {
-      console.error(`Error on agency discovery page ${agencyPageCount}:`, error);
+      console.error(
+        `Error on agency discovery page ${agencyPageCount}:`,
+        error,
+      );
 
       hasMoreAgencies = false;
     }
@@ -183,9 +187,8 @@ async function generateAgencyStats(state: string) {
   let batch = writeBatch(db);
   let batchCount = 0;
 
-
   for (const [agencyName, agencyInfo] of uniqueAgencies.entries()) {
-    const agencyId = agencyName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const agencyId = agencyName.toLowerCase().replace(/[^a-z0-9]/g, "-");
 
     try {
       let lastDoc: QueryDocumentSnapshot | null = null;
@@ -194,13 +197,12 @@ async function generateAgencyStats(state: string) {
       let hasMoreDocs = true;
       let pageCount = 0;
 
-
       while (hasMoreDocs && pageCount < MAX_PAGES_PER_AGENCY) {
         pageCount++;
         let q = query(
           officersRef,
-          where('agency_name', '==', agencyName),
-          limit(QUERY_LIMIT)
+          where("agency_name", "==", agencyName),
+          limit(QUERY_LIMIT),
         );
 
         if (lastDoc) {
@@ -211,7 +213,7 @@ async function generateAgencyStats(state: string) {
         const docsSize = snapshot.size;
         totalProcessed += docsSize;
 
-        snapshot.forEach(doc => {
+        snapshot.forEach((doc) => {
           const data = doc.data();
           if (data.agency_name === agencyName) {
             uniqueOfficers.add(data.person_nbr);
@@ -224,37 +226,35 @@ async function generateAgencyStats(state: string) {
 
         hasMoreDocs = docsSize === QUERY_LIMIT;
 
-
-        if (pageCount % GC_INTERVAL === 0 && typeof global.gc === 'function') {
+        if (pageCount % GC_INTERVAL === 0 && typeof global.gc === "function") {
           global.gc();
         }
       }
 
-
       const agencyStats: AgencyStats = {
         name: agencyName,
         description: `Police officer records and history in ${agencyName}`,
-        stats: [{
-          label: 'Total Officers',
-          value: uniqueOfficers.size.toString()
-        }],
+        stats: [
+          {
+            label: "Total Officers",
+            value: uniqueOfficers.size.toString(),
+          },
+        ],
         state: agencyInfo.state,
         last_updated: new Date(),
         total_officers: uniqueOfficers.size,
-        pages_processed: pageCount
+        pages_processed: pageCount,
       };
 
       const statsDoc = doc(statsCollection, agencyId);
       batch.set(statsDoc, agencyStats);
       batchCount++;
 
-
       if (batchCount >= BATCH_SIZE) {
         await batch.commit();
         batch = writeBatch(db);
         batchCount = 0;
       }
-
     } catch (error) {
       console.error(`Error processing agency ${agencyName}:`, error);
 
@@ -264,7 +264,7 @@ async function generateAgencyStats(state: string) {
         stats: [],
         state: agencyInfo.state,
         last_updated: new Date(),
-        is_partial: true
+        is_partial: true,
       };
 
       const statsDoc = doc(statsCollection, agencyId);
@@ -273,54 +273,57 @@ async function generateAgencyStats(state: string) {
     }
   }
 
-
   if (batchCount > 0) {
     try {
       await batch.commit();
     } catch (error) {
-      console.error('Error committing final batch:', error);
+      console.error("Error committing final batch:", error);
       throw error;
     }
   }
 }
 
-
 export async function updateAgencyStatistics(stateReference?: string) {
   try {
     // If a specific state is provided, only process that state
-    const statesToProcess = stateReference 
-      ? US_STATES.filter(item => item.hasData && item.reference === stateReference)
-      : US_STATES.filter(item => item.hasData);
+    const statesToProcess = stateReference
+      ? US_STATES.filter(
+          (item) => item.hasData && item.reference === stateReference,
+        )
+      : US_STATES.filter((item) => item.hasData);
 
     if (statesToProcess.length === 0) {
       if (stateReference) {
         console.error(`State "${stateReference}" not found or has no data`);
         throw new Error(`Invalid state reference: ${stateReference}`);
       } else {
-        console.log('No states with data found');
+        console.log("No states with data found");
         return;
       }
     }
 
-    console.log(`Processing ${statesToProcess.length} state(s): ${statesToProcess.map(s => s.name).join(', ')}`);
+    console.log(
+      `Processing ${statesToProcess.length} state(s): ${statesToProcess.map((s) => s.name).join(", ")}`,
+    );
 
-    await Promise.all(statesToProcess.map(async (item) => {
-      console.log(`Generating stats for ${item.name}...`);
-      await generateAgencyStats(item.reference);
-    }));
+    await Promise.all(
+      statesToProcess.map(async (item) => {
+        console.log(`Generating stats for ${item.name}...`);
+        await generateAgencyStats(item.reference);
+      }),
+    );
 
-    console.log('Agency statistics update completed successfully');
+    console.log("Agency statistics update completed successfully");
   } catch (error) {
-    console.error('Error updating agency statistics:', error);
+    console.error("Error updating agency statistics:", error);
     throw error;
   }
 }
-
 
 const stateArg = process.argv[2];
 updateAgencyStatistics(stateArg)
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error('Fatal error:', error);
+    console.error("Fatal error:", error);
     process.exit(1);
   });

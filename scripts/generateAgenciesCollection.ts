@@ -1,17 +1,16 @@
 import { initializeApp } from "firebase/app";
 import {
-  getFirestore,
-  collectionGroup,
-  query,
-  getDocs,
-  writeBatch,
-  doc,
   collection,
+  collectionGroup,
+  doc,
+  getDocs,
+  getFirestore,
   limit,
-  where,
-  orderBy,
-  Timestamp,
+  query,
   startAfter,
+  Timestamp,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import { US_STATES } from "@/constants/states";
 
@@ -34,6 +33,7 @@ const AGENCIES_COLLECTION = "agencies";
 const DB_LAUNCH_COLLECTION = "db_launch";
 
 import dotenv from "dotenv";
+
 dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
@@ -65,8 +65,7 @@ async function generateAgenciesCollection() {
 
     const dbLaunchRef = collectionGroup(db, DB_LAUNCH_COLLECTION);
 
-    for (const state of US_STATES.reverse()
-      .filter((item) => item.hasData)) {
+    for (const state of US_STATES.reverse().filter((item) => item.hasData)) {
       const uniqueAgencies = new Map<string, AgencyData>();
 
       let lastDoc: any = null;
@@ -119,7 +118,7 @@ async function generateAgenciesCollection() {
         } catch (error) {
           console.error(
             `Error processing state ${state.reference} on page ${currentPage}:`,
-            error
+            error,
           );
 
           hasMore = false;

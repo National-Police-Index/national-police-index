@@ -5,14 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import CursorPagination from "@/components/common/CursorPagination";
 import OfficerCard from "@/components/officers/OfficerCard";
 import PageHeader from "@/components/PageHeader";
-import PageHeader from "@/components/PageHeader";
-import SearchFilters from "@/components/search/SearchFilters";
 import SearchFilters from "@/components/search/SearchFilters";
 import { US_STATES } from "@/constants/states";
-import { useAgencyAnalytics, useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
-import { useAgencyStats, useAgencyStats } from "@/hooks/useAgencyStats";
-import { useOfficersByAgency, useOfficersByAgency } from "@/hooks/useOfficersByAgency";
-import { useStaticText, useStaticText } from "@/hooks/useStaticText";
+import { useAgencyAnalytics } from "@/hooks/useAgencyAnalytics";
+import { useAgencyStats } from "@/hooks/useAgencyStats";
+import { useOfficersByAgency } from "@/hooks/useOfficersByAgency";
+import { useStaticText } from "@/hooks/useStaticText";
 import styles from "./styles.module.scss";
 
 interface SearchParams {
@@ -59,7 +57,7 @@ export default function AgencyPage() {
   let stateData = US_STATES.find((s) => s.reference.toLowerCase() === stateId);
   if (!stateData) {
     stateData = US_STATES.find(
-      (s) => s.reference.toLowerCase() === stats?.state.toLowerCase()
+      (s) => s.reference.toLowerCase() === stats?.state.toLowerCase(),
     );
   }
   console.log("stateData", stateId, stateData);

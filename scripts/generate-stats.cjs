@@ -1,7 +1,15 @@
-require('dotenv').config();
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collectionGroup, query, getDocs, writeBatch, doc, collection } = require('firebase/firestore');
-const { US_STATES } = require('../constants/states');
+require("dotenv").config();
+const { initializeApp } = require("firebase/app");
+const {
+  getFirestore,
+  collectionGroup,
+  query,
+  getDocs,
+  writeBatch,
+  doc,
+  collection,
+} = require("firebase/firestore");
+const { US_STATES } = require("../constants/states");
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,15 +20,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function generateStateStats() {
-  const statsCollection = collection(db, 'statistics_per_state');
+  const statsCollection = collection(db, "statistics_per_state");
 
   for (const state of US_STATES) {
-    const officersRef = collectionGroup(db, 'db_launch');
+    const officersRef = collectionGroup(db, "db_launch");
     const snapshot = await getDocs(officersRef);
 
     let totalOfficers = 0;
@@ -37,11 +44,11 @@ async function generateStateStats() {
       description: `Police officer records and history in ${state.name}`,
       stats: [
         {
-          label: 'Total Officers',
-          value: totalOfficers.toString()
-        }
+          label: "Total Officers",
+          value: totalOfficers.toString(),
+        },
       ],
-      last_updated: new Date()
+      last_updated: new Date(),
     };
 
     const statsDoc = doc(statsCollection, state.reference.toLowerCase());
@@ -54,6 +61,6 @@ generateStateStats()
     process.exit(0);
   })
   .catch((error) => {
-    console.error('Error:', error);
+    console.error("Error:", error);
     process.exit(1);
   });

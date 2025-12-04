@@ -1,11 +1,4 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import type { Metadata } from "next";
 import { US_STATES } from "@/constants/states";
 import { db } from "@/lib/firebase";
