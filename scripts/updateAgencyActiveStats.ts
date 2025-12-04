@@ -23,12 +23,6 @@ interface State {
   url?: string;
 }
 
-interface ProgressData {
-  lastState: string;
-  lastProcessed: string;
-  totalProcessed: number;
-}
-
 dotenv.config({ path: ".env.local" });
 
 const firebaseConfig = {
