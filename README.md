@@ -87,6 +87,90 @@ Runs ESLint to check for code quality issues
     └── pages/         # Page-specific styles
 ```
 
+## Updating State Data
+
+When you update the database with new data for a specific state, you need to run several scripts in sequence to ensure data integrity, search functionality, and statistics are properly updated.
+
+### Step 1: Data Processing (Required)
+
+These commands normalize and prepare the raw data for the application. Run them in this order:
+
+```bash
+# 1. Normalize state data (clean and standardize field formats)
+npx tsx scripts/normalizeStateData.ts <state>
+
+# 2. Normalize date fields (standardize date formats)
+npx tsx scripts/normalizeDatesByState.ts <state>
+
+# 3. Add search queries (enable full-text search functionality)
+npx tsx scripts/addSearchQueriesByState.ts <state>
+```
+
+**Example for California:**
+```bash
+npx tsx scripts/normalizeStateData.ts california
+npx tsx scripts/normalizeDatesByState.ts california
+npx tsx scripts/addSearchQueriesByState.ts california
+```
+
+### Step 2: Update Derived Collections (Required)
+
+After processing the raw data, update the statistics collections that power the application's analytics and summary views.
+
+```bash
+# 1. Update state-level statistics (statistics_per_state collection)
+npm run generate-stats
+# Or run directly for a specific state:
+npx tsx scripts/generateStateStats.ts <state>
+
+# 2. Update agency-level statistics (statistics_per_agency collection)
+# IMPORTANT: Pass the state parameter to avoid processing ALL states
+npx tsx scripts/generateAgencyStats.ts <state>
+```
+
+### Step 3: Verify Updates
+
+After running all scripts, verify the changes:
+
+1. **Check state statistics:**
+   - Navigate to the Firestore console
+   - Check the `statistics_per_state` collection
+   - Verify the state document has updated statistics
+
+2. **Check agency statistics:**
+   - Navigate to the `statistics_per_agency` collection
+   - Verify agencies have properly formatted `stats` arrays with objects containing `label` and `value` fields
+   - Example of correct format:
+     ```json
+     {
+       "stats": [
+         { "label": "Total Officers", "value": "150" }
+       ]
+     }
+     ```
+   - Some agencies may have incomplete statistics if the `generate-stats-agencies` script was terminated early
+
+3. **Test search functionality:**
+   - Search for officers in the updated state
+   - Verify search latency is acceptable (should be similar to other states)
+
+### Complete Update Workflow Example
+
+Here's the complete workflow for updating California data:
+
+```bash
+# Step 1: Process raw data
+npx tsx scripts/normalizeStateData.ts california
+npx tsx scripts/normalizeDatesByState.ts california
+npx tsx scripts/addSearchQueriesByState.ts california
+
+# Step 2: Update statistics
+npx tsx scripts/generateStateStats.ts california
+npx tsx scripts/generateAgencyStats.ts california
+
+# Step 3: Verify in Firestore console and test search
+```
+
 ## Firebase Deployment
 
 1. Login to Firebase:
