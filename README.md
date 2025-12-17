@@ -96,7 +96,7 @@ When you update the database with new data for a specific state, you need to run
 These commands normalize and prepare the raw data for the application. Run them in this order:
 
 ```bash
-# 1. Normalize state data (clean and standardize field formats)
+# 1. Normalize state data (clean and standardize field formats), include the full, lower-cased, state name, e.g., california
 npx tsx scripts/normalizeStateData.ts <state>
 
 # 2. Normalize date fields (standardize date formats)
@@ -119,14 +119,30 @@ After processing the raw data, update the statistics collections that power the 
 
 ```bash
 # 1. Update state-level statistics (statistics_per_state collection)
-npm run generate-stats
-# Or run directly for a specific state:
+npm run generate-stats -- <state>
+# Or run directly:
 npx tsx scripts/generateStateStats.ts <state>
 
 # 2. Update agency-level statistics (statistics_per_agency collection)
 # IMPORTANT: Pass the state parameter to avoid processing ALL states
+npm run generate-stats-agencies -- <state>
+# Or run directly:
 npx tsx scripts/generateAgencyStats.ts <state>
 ```
+
+**Example for California:**
+```bash
+# State statistics (either command works)
+npm run generate-stats -- california
+npx tsx scripts/generateStateStats.ts california
+
+# Agency statistics (either command works) - ALWAYS specify the state
+npm run generate-stats-agencies -- california
+npx tsx scripts/generateAgencyStats.ts california
+```
+
+**Important Notes:**
+- **`generate-stats-agencies`**: Running without a state parameter will process **ALL states**, which can take 24+ hours. 
 
 ### Step 3: Verify Updates
 
@@ -164,7 +180,11 @@ npx tsx scripts/normalizeStateData.ts california
 npx tsx scripts/normalizeDatesByState.ts california
 npx tsx scripts/addSearchQueriesByState.ts california
 
-# Step 2: Update statistics
+# Step 2: Update statistics (using npm commands)
+npm run generate-stats -- california
+npm run generate-stats-agencies -- california
+
+# Alternative: Step 2 using npx commands
 npx tsx scripts/generateStateStats.ts california
 npx tsx scripts/generateAgencyStats.ts california
 
