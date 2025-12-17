@@ -157,13 +157,15 @@ After running all scripts, verify the changes:
    - Navigate to the `statistics_per_agency` collection
    - Verify agencies have properly formatted `stats` arrays with objects containing `label` and `value` fields
    - Example of correct format:
-     ```json
-     {
-       "stats": [
-         { "label": "Total Officers", "value": "150" }
-       ]
-     }
-     ```
+
+   ```json
+   {
+     "stats": [
+       { "label": "Total Officers", "value": "150" }
+     ]
+   }
+   ```
+
    - Some agencies may have incomplete statistics if the `generate-stats-agencies` script was terminated early
 
 3. **Test search functionality:**
