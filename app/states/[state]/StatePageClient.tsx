@@ -81,7 +81,7 @@ function parseDescription(text: string | undefined): React.ReactNode {
 
 export default function StatePageClient() {
   const params = useParams();
-  const state = params.state as string;
+  const state = (params.state || '').toLowerCase() as string;
   const { getText } = useStaticText("state");
   const searchParams = useSearchParams();
   const resolvedSearchParams = Object.fromEntries(searchParams);
