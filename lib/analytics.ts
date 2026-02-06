@@ -9,6 +9,17 @@ declare global {
 
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
+// Safe wrapper for gtag calls - silently fails when blocked by ad blockers
+const safeGtag = (...args: any[]): void => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
+      window.gtag(...args);
+    }
+  } catch {
+    // Silently ignore analytics errors (e.g., blocked by ad blockers)
+  }
+};
+
 // Initialize Google Analytics
 export const initGA = () => {
   if (!GA_TRACKING_ID) {
@@ -25,14 +36,12 @@ export const trackEvent = (
   value?: number,
   customParameters?: Record<string, any>
 ) => {
-  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-      ...customParameters,
-    });
-  }
+  safeGtag('event', action, {
+    event_category: category,
+    event_label: label,
+    value: value,
+    ...customParameters,
+  });
 };
 
 // Specific tracking functions for National Police Index
@@ -158,33 +167,31 @@ export const trackConversion = (conversionType: 'successful_search' | 'profile_e
 
 // Enhanced page view tracking with location context
 export const trackPageView = (
-  url: string, 
-  title?: string, 
+  url: string,
+  title?: string,
   pageType?: 'officer' | 'agency' | 'state' | 'home',
   state?: string,
   agency?: string,
   officerId?: string
 ) => {
-  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
-    window.gtag('config', GA_TRACKING_ID, {
-      page_location: url,
-      page_title: title,
-      // Custom parameters for detailed tracking
-      custom_parameter_1: state || 'unknown', // State dimension
-      custom_parameter_2: agency || 'unknown', // Agency dimension  
-      custom_parameter_3: pageType || 'unknown', // Page type
-      custom_parameter_4: officerId || 'unknown', // Officer ID
-    });
+  safeGtag('config', GA_TRACKING_ID, {
+    page_location: url,
+    page_title: title,
+    // Custom parameters for detailed tracking
+    custom_parameter_1: state || 'unknown', // State dimension
+    custom_parameter_2: agency || 'unknown', // Agency dimension
+    custom_parameter_3: pageType || 'unknown', // Page type
+    custom_parameter_4: officerId || 'unknown', // Officer ID
+  });
 
-    // Also send a custom event for better segmentation
-    if (pageType && state) {
-      trackEvent('page_view_detailed', 'navigation', `${pageType}_${state}`, undefined, {
-        page_type: pageType,
-        state: state,
-        agency: agency,
-        officer_id: officerId,
-        url: url,
-      });
-    }
+  // Also send a custom event for better segmentation
+  if (pageType && state) {
+    trackEvent('page_view_detailed', 'navigation', `${pageType}_${state}`, undefined, {
+      page_type: pageType,
+      state: state,
+      agency: agency,
+      officer_id: officerId,
+      url: url,
+    });
   }
 };

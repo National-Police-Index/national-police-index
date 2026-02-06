@@ -5,13 +5,19 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
 
   // Redirect /state/ to /states/ to fix analytics duplicate URLs
-  if (
-    url.pathname.startsWith("/state/") &&
-    !url.pathname.startsWith("/states/")
-  ) {
-    // Replace /state/ with /states/
-    url.pathname = url.pathname.replace(/^\/state\//, "/states/");
-    return NextResponse.redirect(url, 301); // Permanent redirect
+  if (url.pathname.startsWith("/state/")) {
+    if (!url.pathname.startsWith("/states/")) {
+      // Replace /state/ with /states/
+      url.pathname = url.pathname.replace(/^\/state\//, "/states/");
+      return NextResponse.redirect(url, 301); // Permanent redirect
+    }
+
+    if (pathname !== pathname.toLowerCase()) {
+      // 308 is a Permanent Redirect (SEO friendly)
+      return NextResponse.redirect(
+        new URL(pathname.toLowerCase() + search, origin), 308
+      )
+    }
   }
 
   return NextResponse.next();
