@@ -1,10 +1,5 @@
 # Firestore to Supabase Migration Plan
 ## National Police Index - Database Migration Design
-
-**Date**: 2026-02-11
-**Migration Type**: NoSQL (Firestore) → SQL (Supabase) with Schema Transformation
-**Strategy**: Dual-Write with New Pipeline First, Then Historical Backfill
-
 ---
 
 ## Executive Summary
@@ -1651,14 +1646,5 @@ Phase 5: Cleanup & Decommission
 
 ---
 
-**Document Control**
-
-- **Version**: 1.0
-- **Date**: 2026-02-11
-- **Author**: Claude Sonnet 4.5
-- **Approvers**: [To be filled]
-- **Status**: Draft - Pending Review
-
----
 
 *This plan is a living document and may be updated as the migration progresses and new information becomes available.*
