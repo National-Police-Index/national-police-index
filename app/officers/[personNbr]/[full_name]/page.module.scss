@@ -18,6 +18,15 @@
   }
 }
 
+.exportButton {
+  margin-top: -40px;
+  margin-bottom: 24px;
+  @media screen and (max-width: 767px) {
+    margin-top: -32px;
+    margin-bottom: 16px;
+  }
+}
+
 .officeData {
   > div {
     gap: 16px;
