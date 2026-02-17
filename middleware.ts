@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-
+  
   // Redirect /state/ to /states/ to fix analytics duplicate URLs
   if (url.pathname.startsWith("/state/")) {
     if (!url.pathname.startsWith("/states/")) {
@@ -11,15 +11,17 @@ export function middleware(request: NextRequest) {
       url.pathname = url.pathname.replace(/^\/state\//, "/states/");
       return NextResponse.redirect(url, 301); // Permanent redirect
     }
-
-    if (pathname !== pathname.toLowerCase()) {
-      // 308 is a Permanent Redirect (SEO friendly)
-      return NextResponse.redirect(
-        new URL(pathname.toLowerCase() + search, origin), 308
-      )
+  }
+  
+  // Lowercase redirect for /state/ or /states/ paths
+  if (url.pathname.startsWith("/state")) {
+    const lowerPath = url.pathname.toLowerCase();
+    if (url.pathname !== lowerPath) {
+      url.pathname = lowerPath;
+      return NextResponse.redirect(url, 308); // Permanent redirect (SEO friendly)
     }
   }
-
+  
   return NextResponse.next();
 }
 
@@ -35,3 +37,4 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
+
