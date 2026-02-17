@@ -15,39 +15,47 @@ export const useAgencyAnalytics = (agencyData: AgencyData | null) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (agencyData && typeof window !== 'undefined') {
-      const { agencyId, agencyName, state, officerCount } = agencyData;
-      
-      // Track agency profile view with state information
-      trackAgencyView(
-        agencyId,
-        agencyName,
-        state,
-        officerCount,
-        'direct_url'
-      );
+    try {
+      if (agencyData && typeof window !== 'undefined') {
+        const { agencyId, agencyName, state, officerCount } = agencyData;
 
-      // Track enhanced page view
-      trackPageView(
-        window.location.href,
-        document.title,
-        'agency',
-        state,
-        agencyName
-      );
+        // Track agency profile view with state information
+        trackAgencyView(
+          agencyId,
+          agencyName,
+          state,
+          officerCount,
+          'direct_url'
+        );
+
+        // Track enhanced page view
+        trackPageView(
+          window.location.href,
+          document.title,
+          'agency',
+          state,
+          agencyName
+        );
+      }
+    } catch {
+      // Silently ignore analytics errors (e.g., blocked by ad blockers)
     }
   }, [agencyData, pathname]);
 
   return {
     trackAgencyInteraction: (action: string, details?: Record<string, any>) => {
-      if (agencyData) {
-        trackAgencyView(
-          agencyData.agencyId,
-          agencyData.agencyName,
-          agencyData.state,
-          agencyData.officerCount,
-          action
-        );
+      try {
+        if (agencyData) {
+          trackAgencyView(
+            agencyData.agencyId,
+            agencyData.agencyName,
+            agencyData.state,
+            agencyData.officerCount,
+            action
+          );
+        }
+      } catch {
+        // Silently ignore analytics errors (e.g., blocked by ad blockers)
       }
     }
   };
