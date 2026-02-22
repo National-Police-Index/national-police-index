@@ -12,9 +12,13 @@ export function useAnalytics() {
 
   // Track page views automatically
   useEffect(() => {
-    if (GA_TRACKING_ID && typeof window !== 'undefined') {
-      const url = `${pathname}${window.location.search}`;
-      trackPageView(url, document.title);
+    try {
+      if (GA_TRACKING_ID && typeof window !== 'undefined') {
+        const url = `${pathname}${window.location.search}`;
+        trackPageView(url, document.title);
+      }
+    } catch {
+      // Silently ignore analytics errors (e.g., blocked by ad blockers)
     }
   }, [pathname]);
 
@@ -24,17 +28,21 @@ export function useAnalytics() {
     let engagementTracked = false;
 
     const trackEngagement = () => {
-      const timeSpent = Date.now() - sessionStartTime;
-      
-      // Track 30 second milestone
-      if (timeSpent > 30000 && !engagementTracked) {
-        trackEngagementMilestone('30_seconds', 30);
-        engagementTracked = true;
-      }
-      
-      // Track 2 minute milestone (conversion)
-      if (timeSpent > 120000) {
-        trackConversion('extended_session', Math.floor(timeSpent / 1000));
+      try {
+        const timeSpent = Date.now() - sessionStartTime;
+
+        // Track 30 second milestone
+        if (timeSpent > 30000 && !engagementTracked) {
+          trackEngagementMilestone('30_seconds', 30);
+          engagementTracked = true;
+        }
+
+        // Track 2 minute milestone (conversion)
+        if (timeSpent > 120000) {
+          trackConversion('extended_session', Math.floor(timeSpent / 1000));
+        }
+      } catch {
+        // Silently ignore analytics errors (e.g., blocked by ad blockers)
       }
     };
 
@@ -47,8 +55,12 @@ export function useAnalytics() {
 
   // Return tracking functions for manual use
   const trackCustomEvent = useCallback((eventName: string, parameters?: Record<string, any>) => {
-    if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
-      window.gtag('event', eventName, parameters);
+    try {
+      if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
+        window.gtag('event', eventName, parameters);
+      }
+    } catch {
+      // Silently ignore analytics errors (e.g., blocked by ad blockers)
     }
   }, []);
 
