@@ -4,20 +4,21 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   
-  // Redirect /state/ to /states/ to fix analytics duplicate URLs
   if (url.pathname.startsWith("/state/")) {
     if (!url.pathname.startsWith("/states/")) {
-      // Replace /state/ with /states/
       url.pathname = url.pathname.replace(/^\/state\//, "/states/");
       return NextResponse.redirect(url, 301); // Permanent redirect
     }
   }
   
-  // Lowercase redirect for /state/ or /states/ paths
   if (url.pathname.startsWith("/state")) {
-    const lowerPath = url.pathname.toLowerCase();
-    if (url.pathname !== lowerPath) {
-      url.pathname = lowerPath;
+    const parts = url.pathname.split("/");
+    // Lowercase only segments 1 and 2 ("states" and the state slug),
+    // leave the rest (agency name, officer name, etc.) untouched.
+    const newParts = parts.map((part, i) => (i <= 2 ? part.toLowerCase() : part));
+    const newPath = newParts.join("/");
+    if (url.pathname !== newPath) {
+      url.pathname = newPath;
       return NextResponse.redirect(url, 308); // Permanent redirect (SEO friendly)
     }
   }
