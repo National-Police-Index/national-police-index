@@ -1,0 +1,18 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "db_launch",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "full_name_lower",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ]
+}

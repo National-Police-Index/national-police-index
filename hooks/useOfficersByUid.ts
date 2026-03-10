@@ -172,13 +172,11 @@ export function useOfficersByUid({
         countQuery = query(countQuery, limit(10000));
 
         if (searchParameters.query) {
+          const searchQuery = searchParameters.query.toLowerCase().trim();
           countQuery = query(
             countQuery,
-            where(
-              "searchQueries",
-              "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+            where("full_name_lower", ">=", searchQuery),
+            where("full_name_lower", "<=", searchQuery + "\uf8ff")
           );
         }
 
@@ -288,13 +286,11 @@ export function useOfficersByUid({
         let q = query(officersRef, where("state", "==", state.toLowerCase()));
 
         if (searchParameters.query) {
+          const searchQuery = searchParameters.query.toLowerCase().trim();
           q = query(
             q,
-            where(
-              "searchQueries",
-              "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
-            )
+            where("full_name_lower", ">=", searchQuery),
+            where("full_name_lower", "<=", searchQuery + "\uf8ff")
           );
         }
 
@@ -312,20 +308,25 @@ export function useOfficersByUid({
           q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
         }
 
-        const sortField =
-          searchParameters.sortBy === "date"
-            ? "start_date"
-            : searchParameters.sortBy === "agency"
-            ? "agency_name"
-            : "last_name";
-        q = query(
-          q,
-          orderBy(
-            sortField,
-            searchParameters.sortOrder === "desc" ? "desc" : "asc"
-          )
-        );
-        q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
+        // When using range queries on full_name_lower, must orderBy that field first
+        if (searchParameters.query) {
+          q = query(q, orderBy("full_name_lower", "asc"));
+        } else {
+          const sortField =
+            searchParameters.sortBy === "date"
+              ? "start_date"
+              : searchParameters.sortBy === "agency"
+              ? "agency_name"
+              : "last_name";
+          q = query(
+            q,
+            orderBy(
+              sortField,
+              searchParameters.sortOrder === "desc" ? "desc" : "asc"
+            )
+          );
+        }
+        q = query(q, limit(pageSize * (searchParameters.query ? 5 : 10)));
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
@@ -359,10 +360,6 @@ export function useOfficersByUid({
         let attempts = 0;
         const maxAttempts = 10;
 
-        const terms = searchParameters.query
-          ? searchParameters.query.trim().toLowerCase().split(" ")
-          : false;
-
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -375,17 +372,6 @@ export function useOfficersByUid({
           ) {
             const doc = snapshot.docs[i];
             const officer = doc.data() as PoliceOfficer;
-
-            if (terms && terms.length > 1) {
-              if (
-                !(
-                  terms.includes(officer.first_name.toLowerCase()) &&
-                  terms.includes(officer.last_name.toLowerCase())
-                )
-              ) {
-                continue;
-              }
-            }
 
             if (!groupedOfficers.has(officer.person_nbr)) {
               groupedOfficers.set(officer.person_nbr, [officer]);
