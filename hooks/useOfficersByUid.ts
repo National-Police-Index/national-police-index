@@ -298,35 +298,35 @@ export function useOfficersByUid({
           );
         }
 
-        if (searchParameters.agency) {
-          q = query(q, where("agency_name", "==", searchParameters.agency));
-        }
-
-        if (searchParameters.startDate) {
-          const startDate = new Date(searchParameters.startDate);
-          q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
-        }
-
-        if (searchParameters.endDate) {
-          const endDate = new Date(searchParameters.endDate);
-          q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
-        }
-
         if(!searchingByUid) {
-        const sortField =
-          searchParameters.sortBy === "date"
-            ? "start_date"
-            : searchParameters.sortBy === "agency"
-            ? "agency_name"
-            : "last_name";
+            if (searchParameters.agency) {
+              q = query(q, where("agency_name", "==", searchParameters.agency));
+            }
 
-          q = query(
-            q,
-            orderBy(
-              sortField,
-              searchParameters.sortOrder === "desc" ? "desc" : "asc"
-            )
-          );
+            if (searchParameters.startDate) {
+              const startDate = new Date(searchParameters.startDate);
+              q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
+            }
+
+            if (searchParameters.endDate) {
+              const endDate = new Date(searchParameters.endDate);
+              q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
+            }
+
+            const sortField =
+              searchParameters.sortBy === "date"
+                ? "start_date"
+                : searchParameters.sortBy === "agency"
+                ? "agency_name"
+                : "last_name";
+
+              q = query(
+                q,
+                orderBy(
+                  sortField,
+                  searchParameters.sortOrder === "desc" ? "desc" : "asc"
+                )
+              );
         }
         q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
