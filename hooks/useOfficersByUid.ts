@@ -14,6 +14,7 @@ import {
   getDoc,
   collection,
   DocumentData,
+  or,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -287,13 +288,12 @@ export function useOfficersByUid({
 
         let q = query(officersRef, where("state", "==", state.toLowerCase()));
 
+        const searchingByUid = searchParameters.query && /\d/.test(searchParameters.query.trim());
         if (searchParameters.query) {
-          q = query(
-            q,
-            where(
-              "searchQueries",
-              "array-contains-any",
-              searchParameters.query.toLowerCase().split(" ").slice(0, 20)
+          const queryTerms = searchParameters.query.toLowerCase().split(" ").slice(0, 20);
+          q = query(q,
+            or(where("searchQueries", "array-contains-any", queryTerms),
+               where("person_nbr", "==", searchParameters.query)
             )
           );
         }
@@ -312,19 +312,22 @@ export function useOfficersByUid({
           q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
         }
 
+        if(!searchingByUid) {
         const sortField =
           searchParameters.sortBy === "date"
             ? "start_date"
             : searchParameters.sortBy === "agency"
             ? "agency_name"
             : "last_name";
-        q = query(
-          q,
-          orderBy(
-            sortField,
-            searchParameters.sortOrder === "desc" ? "desc" : "asc"
-          )
-        );
+
+          q = query(
+            q,
+            orderBy(
+              sortField,
+              searchParameters.sortOrder === "desc" ? "desc" : "asc"
+            )
+          );
+        }
         q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
         const direction = searchParameters.direction;
