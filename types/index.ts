@@ -22,6 +22,7 @@ export interface PoliceOfficer {
   employment_status?: string;
   certification_type?: string;
   type?: string;
+  ext_url?: string;
   [key: string]: any;
 }
 

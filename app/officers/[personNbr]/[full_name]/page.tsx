@@ -20,6 +20,7 @@ type PoliceOfficerWithEventType = PoliceOfficer & {
   separation_reason?: string;
   rank?: string;
   sanction_date?: string;
+  ext_url?: string;
 };
 
 const toSentenceCase = (str: string) => {
@@ -425,6 +426,13 @@ export default function OfficerProfilePage() {
                       )}
                   </div>
                 </div>
+                {latestRecord.ext_url && (
+                  <div className="self-stretch border-b-[0.50px] border-[#2F5E50] flex justify-center items-center ">
+                    <div className="flex-1 justify-start text-[#122823] text-base font-bold font-['Inter'] leading-normal">
+                      <a href={latestRecord.ext_url} target='_blank'>Link to profile on OpenOversightVA</a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
