@@ -190,20 +190,28 @@ export function useOfficersByUid({
           );
         }
 
-        if (searchParameters.startDate) {
-          const startDate = new Date(searchParameters.startDate);
-          countQuery = query(
-            countQuery,
-            where("start_date_iso", ">=", startDate.toISOString())
-          );
-        }
+        // Same constraint as the main query: skip server-side date range when
+        // a name search is active, then filter dates client-side.
+        const countStartIso = searchParameters.startDate
+          ? new Date(searchParameters.startDate).toISOString()
+          : null;
+        const countEndIso = searchParameters.endDate
+          ? new Date(searchParameters.endDate).toISOString()
+          : null;
 
-        if (searchParameters.endDate) {
-          const endDate = new Date(searchParameters.endDate);
-          countQuery = query(
-            countQuery,
-            where("end_date_iso", "<=", endDate.toISOString())
-          );
+        if (!searchParameters.query) {
+          if (countStartIso) {
+            countQuery = query(
+              countQuery,
+              where("start_date_iso", ">=", countStartIso)
+            );
+          }
+          if (countEndIso) {
+            countQuery = query(
+              countQuery,
+              where("end_date_iso", "<=", countEndIso)
+            );
+          }
         }
 
         const countSnapshot = await getDocs(countQuery);
@@ -211,6 +219,10 @@ export function useOfficersByUid({
         const uniqueOfficers = new Set();
         countSnapshot.docs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
+          if (searchParameters.query) {
+            if (countStartIso && (!officer.start_date_iso || officer.start_date_iso < countStartIso)) return;
+            if (countEndIso && officer.end_date_iso && officer.end_date_iso > countEndIso) return;
+          }
           uniqueOfficers.add(officer.person_nbr);
         });
 
@@ -303,14 +315,19 @@ export function useOfficersByUid({
               q = query(q, where("agency_name", "==", searchParameters.agency));
             }
 
-            if (searchParameters.startDate) {
-              const startDate = new Date(searchParameters.startDate);
-              q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
-            }
+            // Firestore can't combine array-contains-any (from name search) with
+            // a range filter on a different field. When a name search is active,
+            // skip the date range filters here and apply them client-side below.
+            if (!searchParameters.query) {
+              if (searchParameters.startDate) {
+                const startDate = new Date(searchParameters.startDate);
+                q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
+              }
 
-            if (searchParameters.endDate) {
-              const endDate = new Date(searchParameters.endDate);
-              q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
+              if (searchParameters.endDate) {
+                const endDate = new Date(searchParameters.endDate);
+                q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
+              }
             }
 
             const sortField =
@@ -366,6 +383,13 @@ export function useOfficersByUid({
           ? searchParameters.query.trim().toLowerCase().split(" ")
           : false;
 
+        const clientStartIso = searchParameters.query && searchParameters.startDate
+          ? new Date(searchParameters.startDate).toISOString()
+          : null;
+        const clientEndIso = searchParameters.query && searchParameters.endDate
+          ? new Date(searchParameters.endDate).toISOString()
+          : null;
+
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -388,6 +412,13 @@ export function useOfficersByUid({
               ) {
                 continue;
               }
+            }
+
+            if (clientStartIso && (!officer.start_date_iso || officer.start_date_iso < clientStartIso)) {
+              continue;
+            }
+            if (clientEndIso && officer.end_date_iso && officer.end_date_iso > clientEndIso) {
+              continue;
             }
 
             if (!groupedOfficers.has(officer.person_nbr)) {
