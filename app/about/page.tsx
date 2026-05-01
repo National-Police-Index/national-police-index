@@ -5,11 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import TeamCard from '@/components/team/TeamCard';
 import { useTeam } from '@/hooks/useTeam';
+import { usePartners } from '@/hooks/usePartners';
 import aboutImage from '@/images/about-image.png';
 import styles from './page.module.scss';
 
 export default function AboutPage() {
   const { loading, error, teamMembers } = useTeam();
+  const { loading_p, error_p, partners } = usePartners();
   return (
     <div className="w-full mx-auto">
       <PageHeader
@@ -85,6 +87,35 @@ export default function AboutPage() {
                       name={member.name}
                       pronouns={member.pronouns}
                       description={member.description}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Partners/Collaborators Section */}
+          <section className="w-full">
+            <div className="w-full pt-4 border-t border-[#2F5E50] inline-flex justify-start items-center gap-2.5">
+              <div className="justify-start text-[#122823] text-4xl font-bold font-['Inter'] leading-[48px] tracking-tight">Partners and Collaborators</div>
+            </div>
+
+            <div className={`w-full mx-auto`}>
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                  <p className="ml-4 ">Loading partners...</p>
+                </div>
+              ) : error ? (
+                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : (
+                <div className={`w-full flex flex-wrap gap-6 ${styles.partnerSection}`}>
+                  {partners.map((partner) => (
+                    <TeamCard
+                      key={partner.name}
+                      name={partner.name}
+                      pronouns={partner.pronouns}
+                      description={partner.description}
                     />
                   ))}
                 </div>
