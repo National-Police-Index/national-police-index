@@ -109,7 +109,7 @@ export default function AboutPage() {
               ) : error ? (
                 <div className="text-red-600 text-center py-12">{error.message}</div>
               ) : (
-                <div className={`w-full flex flex-wrap gap-6 ${styles.partnerSection}`}>
+                <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {partners.map((partner) => (
                     <TeamCard
                       key={partner.name}
