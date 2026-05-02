@@ -47,7 +47,7 @@ export default function AboutPage() {
                 </p>
 
                 <p>
-                  The NPI is a public data project run by <Link href="https://invisible.institute/introduction" className="underline">Invisible Institute</Link>, a nonprofit public accountability journalism organization based in Chicago; <Link href="https://hrdag.org/" className="underline">Human Rights Data Analysis Group</Link>, a non-profit, non-partisan organization that applies rigorous science to the analysis of human rights violations around the world, and <Link href="https://mljusticelab.com/" className="underline">Machine Learning Justice Lab</Link>, a start-up that builds open source software designed for human rights research. <Link href="https://justicelouisiana.org/" className="underline">Innocence & Justice Louisiana</Link> was a founding partner. The web tool was developed by <Link href="https://79x.solutions/" className="underline">79X Solutions</Link>.
+                  The NPI is a public data project run by <Link href="https://invisible.institute/introduction" className="underline" target="_blank">Invisible Institute</Link>, a nonprofit public accountability journalism organization based in Chicago; <Link href="https://hrdag.org/" className="underline" target="_blank">Human Rights Data Analysis Group</Link>, a non-profit, non-partisan organization that applies rigorous science to the analysis of human rights violations around the world, and <Link href="https://mljusticelab.com/" className="underline" target="_blank">Machine Learning Justice Lab</Link>, a start-up that builds open source software designed for human rights research. <Link href="https://justicelouisiana.org/" className="underline" target="_blank">Innocence & Justice Louisiana</Link> was a founding partner. The web tool was developed by <Link href="https://79x.solutions/" className="underline" target="_blank">79X Solutions</Link>.
                 </p>
               </div>
 
@@ -200,7 +200,7 @@ export default function AboutPage() {
                 </p>
 
                 <p>
-                  Access the underlying data files for the National Police Index at this <Link href="https://github.com/National-Police-Index/us-post-data" className="underline">link</Link>.
+                  Access the underlying data files for the National Police Index at this <Link href="https://github.com/National-Police-Index/us-post-data" className="underline" target="_blank">link</Link>.
                 </p>
               </div>
               </section>

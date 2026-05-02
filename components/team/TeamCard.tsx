@@ -15,7 +15,7 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
       if (linkMatch) {
         const [_, text, url] = linkMatch;
         return (
-          <a key={index} href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
+          <a key={index} target="_blank" href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
             {text}
           </a>
         );
@@ -35,7 +35,7 @@ export default function TeamCard({ name, pronouns, description }: TeamMember) {
       if (linkMatch) {
         const [_, text, url] = linkMatch;
         return (
-          <a key={index} href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
+          <a key={index} target="_blank" href={url} className={`text-[#122823] text-sm font-normal font-['Inter'] underline leading-tight hover:text-[#4F8C7E] ${_}`}>
             {text}
           </a>
         );
