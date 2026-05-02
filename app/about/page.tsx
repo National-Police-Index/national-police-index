@@ -67,13 +67,13 @@ export default function AboutPage() {
             </div>
 
             <div className={`w-full mx-auto`}>
-              {loading ? (
+              {loading_cl ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                   <p className="ml-4 ">Loading co-leads...</p>
                 </div>
-              ) : error ? (
-                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : error_cl ? (
+                <div className="text-red-600 text-center py-12">{error_cl.message}</div>
               ) : (
                 <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {coLeads.map((co_lead) => (
@@ -96,13 +96,13 @@ export default function AboutPage() {
             </div>
 
             <div className={`w-full mx-auto`}>
-              {loading ? (
+              {loading_cc ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                   <p className="ml-4 ">Loading current contributors & volunteers...</p>
                 </div>
-              ) : error ? (
-                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : error_cc ? (
+                <div className="text-red-600 text-center py-12">{error_cc.message}</div>
               ) : (
                 <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {currentContributors.map((current) => (
@@ -125,13 +125,13 @@ export default function AboutPage() {
             </div>
 
             <div className={`w-full mx-auto`}>
-              {loading ? (
+              {loading_p ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                   <p className="ml-4 ">Loading partners...</p>
                 </div>
-              ) : error ? (
-                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : error_p ? (
+                <div className="text-red-600 text-center py-12">{error_p.message}</div>
               ) : (
                 <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {partners.map((partner) => (
@@ -154,13 +154,13 @@ export default function AboutPage() {
             </div>
 
             <div className={`w-full mx-auto`}>
-              {loading ? (
+              {loading_pc ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                   <p className="ml-4 ">Loading previous contributors and volunteers...</p>
                 </div>
-              ) : error ? (
-                <div className="text-red-600 text-center py-12">{error.message}</div>
+              ) : error_pc ? (
+                <div className="text-red-600 text-center py-12">{error_pc.message}</div>
               ) : (
                 <div className={`w-full flex flex-wrap gap-6 ${styles.teamSection}`}>
                   {previousContributors.map((previous) => (
