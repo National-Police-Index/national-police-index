@@ -144,6 +144,20 @@ export default function AboutPage() {
                   ))}
                 </div>
               )}
+              <div className="justify-start font-lg font-['Inter'] pt-10 tracking-tight">Legal Support:</div>
+              <div className="pl-7">
+                <ul className="list-disc font-md">
+                  <li className="pt-3 leading-6">Reporters Committee for Freedom of the Press</li>
+                  <li className="leading-6">Wisconsin Transparency Project</li>
+                  <li className="leading-6">ACLU of Delaware</li>
+                  <li className="leading-6">University of Michigan Civil Rights Litigation Initiative</li>
+                  <li className="leading-6">University of Virginia First Amendment Clinic</li>
+                  <li className="leading-6">George Washington University Public Justice Advocacy Clinic</li>
+                  <li className="leading-6">Southern Methodist University First Amendment Clinic</li>
+                  <li className="leading-6">Proyecto de Acceso a la Información de la Universidad Interamericana</li>
+                  <li className="leading-6">University of Illinois First Amendment Clinic</li>
+                </ul>
+              </div>
             </div>
           </section>
 
@@ -173,6 +187,16 @@ export default function AboutPage() {
                   ))}
                 </div>
               )}
+              <div className="justify-start font-lg font-['Inter'] pt-10 tracking-tight">Invisible Institute Public Access Legal Externs:</div>
+              <div className="pl-7">
+                <ul className="list-disc font-md">
+                  <li className="pt-3 leading-6">Andra Cernavskis (2026)</li>
+                  <li className="leading-6">Kaitlyn Mattox (2026)</li>
+                  <li className="leading-6">Makayla Bruno-Smith (2025)</li>
+                  <li className="leading-6">Nardien Sadik (2025)</li>
+                  <li className="leading-6">Josette Soto (2025)</li>
+                </ul>
+              </div>
             </div>
           </section>
 
