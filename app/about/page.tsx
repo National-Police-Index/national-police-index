@@ -4,7 +4,7 @@ import PageHeader from '@/components/PageHeader';
 import Image from 'next/image';
 import Link from 'next/link';
 import TeamCard from '@/components/team/TeamCard';
-import { useTeam } from '@/hooks/useTeam';
+//import { useTeam } from '@/hooks/useTeam';
 import { usePartners } from '@/hooks/usePartners';
 import { useCurrentContributors } from '@/hooks/useCurContrib';
 import { useCoLeads } from '@/hooks/useCoLeads';
