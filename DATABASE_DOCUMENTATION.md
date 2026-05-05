@@ -219,6 +219,7 @@ interface Post {
 ```typescript
 interface TeamMember {
   name: string;
+  pronouns: string;
   role: string;
   image: string;               // Image URL
   description: string;
@@ -229,11 +230,17 @@ interface TeamMember {
 ```
 
 **Scripts that manage it**:
+### this needs to be updated to seed the co-leads rather than the team collection because that isn't being used anymore
 - [`seedTeamData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/seedTeamData.ts) - Initializes team data
 
 **Usage in application**:
-- Hook [`useTeam`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useTeam.ts) - Gets team members
+- Hook [`useCoLeads`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useCoLeads.ts) - Gets co-leads
+- Hook [`useCurContrib`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useCurContrib.ts) - Gets current contributors
+- Hook [`usePartners`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/usePartners.ts) - Gets partners
+- Hook [`usePrevContrib`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/usePrevContrib.ts) - Gets previous contributors
 - ["About" page](https://github.com/National-Police-Index/national-police-index/blob/main/app/about/page.tsx) to display team
+### the useTeam hook is now archived. we separated out team members to more specific labels
+- Hook [`useTeam`](https://github.com/National-Police-Index/national-police-index/blob/main/hooks/useTeam.ts) - Gets team members
 
 ## Temporary and System Collections
 
