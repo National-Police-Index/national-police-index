@@ -13,7 +13,7 @@ import aboutImage from '@/images/about-image.png';
 import styles from './page.module.scss';
 
 export default function AboutPage() {
-  const { loading, error, teamMembers } = useTeam();
+  //const { loading, error, teamMembers } = useTeam();
   const { loading_cl, error_cl, coLeads } = useCoLeads();
   const { loading_p, error_p, partners } = usePartners();
   const { loading_cc, error_cc, currentContributors } = useCurrentContributors();
