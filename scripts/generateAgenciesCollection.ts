@@ -136,7 +136,7 @@ async function generateAgenciesCollection() {
             .replace(/[/\\]/g, "%2F")
             .replace(/[^a-z0-9-]/g, "-");
 
-          const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
+          const agencyRef = doc(collection(db, AGENCIES_COLLECTION), `${state.reference}-${docId}`);
 
           const agencyDoc = {
             name: agencyName,
@@ -168,7 +168,7 @@ async function generateAgenciesCollection() {
           .replace(/[/\\]/g, "%2F")
           .replace(/[^a-z0-9-]/g, "-");
 
-        const agencyRef = doc(collection(db, AGENCIES_COLLECTION), docId);
+        const agencyRef = doc(collection(db, AGENCIES_COLLECTION), `${state.reference}-${docId}`);
 
         const agencyDoc = {
           name: agencyName,

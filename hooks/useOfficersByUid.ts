@@ -14,6 +14,7 @@ import {
   getDoc,
   collection,
   DocumentData,
+  or,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -187,20 +188,28 @@ export function useOfficersByUid({
           );
         }
 
-        if (searchParameters.startDate) {
-          const startDate = new Date(searchParameters.startDate);
-          countQuery = query(
-            countQuery,
-            where("start_date_iso", ">=", startDate.toISOString())
-          );
-        }
+        // Same constraint as the main query: skip server-side date range when
+        // a name search is active, then filter dates client-side.
+        const countStartIso = searchParameters.startDate
+          ? new Date(searchParameters.startDate).toISOString()
+          : null;
+        const countEndIso = searchParameters.endDate
+          ? new Date(searchParameters.endDate).toISOString()
+          : null;
 
-        if (searchParameters.endDate) {
-          const endDate = new Date(searchParameters.endDate);
-          countQuery = query(
-            countQuery,
-            where("end_date_iso", "<=", endDate.toISOString())
-          );
+        if (!searchParameters.query) {
+          if (countStartIso) {
+            countQuery = query(
+              countQuery,
+              where("start_date_iso", ">=", countStartIso)
+            );
+          }
+          if (countEndIso) {
+            countQuery = query(
+              countQuery,
+              where("end_date_iso", "<=", countEndIso)
+            );
+          }
         }
 
         const countSnapshot = await getDocs(countQuery);
@@ -208,6 +217,10 @@ export function useOfficersByUid({
         const uniqueOfficers = new Set();
         countSnapshot.docs.forEach((doc) => {
           const officer = doc.data() as PoliceOfficer;
+          if (searchParameters.query) {
+            if (countStartIso && (!officer.start_date_iso || officer.start_date_iso < countStartIso)) return;
+            if (countEndIso && officer.end_date_iso && officer.end_date_iso > countEndIso) return;
+          }
           uniqueOfficers.add(officer.person_nbr);
         });
 
@@ -285,48 +298,52 @@ export function useOfficersByUid({
 
         let q = query(officersRef, where("state", "==", state.toLowerCase()));
 
+        const searchingByUid = searchParameters.query && /\d/.test(searchParameters.query.trim());
         if (searchParameters.query) {
-          const searchQuery = searchParameters.query.toLowerCase().trim();
-          q = query(
-            q,
-            where("full_name_lower", ">=", searchQuery),
-            where("full_name_lower", "<=", searchQuery + "\uf8ff")
-          );
-        }
-
-        if (searchParameters.agency) {
-          q = query(q, where("agency_name", "==", searchParameters.agency));
-        }
-
-        if (searchParameters.startDate) {
-          const startDate = new Date(searchParameters.startDate);
-          q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
-        }
-
-        if (searchParameters.endDate) {
-          const endDate = new Date(searchParameters.endDate);
-          q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
-        }
-
-        // When using range queries on full_name_lower, must orderBy that field first
-        if (searchParameters.query) {
-          q = query(q, orderBy("full_name_lower", "asc"));
-        } else {
-          const sortField =
-            searchParameters.sortBy === "date"
-              ? "start_date"
-              : searchParameters.sortBy === "agency"
-              ? "agency_name"
-              : "last_name";
-          q = query(
-            q,
-            orderBy(
-              sortField,
-              searchParameters.sortOrder === "desc" ? "desc" : "asc"
+          const queryTerms = searchParameters.query.toLowerCase().split(" ").slice(0, 20);
+          q = query(q,
+            or(where("searchQueries", "array-contains-any", queryTerms),
+               where("person_nbr", "==", searchParameters.query)
             )
           );
         }
-        q = query(q, limit(pageSize * (searchParameters.query ? 5 : 10)));
+
+        if(!searchingByUid) {
+            if (searchParameters.agency) {
+              q = query(q, where("agency_name", "==", searchParameters.agency));
+            }
+
+            // Firestore can't combine array-contains-any (from name search) with
+            // a range filter on a different field. When a name search is active,
+            // skip the date range filters here and apply them client-side below.
+            if (!searchParameters.query) {
+              if (searchParameters.startDate) {
+                const startDate = new Date(searchParameters.startDate);
+                q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
+              }
+
+              if (searchParameters.endDate) {
+                const endDate = new Date(searchParameters.endDate);
+                q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
+              }
+            }
+
+            const sortField =
+              searchParameters.sortBy === "date"
+                ? "start_date"
+                : searchParameters.sortBy === "agency"
+                ? "agency_name"
+                : "last_name";
+
+              q = query(
+                q,
+                orderBy(
+                  sortField,
+                  searchParameters.sortOrder === "desc" ? "desc" : "asc"
+                )
+              );
+        }
+        q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
@@ -360,6 +377,17 @@ export function useOfficersByUid({
         let attempts = 0;
         const maxAttempts = 10;
 
+        const terms = searchParameters.query
+          ? searchParameters.query.trim().toLowerCase().split(" ")
+          : false;
+
+        const clientStartIso = searchParameters.query && searchParameters.startDate
+          ? new Date(searchParameters.startDate).toISOString()
+          : null;
+        const clientEndIso = searchParameters.query && searchParameters.endDate
+          ? new Date(searchParameters.endDate).toISOString()
+          : null;
+
         while (
           uniqueCount < pageSize &&
           attempts < maxAttempts &&
@@ -372,6 +400,24 @@ export function useOfficersByUid({
           ) {
             const doc = snapshot.docs[i];
             const officer = doc.data() as PoliceOfficer;
+
+            if (terms && terms.length > 1) {
+              if (
+                !(
+                  terms.includes(officer.first_name.toLowerCase()) &&
+                  terms.includes(officer.last_name.toLowerCase())
+                )
+              ) {
+                continue;
+              }
+            }
+
+            if (clientStartIso && (!officer.start_date_iso || officer.start_date_iso < clientStartIso)) {
+              continue;
+            }
+            if (clientEndIso && officer.end_date_iso && officer.end_date_iso > clientEndIso) {
+              continue;
+            }
 
             if (!groupedOfficers.has(officer.person_nbr)) {
               groupedOfficers.set(officer.person_nbr, [officer]);

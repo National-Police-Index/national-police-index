@@ -63,7 +63,7 @@ export default function Footer() {
               alt="Human Rights Data Analysis Group logo"
             />
           </a>
-          <a className="relative -ml-8" href="https://mljlab.org" target="_blank" rel="noopener noreferrer">
+          <a className="relative -ml-8" href="https://mljusticelab.com/" target="_blank" rel="noopener noreferrer">
             <Image
               src={mljlab}
               alt="MLJ Lab logo"
