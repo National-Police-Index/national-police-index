@@ -13,6 +13,24 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "db_launch",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "search_prefixes",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "last_name",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ]
 }

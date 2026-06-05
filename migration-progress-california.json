@@ -1,9 +1,0 @@
-{
-  "totalProcessed": 496033,
-  "totalUpdated": 496022,
-  "totalSkipped": 11,
-  "errors": 0,
-  "startTime": "2026-02-06T01:35:38.449Z",
-  "lastUpdateTime": "2026-02-06T02:05:29.207Z",
-  "lastProcessedDoc": "california-processed.csv_99999"
-}
