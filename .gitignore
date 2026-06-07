@@ -43,3 +43,4 @@ firebase-service-account.json
 
 /.firebase
 *.log
+misc/
