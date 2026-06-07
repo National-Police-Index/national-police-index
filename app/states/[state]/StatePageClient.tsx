@@ -120,6 +120,7 @@ export default function StatePageClient() {
     error: officersError,
     officerGroups,
     totalGroups,
+    totalGroupsCapped,
     hasNextPage,
     hasPreviousPage,
     currentPage: apiCurrentPage,
@@ -237,11 +238,15 @@ export default function StatePageClient() {
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
-                  {totalGroups > 0 && (
+                  {/* Show pagination whenever there are results — NOT gated on
+                      the count. */}
+                  {officerGroups.length > 0 && (
                     <div>
                       <CursorPagination
                         currentPage={apiCurrentPage}
                         totalCount={totalGroups}
+                        isCapped={totalGroupsCapped}
+                        currentPageCount={officerGroups.length}
                         pageSize={apiPageSize || pageSize}
                         baseUrl={`/states/${state}`}
                         hasPreviousPage={hasPreviousPage}

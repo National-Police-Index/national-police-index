@@ -11,6 +11,8 @@ interface CursorPaginationProps {
   baseUrl: string;
   hasPreviousPage: boolean;
   hasNextPage: boolean;
+  isCapped?: boolean;
+  currentPageCount?: number;
   onPageSizeChange?: (newSize: number) => void;
 }
 
@@ -21,6 +23,8 @@ export default function CursorPagination({
   baseUrl,
   hasPreviousPage,
   hasNextPage,
+  isCapped = false,
+  currentPageCount,
   onPageSizeChange,
 }: CursorPaginationProps) {
   const searchParams = useSearchParams();
@@ -100,14 +104,20 @@ export default function CursorPagination({
     >
       <div className="">
         Displaying{" "}
-        {totalCount > 0 ? (
+        {((currentPage - 1) * pageSize + 1).toLocaleString()}-
+        {(currentPageCount != null
+          ? (currentPage - 1) * pageSize + currentPageCount
+          :
+            isCapped || totalCount <= 0
+            ? currentPage * pageSize
+            : Math.min(currentPage * pageSize, totalCount)
+        ).toLocaleString()}
+        {totalCount > 0 && (
           <>
-            {((currentPage - 1) * pageSize + 1).toLocaleString()}-
-            {Math.min(currentPage * pageSize, totalCount).toLocaleString()} of{" "}
-            {totalCount.toLocaleString()}
+            {" "}
+            of {totalCount.toLocaleString()}
+            {isCapped ? "+" : ""}
           </>
-        ) : (
-          "0 items"
         )}
       </div>
 
@@ -138,7 +148,9 @@ export default function CursorPagination({
 
           {/* Current page indicator */}
           <li className="">
-            Page {currentPage} of {totalPages.toLocaleString() || 1}
+            {isCapped || totalCount <= 0
+              ? `Page ${currentPage.toLocaleString()}`
+              : `Page ${currentPage} of ${totalPages.toLocaleString() || 1}`}
           </li>
 
           {/* Next page */}
