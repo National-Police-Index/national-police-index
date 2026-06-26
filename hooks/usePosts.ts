@@ -10,7 +10,7 @@ interface UsePostsOptions {
   limit?: number;
 }
 
-export function usePosts({ state, limit = 10 }: UsePostsOptions = {}) {
+export function usePosts({ state, limit = 15 }: UsePostsOptions = {}) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -20,7 +20,7 @@ export function usePosts({ state, limit = 10 }: UsePostsOptions = {}) {
       try {
         setLoading(true);
         const constraints: QueryConstraint[] = [
-          orderBy('createdAt', 'asc')
+          orderBy('date', 'desc')
         ];
 
         if (state) {
