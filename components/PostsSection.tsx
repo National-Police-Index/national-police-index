@@ -5,7 +5,9 @@ import PostCard from '@/components/PostCard';
 import { useState } from 'react';
 
 export default function PostsSection() {
-  const { posts, loading, error } = usePosts({ limit: 6 });
+
+  
+  const { posts, loading, error } = usePosts({ limit: 12 });
   const [currentPage, setCurrentPage] = useState(0);
 
   const postsPerPage = 3;

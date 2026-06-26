@@ -20,7 +20,7 @@ export function usePosts({ state, limit = 10 }: UsePostsOptions = {}) {
       try {
         setLoading(true);
         const constraints: QueryConstraint[] = [
-          orderBy('createdAt', 'asc')
+          orderBy('date', 'desc')
         ];
 
         if (state) {
