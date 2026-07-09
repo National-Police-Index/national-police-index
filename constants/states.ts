@@ -208,7 +208,7 @@ export const US_STATES: USState[] = [
     abbreviation: "MA",
     hasData: false,
     key: "a41",
-    dataFlag: "no_data_tb",
+    dataFlag: "coming_soon",
   },
   {
     name: "Michigan",
@@ -259,7 +259,7 @@ export const US_STATES: USState[] = [
     abbreviation: "NE",
     hasData: false,
     key: "a20",
-    dataFlag: "no_data_tb",
+    dataFlag: "coming_soon",
   },
   {
     name: "Nevada",
@@ -285,7 +285,7 @@ export const US_STATES: USState[] = [
     abbreviation: "NJ",
     hasData: false,
     key: "a15",
-    dataFlag: "no_data_tb",
+    dataFlag: "coming_soon",
   },
   {
     name: "New Mexico",
@@ -335,6 +335,7 @@ export const US_STATES: USState[] = [
     hasData: false,
     key: "a35",
     dataFlag: "no_data_lb",
+    url: "https://www.readfrontier.org/stories/when-oklahoma-police-officers-suspected-of-misconduct-move-between-agencies-the-public-cant-track-them/",
   },
   {
     name: "Oregon",
@@ -367,6 +368,7 @@ export const US_STATES: USState[] = [
     hasData: false,
     key: "a42",
     dataFlag: "no_data_tb",
+    url:"https://www.oceanstatemedia.org/politics/rhode-island-resists-efforts-at-policing-reform-embraced-by-every-other-state",
   },
   {
     name: "South Carolina",
@@ -422,7 +424,7 @@ export const US_STATES: USState[] = [
     abbreviation: "VA",
     hasData: false,
     key: "a24",
-    dataFlag: "no_data_lb",
+    dataFlag: "coming_soon",
     url: "https://vcij.org/stories/virginia-is-in-the-minority-of-states-keeping-even-the-most-basic-police-data-secret",
   },
   {
