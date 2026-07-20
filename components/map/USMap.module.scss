@@ -3,6 +3,7 @@
 
 $dateFull: #A1D1C1;
 $dataSoon: #D7F4CE;
+$someDataSoon: #D7F4CE;
 $dataSome: #FFF5CC;
 $dataNoTB: #FFE1C7;
 $dataNoLB: #FAD2D2;
@@ -107,6 +108,12 @@ $dataNoLB: #FAD2D2;
   }
 
   &.some_data {
+    >div>div> :first-child {
+      background-color: $dataSome;
+    }
+  }
+
+  &.some_data_soon {
     >div>div> :first-child {
       background-color: $dataSome;
     }

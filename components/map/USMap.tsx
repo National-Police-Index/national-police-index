@@ -17,6 +17,7 @@ type StatesMap = {
 export const DATA_FLAGS = {
   'full': 'bg-[#A1D1C1]',
   'coming_soon': 'bg-[#D7F4CE]',
+  'some_coming_soon': 'bg-[#D7F4CE]',
   'some_data': 'bg-[#FFF5CC]',
   'no_data_tb': 'bg-[#FFE1C7]',
   'no_data_lb': 'bg-[#FAD2D2]',
@@ -25,9 +26,65 @@ export const DATA_FLAGS = {
 export const DATA_FLAG_MESSAGES = {
   'full': 'Full Data Available',
   'coming_soon': 'Data Coming Soon',
+  'some_coming_soon': 'Some Data Coming Soon',
   'some_data': 'Some Data Available',
   'no_data_tb': 'No Data (Technical Barrier)',
   'no_data_lb': 'No Data (Legal Barrier)',
+};
+
+export const STATE_HOVER = {
+  'alabama': "Legal barrier to release",
+  'alaska': "Records from Alaska are still being processed",
+  'arizona': "Employment history data from Arizona is available",
+  'arkansas': "Claimed legal barrier to release",
+  'california': "Employment history data from California is available",
+  'colorado': "Legal barrier to release employment history data; ongoing appeal",
+  'connecticut': "Technical barriers prevent the release of employment history data in Connecticut",
+  'delaware': "Claimed legal barrier to release employment history data; ongoing appeal",
+  'columbia': "Records from D.C. are still being processed",
+  'florida': "Employment history data from Florida is available",
+  'georgia': "Employment history data from Georgia is available",
+  'hawaii': "Records from Hawaii are still being processed",
+  'idaho': "Employment history data from Idaho is available",
+  'illinois': "Employment history data from Illinois is available",
+  'indiana': "Employment history data from Indiana is available",
+  'iowa': "Records from Iowa are still being processed",
+  'kansas': "Employment history data from Kansas is available",
+  'kentucky': "Employment history data from Kentucky is available",
+  'louisiana': "Limited employment history data from Louisiana is available through LLEAD",
+  'maine': "Technical barriers prevent the release of employment history data in Maine",
+  'maryland': "Employment history data from Maryland is available",
+  'massachusetts': "Little employment history data exists in Massachusetts due to no certification system until 2021",
+  'michigan': "Claimed legal barrier to release employment history data; ongoing appeal",
+  'minnesota': "Employment history data from Minnesota is available",
+  'mississippi': "Employment history data from Mississippi is available",
+  'missouri': "Claimed legal barrier to release employment history data",
+  'montana': "Claimed legal barrier to release employment history data",
+  'nebraska': "Technical barriers prevent the release of employment history data in Nebraska",
+  'nevada': "Claimed legal barrier to release employment history data",
+  'new-hampshire': "Technical barriers prevent the release of employment history data in New Hampshire",
+  'new-jersey': "Little employment history data exists in New Jersey due to no certification system until 2021",
+  'new-mexico': "Employment history data from New Mexico is available",
+  'new-york': "Claimed legal barrier to release employment history data; ongoing appeal",
+  'north-carolina': "Employment history data from North Carolina is available",
+  'north-dakota': "Records from North Dakota are still being processed",
+  'ohio': "Employment history data from Ohio is available",
+  'oklahoma': "Claimed legal barrier to release employment history data",
+  'oregon': "Employment history data from Oregon is available",
+  'pennsylvania': "Claimed legal barrier to release employment history data",
+  'puerto-rico': "",
+  'rhode-island': "Little employment history data exists in Rhode Island due to no certification system",
+  'south-carolina': "Employment history data from South Carolina is available",
+  'south-dakota': "Claimed legal barrier to release employment history data",
+  'tennessee': "Employment history data from Tennessee is available",
+  'texas': "Employment history data from Texas is available",
+  'utah': "Employment history data from Utah is available",
+  'vermont': "Employment history data from Vermont is available",
+  'virginia': "Claimed legal barrier to release employment history data",
+  'washington': "Employment history data from Washington is available",
+  'west-virginia': "Employment history data from West Virginia is available",
+  'wisconsin': "Claimed legal barrier to release employment history data; ongoing appeal",
+  'wyoming': "Employment history data from Wyoming is available",
 };
 
 export default function USMap() {
@@ -59,7 +116,7 @@ export default function USMap() {
       window.location.href = `/states/${stateReference.toLowerCase()}`;
     } else {
       if (stateData?.url) {
-        window.open(stateData.url, '_self');
+        window.open(stateData.url, '_blank');
       }
     }
   };
@@ -71,6 +128,8 @@ export default function USMap() {
       // Track hover interaction
       trackMapInteraction(stateData.name, 'hover');
       const message = DATA_FLAG_MESSAGES[stateData.dataFlag as keyof typeof DATA_FLAG_MESSAGES] || '';
+      //will implement the state hover stuff at a later time, when the text is up to date
+      //const message = STATE_HOVER[stateData.reference as keyof typeof STATE_HOVER] || '';
 
       const eTarget = (e.target as HTMLElement).getBoundingClientRect();
       const wrapperRect = mapWrapperRef.current?.getBoundingClientRect();
