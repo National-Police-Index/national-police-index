@@ -7,19 +7,15 @@ import {
   collectionGroup,
   getDocs,
   writeBatch,
-  doc,
-  DocumentData,
   QueryDocumentSnapshot,
   limit,
   startAfter,
   query,
-  where,
-  orderBy
+  where
 } from 'firebase/firestore';
 
 import dotenv from 'dotenv';
 import * as fs from 'fs';
-import * as path from 'path';
 
 
 dotenv.config({ path: '.env.local' });
@@ -56,15 +52,6 @@ const CONFIG = {
   targetState: targetState,
 };
 
-
-interface OfficerDocument extends DocumentData {
-  first_name?: string;
-  middle_name?: string;
-  last_name?: string;
-  full_name?: string;
-  person_nbr?: string;
-  state?: string;
-}
 
 interface ProgressData {
   lastProcessedId: string | null;

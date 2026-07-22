@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collectionGroup, query, where, getDocs, writeBatch, doc, limit, startAfter, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { getFirestore, collectionGroup, query, where, getDocs, writeBatch, limit, startAfter, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 

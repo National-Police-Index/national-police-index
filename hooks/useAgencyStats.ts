@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   query,
   where,
@@ -49,11 +47,6 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
       try {
         setLoading(true);
         setError(null);
-
-        const agencyId = agencyName
-          .toLowerCase()
-          .replace(/[/\\]/g, "%2F")
-          .replace(/[^a-z0-9-]/g, "-");
 
         //  const statsRef = doc(db, "statistics_per_agency", agencyId);
         // const statsDoc = await getDoc(statsRef);
@@ -110,7 +103,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
                 : new Error("Failed to fetch agency statistics")
             );
           }
-        } catch (calcErr) {
+        } catch {
           setStats(createDefaultStats(agencyName));
           setError(
             err instanceof Error
@@ -124,6 +117,7 @@ export function useAgencyStats(agencyName: string, stateId: string = "") {
     }
 
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agencyName]);
 
   return { loading, error, stats };

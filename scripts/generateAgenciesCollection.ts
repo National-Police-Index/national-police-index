@@ -9,7 +9,6 @@ import {
   collection,
   limit,
   where,
-  orderBy,
   Timestamp,
   startAfter,
 } from "firebase/firestore";

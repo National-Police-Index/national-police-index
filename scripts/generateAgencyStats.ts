@@ -10,9 +10,6 @@ import {
   limit,
   startAfter,
   QueryDocumentSnapshot,
-  DocumentData,
-  CollectionReference,
-  Query,
   setDoc,
   where,
   orderBy
@@ -97,7 +94,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
 
 async function loadDiscoveredAgencies(): Promise<Map<string, { name: string; state: string }>> {
   const tempCollection = collection(db, TEMP_COLLECTION);
-        let q = query(
+        const q = query(
           tempCollection,
         orderBy('discovered_at', 'desc'),
         );
@@ -189,7 +186,6 @@ async function generateAgencyStats(state: string) {
 
     try {
       let lastDoc: QueryDocumentSnapshot | null = null;
-      let totalProcessed = 0;
       const uniqueOfficers = new Set<string>();
       let hasMoreDocs = true;
       let pageCount = 0;
@@ -209,7 +205,6 @@ async function generateAgencyStats(state: string) {
 
         const snapshot = await withTimeout(getDocs(q));
         const docsSize = snapshot.size;
-        totalProcessed += docsSize;
 
         snapshot.forEach(doc => {
           const data = doc.data();

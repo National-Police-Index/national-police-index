@@ -1,24 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import {
     getFirestore,
-    collectionGroup,
     query,
     getDocs,
     getDoc,
     writeBatch,
     doc,
     collection,
-    limit,
-    startAfter,
-    QueryDocumentSnapshot,
-    DocumentData,
-    CollectionReference,
-    Query,
     setDoc,
     where,
     orderBy
 } from 'firebase/firestore';
 import dotenv from 'dotenv';
+import { US_STATES } from '../constants/states';
 
 interface State {
     name: string;
@@ -29,13 +23,6 @@ interface State {
     dataFlag: string;
     url?: string;
 }
-
-interface ProgressData {
-    lastState: string;
-    lastProcessed: string;
-    totalProcessed: number;
-}
-
 
 dotenv.config({ path: '.env.local' });
 
@@ -52,9 +39,6 @@ const firebaseConfig = {
 console.log(firebaseConfig);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-
-const { US_STATES } = require('../constants/states') as { US_STATES: State[] };
 
 async function updateAgencyActiveStats(startState?: string) {
     try {

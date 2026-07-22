@@ -33,15 +33,12 @@ async function addSearchQueries(): Promise<void> {
     let batch = writeBatch(db);
     let batchCount = 0;
     const BATCH_SIZE = 500;
-    let updatedCount = 0;
-    let skippedCount = 0;
 
     for (const docSnapshot of querySnapshot.docs as QueryDocumentSnapshot<OfficerDocument>[]) {
       const docData = docSnapshot.data();
 
 
       if (!docData.full_name) {
-        skippedCount++;
         continue;
       }
 
@@ -65,7 +62,6 @@ async function addSearchQueries(): Promise<void> {
 
       batch.update(docRef, { searchQueries: uniqueSearchQueries });
       batchCount++;
-      updatedCount++;
 
 
       if (batchCount >= BATCH_SIZE) {

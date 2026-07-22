@@ -10,17 +10,10 @@ import {
   QueryDocumentSnapshot,
   limit,
   startAfter,
-  orderBy,
-  DocumentData,
   CollectionReference,
   Query
 } from 'firebase/firestore';
 import { US_STATES } from '../constants/states.js';
-
-interface State {
-  name: string;
-  abbreviation: string;
-}
 
 
 const BATCH_SIZE = 20;

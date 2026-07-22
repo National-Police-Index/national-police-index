@@ -14,7 +14,6 @@ import {
   where
 } from 'firebase/firestore';
 import fs from 'fs';
-import path from 'path';
 
 
 import dotenv from 'dotenv';
@@ -131,7 +130,6 @@ async function processState(state: string, progressData: ProgressData): Promise<
     let processed = stateProgress.documentsProcessed;
     let updatedCount = stateProgress.documentsUpdated;
     let skippedCount = stateProgress.documentsSkipped;
-    let totalDocuments = 0;
     let lastDoc: QueryDocumentSnapshot<OfficerDocument> | null = null;
 
 
@@ -155,9 +153,6 @@ async function processState(state: string, progressData: ProgressData): Promise<
         hasMoreDocs = false;
         continue;
       }
-
-      totalDocuments += batchSize;
-
 
       let batch = writeBatch(db);
       let batchCount = 0;

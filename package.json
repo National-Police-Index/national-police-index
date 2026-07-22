@@ -7,7 +7,7 @@
     "build": "next build",
     "build:sitemap": "cd scripts && npx tsc && node ../dist/scripts/scripts/generateSitemap.js",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "migrate": "tsx scripts/migrate.ts",
     "generate-stats": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateStateStats.ts",
     "generate-stats-agencies": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/generateAgencyStats.ts",
@@ -41,6 +41,8 @@
     "react-instantsearch": "^7.15.6"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/json2csv": "^5.0.7",
     "@types/lodash": "^4.17.16",

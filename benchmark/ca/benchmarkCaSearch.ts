@@ -116,8 +116,8 @@ async function runFastPath(db: Firestore, rawQuery: string): Promise<RunResult> 
   q = query(q, limit(INTERNAL_PAGE_SIZE * 10));
 
   const t0 = performance.now();
-  let snapshot = await getDocsFromServer(q);
-  let totalDocs = snapshot.size;
+  const snapshot = await getDocsFromServer(q);
+  const totalDocs = snapshot.size;
 
   // SINGLE fetch only — no continuation loop (matches the capped CA fast path).
   const grouped = new Map<string, true>();

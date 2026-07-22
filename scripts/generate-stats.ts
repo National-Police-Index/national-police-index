@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 import type { ServiceAccount } from 'firebase-admin';
 import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { join } from 'path';
 
 
 const serviceAccountPath = join(process.cwd(), 'firebase-service-account.json');
@@ -59,7 +59,7 @@ const US_STATES = [
 ];
 
 
-const app = admin.initializeApp({
+admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
@@ -87,7 +87,6 @@ async function generateStateStats() {
       const CHUNK_SIZE = 1000;
       let lastDoc = null;
       let totalOfficers = 0;
-      let processedDocs = 0;
 
       while (true) {
         let query = officersRef.orderBy('document_id').limit(CHUNK_SIZE);
@@ -98,8 +97,6 @@ async function generateStateStats() {
         const snapshot = await query.get();
         const batchSize = snapshot.size;
         if (batchSize === 0) break;
-
-        processedDocs += batchSize;
 
         snapshot.forEach(doc => {
           const data = doc.data();

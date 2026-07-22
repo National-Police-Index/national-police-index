@@ -24,7 +24,7 @@ export function useAnalytics() {
 
   // Track engagement milestones
   useEffect(() => {
-    let sessionStartTime = Date.now();
+    const sessionStartTime = Date.now();
     let engagementTracked = false;
 
     const trackEngagement = () => {

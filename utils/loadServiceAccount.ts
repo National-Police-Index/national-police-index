@@ -1,6 +1,6 @@
 import type { ServiceAccount } from 'firebase-admin';
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
 const projectRoot = path.resolve(__dirname, '..');
 
 export async function loadServiceAccount(): Promise<ServiceAccount> {

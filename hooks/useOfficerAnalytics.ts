@@ -44,7 +44,7 @@ export const useOfficerAnalytics = (officerData: OfficerData | null) => {
   }, [officerData, pathname]);
 
   return {
-    trackOfficerInteraction: (action: string, details?: Record<string, any>) => {
+    trackOfficerInteraction: (action: string) => {
       try {
         if (officerData) {
           trackOfficerView(

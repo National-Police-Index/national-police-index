@@ -117,7 +117,7 @@ export function useOfficersByUid({
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [firstDoc, setFirstDoc] =
+  const [, setFirstDoc] =
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [lastDoc, setLastDoc] =
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -327,7 +327,7 @@ export function useOfficersByUid({
         setCountCapCache((prev) => ({ ...prev, [filtersCacheKey]: capped }));
 
         return uniqueCount;
-      } catch (countErr) {
+      } catch {
         const defaultCount = 11713;
         return defaultCount;
       }
@@ -338,18 +338,6 @@ export function useOfficersByUid({
       return defaultCount;
     }
   }, [state, filtersCacheKey, countCache, searchParameters]);
-
-  const calculateUniqueOfficersCount = useCallback(
-    (docs: QueryDocumentSnapshot<DocumentData>[]) => {
-      const uniqueOfficers = new Set();
-      docs.forEach((doc) => {
-        const officer = doc.data() as PoliceOfficer;
-        uniqueOfficers.add(officer.person_nbr);
-      });
-      return uniqueOfficers.size;
-    },
-    []
-  );
 
   useEffect(() => {
     let isMounted = true;
@@ -710,12 +698,14 @@ export function useOfficersByUid({
     return () => {
       isMounted = false;
       if (fetchStateRef.current.debounceTimer) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         clearTimeout(fetchStateRef.current.debounceTimer);
       }
       if (cancelTokenRef.current) {
         cancelTokenRef.current.abort();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, searchParamsString]);
 
   useEffect(() => {

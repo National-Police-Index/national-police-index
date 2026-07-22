@@ -12,8 +12,6 @@ import {
   doc,
   getDoc,
   startAfter,
-  QueryDocumentSnapshot,
-  DocumentData,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { PoliceOfficer } from "@/types";
@@ -41,7 +39,6 @@ interface UseOfficersByAgencyProps {
 
 export function useOfficersByAgency({
   agencyName,
-  agencyId,
   state,
   searchParams = { pageSize: "16" },
 }: UseOfficersByAgencyProps) {
@@ -96,8 +93,8 @@ export function useOfficersByAgency({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [officerGroups, setOfficerGroups] = useState<OfficerGroup[]>([]);
-  const [sortedGroups, setSortedGroups] = useState<OfficerGroup[]>([]);
-  const [totalOfficers, setTotalOfficers] = useState<number | null>(null);
+  const [, setSortedGroups] = useState<OfficerGroup[]>([]);
+  const [, setTotalOfficers] = useState<number | null>(null);
   const [totalCount, setTotalCount] = useState(0);
 
   const [currentPage, setCurrentPage] = useState<number>(
@@ -280,12 +277,13 @@ export function useOfficersByAgency({
         setCountCache((prev) => ({ ...prev, [filtersCacheKey]: uniqueCount }));
 
         return uniqueCount;
-      } catch (countErr) {
+      } catch {
         return 500;
       }
-    } catch (err) {
+    } catch {
       return 500;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     agencyName,
     state,
@@ -426,7 +424,6 @@ export function useOfficersByAgency({
         const pageSize = searchParameters.query
           ? 100
           : searchParameters.pageSize;
-        const page = currentPage;
         const direction = searchParameters.direction;
 
         q = query(q, limit(pageSize * (searchParameters.query ? 100 : 10)));
@@ -452,7 +449,6 @@ export function useOfficersByAgency({
         }
 
         const snapshot = await getDocs(q);
-        const allDocs = snapshot.docs;
 
         const groupedOfficers = new Map<string, PoliceOfficer[]>();
         let uniqueCount = 0;
@@ -586,9 +582,11 @@ export function useOfficersByAgency({
       isMounted = false;
 
       if (fetchStateRef.current.debounceTimer) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         clearTimeout(fetchStateRef.current.debounceTimer);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString]);
 
   useEffect(() => {
@@ -602,6 +600,7 @@ export function useOfficersByAgency({
       cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
       setHasPreviousPage(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     agencyName,
     searchParameters.query,

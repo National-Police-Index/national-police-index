@@ -43,7 +43,7 @@ export const useAgencyAnalytics = (agencyData: AgencyData | null) => {
   }, [agencyData, pathname]);
 
   return {
-    trackAgencyInteraction: (action: string, details?: Record<string, any>) => {
+    trackAgencyInteraction: (action: string) => {
       try {
         if (agencyData) {
           trackAgencyView(

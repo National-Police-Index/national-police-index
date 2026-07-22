@@ -226,6 +226,7 @@ export default function SearchFilters({
       setReset(false);
     }
     router.push(`?${params.toString()}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, router, searchParams]);
 
   const downloadEntireCSV = async () => {

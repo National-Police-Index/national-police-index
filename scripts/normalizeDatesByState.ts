@@ -156,8 +156,8 @@ function normalizeDate(input: any): string {
       // Common US date formats: MM/DD/YYYY or M/D/YY
       const mdY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
       if (mdY) {
-        let month = parseInt(mdY[1], 10);
-        let day = parseInt(mdY[2], 10);
+        const month = parseInt(mdY[1], 10);
+        const day = parseInt(mdY[2], 10);
         let year = parseInt(mdY[3], 10);
         if (year < 100) year += year >= 70 ? 1900 : 2000; // naive 2-digit year handling
         if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
@@ -201,7 +201,7 @@ async function processState(
   const existing = progressData.states.find((s) => s.state === state);
   if (existing && existing.completed) return existing;
 
-  let stateProgress: StateProgress = existing || {
+  const stateProgress: StateProgress = existing || {
     state,
     completed: false,
     documentsProcessed: 0,

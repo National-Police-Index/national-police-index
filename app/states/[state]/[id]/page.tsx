@@ -113,6 +113,7 @@ export default function AgencyPage() {
     }, 2000);
 
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [officersLoading]);
 
   const loading = statsLoading || officersLoading || searchLoading;

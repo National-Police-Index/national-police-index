@@ -19,7 +19,7 @@ export const _US_STATES_MAP = {
         )
     },
     '_a0': {
-        renderSvg: (state: State, onClick: (reference: string) => void) => (
+        renderSvg: () => (
             <div className="left-[4.95rem] top-[9.87rem] absolute">
 
                 <svg width="44" height="22" viewBox="0 0 44 22" fill="none" xmlns="http://www.w3.org/2000/svg">
