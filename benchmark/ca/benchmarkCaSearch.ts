@@ -1,4 +1,12 @@
 /**
+ * ⚠️ STALE — needs updating, do not treat as validation.
+ * INTERNAL_PAGE_SIZE is 100 but the app defaults to 16, so this measures a
+ * 6x-wider fetch window than production; runFastPath still uses the pre-fix
+ * anchor-only query rather than the shipped surname-range one; and it only prints
+ * result counts without asserting them, which is how "smith john" quietly
+ * returning 19 of 50 matches got read as a win. Also keeps local copies of the
+ * hook's helpers, which are now exported and should be imported instead.
+ *
  * Benchmark: CA "old path" (searchQueries / array-contains-any) vs
  * "fast path" (search_prefixes / array-contains), measured against the real
  * Firestore backend.

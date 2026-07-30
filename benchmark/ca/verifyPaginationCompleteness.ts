@@ -1,4 +1,13 @@
 /**
+ * ⚠️ STALE — needs updating, and NOT a recall test. groundTruth() below uses the
+ * same anchor query as the code under test, so it only proves the pagination loop
+ * is self-consistent — which is how "smith john" reported COMPLETE ✅ while page 1
+ * of the real search showed 0 of its 50 matches. It also pages exhaustively where
+ * the app does a single fetch, simulates the pre-fix anchor-only query rather than
+ * the shipped surname-range one, and keeps local copies of the hook's helpers,
+ * which are now exported and should be imported instead. For recall use
+ * benchmark/verifySearchRecall.ts or benchmark/ca/verifyMultiTermRecall.ts.
+ *
  * Completeness proof for the capped CA fast path: simulate the hook's page-by-
  * page cursor pagination and confirm that scrolling through ALL pages reaches
  * EVERY matching officer — i.e. nothing is hidden — and matches a ground-truth

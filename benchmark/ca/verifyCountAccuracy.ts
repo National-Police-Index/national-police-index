@@ -1,4 +1,9 @@
 /**
+ * ⚠️ STALE — needs updating. "✅ ACCURATE" overclaims: it only means the 10k cap
+ * did not truncate the count, not that the count is right, since both sides are
+ * anchored on the same (pre-fix) term. Also keeps local copies of the hook's
+ * helpers, which are now exported and should be imported instead.
+ *
  * Is the displayed total count correct, or capped by the 10k-doc fetch?
  *
  * getTotalCount() fetches up to limit(10000) docs matching the anchor prefix,

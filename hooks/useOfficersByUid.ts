@@ -15,6 +15,8 @@ import {
   collection,
   DocumentData,
   or,
+  Query,
+  QueryConstraint,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -32,7 +34,7 @@ import { PoliceOfficer } from "@/types";
 const CA_MIN_PREFIX_LENGTH = 2;
 const CA_FAST_SEARCH_ENABLED = true;
 
-function caSearchTerms(rawQuery: string): string[] {
+export function caSearchTerms(rawQuery: string): string[] {
   return rawQuery
     .toLowerCase()
     .trim()
@@ -42,15 +44,75 @@ function caSearchTerms(rawQuery: string): string[] {
 
 // The longest term is the most selective, so anchoring the indexed query on it
 // yields the smallest candidate set from Firestore.
-function caAnchorTerm(terms: string[]): string {
+export function caAnchorTerm(terms: string[]): string {
   return terms.reduce((a, b) => (b.length > a.length ? b : a), terms[0] ?? "");
+}
+
+// Multi-term search used to enforce only ONE term on the server and check the
+// rest client-side inside a limit-truncated, last_name-ordered window, so a match
+// whose surname sorted past that window was unreachable ("joseph goosby" found
+// nothing). Pinning a second term to a last_name prefix range makes the server
+// satisfy both, reusing the existing (state, <token field>, last_name) indexes.
+
+// last_name is stored Title Case while typed terms are lowercased, so a range
+// bound has to be re-cased. U+F8FF sorts above any character used in a name.
+const NAME_RANGE_HIGH = String.fromCharCode(0xf8ff);
+
+export function titleCaseTerm(term: string): string {
+  return term.charAt(0).toUpperCase() + term.slice(1);
+}
+
+export function surnameRangeConstraints(
+  tokenField: string,
+  anchor: string,
+  surname: string
+): QueryConstraint[] {
+  const lo = titleCaseTerm(surname);
+  return [
+    where(tokenField, "array-contains", anchor),
+    where("last_name", ">=", lo),
+    where("last_name", "<", lo + NAME_RANGE_HIGH),
+  ];
+}
+
+// Users type either order ("joseph goosby", "smith john"), so probe both
+// assignments and keep whichever hits — a non-empty probe means both terms matched
+// by construction. The winner depends only on the terms and the data, not the
+// cursor, so pagination is unaffected. Returns null when there is nothing better
+// than the caller's existing query, so this can only add results, never remove.
+export async function pickNameConstraints(
+  base: Query<DocumentData>,
+  tokenField: string,
+  terms: string[]
+): Promise<QueryConstraint[] | null> {
+  // Any term length is safe: both constraints still guarantee a real match.
+  const usable = terms.filter((t) => t.length > 0);
+  if (usable.length < 2) return null;
+
+  const [first, second] = usable;
+  const variants = [
+    surnameRangeConstraints(tokenField, first, second),
+    surnameRangeConstraints(tokenField, second, first),
+  ];
+
+  try {
+    const probes = await Promise.all(
+      variants.map((constraints) =>
+        getDocs(query(base, ...constraints, orderBy("last_name", "asc"), limit(1)))
+      )
+    );
+    const hit = probes.findIndex((snap) => !snap.empty);
+    return hit >= 0 ? variants[hit] : null;
+  } catch {
+    return null;
+  }
 }
 
 // Every typed term must be a prefix of some token of the officer's name. This
 // enforces AND semantics + any-order matching on the client, over whatever
 // candidate set the server query returned. Used by both the CA fast path and
 // the non-CA search path.
-function matchesAllTerms(officer: PoliceOfficer, terms: string[]): boolean {
+export function matchesAllTerms(officer: PoliceOfficer, terms: string[]): boolean {
   const tokens = `${officer.first_name} ${officer.last_name}`
     .toLowerCase()
     .split(/\s+/)
@@ -402,20 +464,42 @@ export function useOfficersByUid({
         const useCaFastPath =
           CA_FAST_SEARCH_ENABLED && caTerms.length > 0 && !searchParameters.agency;
 
+        // Firestore requires the range field to lead the orderBy, and an agency
+        // filter would need a different index — otherwise keep the old shape.
+        const canRangeOnLastName =
+          !searchingByUid &&
+          !searchParameters.agency &&
+          searchParameters.sortBy !== "date" &&
+          searchParameters.sortBy !== "agency";
+
         if (useCaFastPath) {
+          const caRanged = canRangeOnLastName
+            ? await pickNameConstraints(q, "search_prefixes", caTerms)
+            : null;
           q = query(
             q,
-            where("search_prefixes", "array-contains", caAnchorTerm(caTerms))
+            ...(caRanged ?? [
+              where("search_prefixes", "array-contains", caAnchorTerm(caTerms)),
+            ])
           );
           q = query(q, orderBy("last_name", "asc"));
         } else {
           if (searchParameters.query) {
             const queryTerms = searchParameters.query.toLowerCase().split(" ").slice(0, 20);
-            q = query(q,
-              or(where("searchQueries", "array-contains-any", queryTerms),
-                 where("person_nbr", "==", searchParameters.query)
-              )
-            );
+            // person_nbr never contains whitespace, so that branch is already
+            // dead for a multi-term name query.
+            const nonCaRanged = canRangeOnLastName
+              ? await pickNameConstraints(q, "searchQueries", queryTerms)
+              : null;
+            if (nonCaRanged) {
+              q = query(q, ...nonCaRanged);
+            } else {
+              q = query(q,
+                or(where("searchQueries", "array-contains-any", queryTerms),
+                   where("person_nbr", "==", searchParameters.query)
+                )
+              );
+            }
           }
 
           if(!searchingByUid) {
