@@ -121,7 +121,7 @@ export default function OfficerProfilePage() {
       ...(eventType === "Discipline" && { sanction_date: dateString }),
       rank: record.rank || record.certification_type || record.type,
       offense: record.offense || record.sanction,
-      separation_reason: record.separation_reason || record.status,
+      separation_reason: record.separation_reason || record.employment_status,
       violation: record.violation,
     } as PoliceOfficerWithEventType;
   };
