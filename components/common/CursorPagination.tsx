@@ -103,6 +103,7 @@ export default function CursorPagination({
       className={`flex items-center justify-between ${styles.paginationWrapper}`}
     >
       <div className="">
+        {currentPageCount === 0 ? "No results on this page" : <>
         Displaying{" "}
         {((currentPage - 1) * pageSize + 1).toLocaleString()}-
         {(currentPageCount != null
@@ -119,6 +120,7 @@ export default function CursorPagination({
             {isCapped ? "+" : ""}
           </>
         )}
+        </>}
       </div>
 
       <nav className={`flex items-center justify-center ${styles.pagination}`}>

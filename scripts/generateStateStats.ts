@@ -1,19 +1,15 @@
-import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  writeBatch,
-  doc,
-  QueryDocumentSnapshot,
-  limit,
-  startAfter,
-  CollectionReference,
-  Query
-} from 'firebase/firestore';
+// Uses the Firebase ADMIN SDK, not the client SDK. The client SDK only has the
+// public web config, so its writes to statistics_per_state are governed by the
+// deployed Firestore rules and fail with PERMISSION_DENIED. The admin SDK
+// authenticates with the service account and bypasses rules, which is what a
+// maintenance script needs. Same pattern as generateSitemap.ts.
+import * as admin from 'firebase-admin';
 import { US_STATES } from '../constants/states.js';
+import { loadServiceAccount } from '../utils/loadServiceAccount';
+
+type QueryDocumentSnapshot = admin.firestore.QueryDocumentSnapshot;
+type CollectionReference = admin.firestore.CollectionReference;
+type Query = admin.firestore.Query;
 
 
 const BATCH_SIZE = 20;
@@ -23,34 +19,17 @@ const MAX_PAGES_PER_STATE = 20000;
 const GC_INTERVAL = 1;
 
 
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+let db: admin.firestore.Firestore;
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-
-const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-];
-
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    throw new Error(`Missing required environment variable: ${envVar}`);
+async function initializeFirebase(): Promise<admin.firestore.Firestore> {
+  if (!admin.apps.length) {
+    const serviceAccount = await loadServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
   }
+  return admin.firestore();
 }
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 interface StatItem {
   label: string;
@@ -87,7 +66,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): P
 }
 
 async function processStateChunk(states: typeof US_STATES, statsCollection: CollectionReference) {
-  let batch = writeBatch(db);
+  let batch = db.batch();
   let batchCount = 0;
   let retryCount = 0;
   const MAX_RETRIES = 3;
@@ -96,7 +75,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
     const stateRef = state.reference.toLowerCase();
 
 
-    const officersRef = collection(db, 'db_launch');
+    const officersRef = db.collection('db_launch');
     let lastDoc: QueryDocumentSnapshot | null = null;
     let totalProcessed = 0;
 
@@ -109,17 +88,15 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
       while (hasMoreDocs && pageCount < MAX_PAGES_PER_STATE) {
         pageCount++;
 
-        let q: Query = query(
-          officersRef,
-          where('state', '==', stateRef),
-          limit(QUERY_LIMIT)
-        );
+        let q: Query = officersRef
+          .where('state', '==', stateRef)
+          .limit(QUERY_LIMIT);
 
         if (lastDoc) {
-          q = query(q, startAfter(lastDoc));
+          q = q.startAfter(lastDoc);
         }
 
-        const snapshot = await withTimeout(getDocs(q));
+        const snapshot = await withTimeout(q.get());
         totalProcessed += snapshot.size;
 
 
@@ -165,7 +142,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
       };
 
 
-      const statsDoc = doc(statsCollection, stateRef);
+      const statsDoc = statsCollection.doc(stateRef);
       batch.set(statsDoc, stateStats);
       batchCount++;
 
@@ -175,7 +152,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
 
       if (batchCount === BATCH_SIZE) {
         await batch.commit();
-        batch = writeBatch(db);
+        batch = db.batch();
         batchCount = 0;
       }
 
@@ -205,14 +182,14 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
         };
 
         try {
-          const statsDoc = doc(statsCollection, stateRef);
+          const statsDoc = statsCollection.doc(stateRef);
           batch.set(statsDoc, stateStats);
           batchCount++;
 
 
           if (batchCount > 0) {
             await batch.commit();
-            batch = writeBatch(db);
+            batch = db.batch();
             batchCount = 0;
           }
         } catch (writeError: unknown) {
@@ -226,7 +203,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
   if (batchCount > 0) {
     try {
       await batch.commit();
-      batch = writeBatch(db);
+      batch = db.batch();
       batchCount = 0;
     } catch (error) {
       console.error('Error committing batch:', error instanceof Error ? error.message : 'Unknown error');
@@ -236,7 +213,7 @@ async function processStateChunk(states: typeof US_STATES, statsCollection: Coll
 }
 
 async function generateStateStats(startFromState?: string) {
-  const statsCollection = collection(db, 'statistics_per_state');
+  const statsCollection = db.collection('statistics_per_state');
 
 
   let startIndex = 0;
@@ -265,6 +242,9 @@ async function generateStateStats(startFromState?: string) {
 
 export async function updateStateStatistics(startFromState?: string) {
   try {
+    // Initialize here (not only in the main-module block) so callers that
+    // import this function, e.g. scripts/build-stats.js, get a ready db.
+    db ??= await initializeFirebase();
     await generateStateStats(startFromState);
   } catch (error) {
     console.error('Error updating state statistics:', error instanceof Error ? error.message : 'Unknown error');
@@ -275,10 +255,11 @@ export async function updateStateStatistics(startFromState?: string) {
 
 if (import.meta.url === new URL(process.argv[1], 'file:').href) {
   const startFromState = process.argv[2];
-  updateStateStatistics(startFromState)
-    .then(() => process.exit(0))
-    .catch((error) => {
-      console.error('Script failed:', error instanceof Error ? error.message : 'Unknown error');
-      process.exit(1);
-    });
+  (async () => {
+    await updateStateStatistics(startFromState);
+    process.exit(0);
+  })().catch((error) => {
+    console.error('Script failed:', error instanceof Error ? error.message : 'Unknown error');
+    process.exit(1);
+  });
 }

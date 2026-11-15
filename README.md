@@ -104,13 +104,21 @@ npx tsx scripts/normalizeDatesByState.ts <state>
 
 # 3. Add search queries (enable full-text search functionality)
 npx tsx scripts/addSearchQueriesByState.ts <state>
+
+# 4. Add search prefixes (REQUIRED for california — the CA fast search path in
+#    hooks/useOfficersByUid.ts queries `search_prefixes` and returns nothing
+#    without it; harmless but currently unused for other states)
+npx tsx scripts/addSearchPrefixesByState.ts <state>
 ```
+
+Scripts 1-3 record a `<name>_progress.json` file and refuse to re-process a state they already marked `completed` — delete that file when re-running after a re-upload, or the run silently does nothing. `addSearchPrefixesByState.ts` has no such file: its writes are idempotent, so re-running it is always safe.
 
 **Example for California:**
 ```bash
 npx tsx scripts/normalizeStateData.ts california
 npx tsx scripts/normalizeDatesByState.ts california
 npx tsx scripts/addSearchQueriesByState.ts california
+npx tsx scripts/addSearchPrefixesByState.ts california
 ```
 
 ### Step 2: Update Derived Collections (Required)
@@ -169,7 +177,11 @@ After running all scripts, verify the changes:
    - Some agencies may have incomplete statistics if the `generate-stats-agencies` script was terminated early
 
 3. **Test search functionality:**
-   - Search for officers in the updated state
+   The search tests are general: every state, California included, runs the same suites.
+   - `npx tsx benchmark/verifyTokenCoverage.ts <state> --strict` — every record carries well-formed search tokens (`searchQueries`, plus `search_prefixes` in California); run right after the pipeline
+   - `npx tsx benchmark/verifySearchRecall.ts <state>` — sampled real officers must be reachable when searched the ways people type (full name, reversed, "last, first", partial, middle name, Mc / particle / hyphen spellings), page 1 must fill, paging must reach every match, and the result count must cover them; also runs the named regression queries. Add `--seed=random` for a fresh sample
+   - `npx tsx benchmark/verifySearchTokens.ts` — offline: the tokens the pipeline stores agree with the search filter
+   - Search for officers in the updated state in the UI
    - Verify search latency is acceptable (should be similar to other states)
 
 ### Complete Update Workflow Example
@@ -181,6 +193,7 @@ Here's the complete workflow for updating California data:
 npx tsx scripts/normalizeStateData.ts california
 npx tsx scripts/normalizeDatesByState.ts california
 npx tsx scripts/addSearchQueriesByState.ts california
+npx tsx scripts/addSearchPrefixesByState.ts california
 
 # Step 2: Update statistics (using npm commands)
 npm run generate-stats -- california
