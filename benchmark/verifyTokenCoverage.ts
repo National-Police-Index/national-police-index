@@ -7,8 +7,9 @@
  *  - searchQueries not what searchTokens()   -> "old format", reported; FAIL only
  *    builds today (e.g. "zeilenga,")            with --strict. Fixed by re-running
  *                                               scripts/addSearchQueriesByState.ts
- *  - search_prefixes missing / mismatched    -> FAIL, in prefix-indexed states
- *    (PREFIX_STATES)                            (CA search queries that field)
+ *  - name_prefixes missing / mismatched      -> FAIL (name search queries that
+ *    (not what namePrefixes() builds)           field). Fixed by re-running
+ *                                               scripts/addNamePrefixesByState.ts
  *
  * Docs with no name at all are skipped, as the pipeline scripts skip them.
  * Run right after a state's pipeline (use --strict then) or a re-upload.
@@ -18,11 +19,8 @@
  */
 import * as admin from "firebase-admin";
 import { loadServiceAccount } from "../utils/loadServiceAccount";
-import { searchTokens } from "../lib/officerSearch";
-import { searchPrefixesFor } from "../scripts/addSearchPrefixesByState";
+import { searchTokens, namePrefixes, NAME_PREFIX_FIELD } from "../lib/officerSearch";
 
-/** States whose search reads `search_prefixes` (see CA_FAST_SEARCH_ENABLED). */
-const PREFIX_STATES = ["california"];
 const PAGE = 5000;
 const MAX_EXAMPLES = 5;
 
@@ -30,8 +28,7 @@ const sameSet = (a: unknown, b: string[]) =>
   Array.isArray(a) && new Set(a).size === b.length && b.every((x) => a.includes(x));
 
 async function scanState(db: admin.firestore.Firestore, state: string, strict: boolean): Promise<boolean> {
-  const prefixed = PREFIX_STATES.includes(state);
-  const fields = ["first_name", "middle_name", "last_name", "full_name", "searchQueries", ...(prefixed ? ["search_prefixes"] : [])];
+  const fields = ["first_name", "middle_name", "last_name", "full_name", "searchQueries", NAME_PREFIX_FIELD];
   let total = 0, nameless = 0, missing = 0, oldFormat = 0, prefixMissing = 0, prefixWrong = 0;
   const examples: string[] = [];
   const note = (s: string) => { if (examples.length < MAX_EXAMPLES) examples.push(s); };
@@ -55,15 +52,13 @@ async function scanState(db: admin.firestore.Firestore, state: string, strict: b
         note(`${d.id} "${name}" old-format searchQueries ${JSON.stringify(x.searchQueries)}`);
       }
 
-      if (prefixed && (x.first_name || x.last_name)) {
-        // An empty array is valid when every word is too short to index.
-        if (!Array.isArray(x.search_prefixes)) {
-          prefixMissing++;
-          note(`${d.id} "${name}" missing search_prefixes`);
-        } else if (!sameSet(x.search_prefixes, searchPrefixesFor(x.first_name ?? "", x.last_name ?? ""))) {
-          prefixWrong++;
-          note(`${d.id} "${name}" mismatched search_prefixes`);
-        }
+      // An empty array is valid when every word is too short to index.
+      if (!Array.isArray(x[NAME_PREFIX_FIELD])) {
+        prefixMissing++;
+        note(`${d.id} "${name}" missing ${NAME_PREFIX_FIELD}`);
+      } else if (!sameSet(x[NAME_PREFIX_FIELD], namePrefixes(x))) {
+        prefixWrong++;
+        note(`${d.id} "${name}" mismatched ${NAME_PREFIX_FIELD}`);
       }
     }
     if (total && total % 50000 < snap.size) console.log(`  ${state}: scanned ${total}...`);
@@ -74,7 +69,7 @@ async function scanState(db: admin.firestore.Firestore, state: string, strict: b
   const ok = total > 0 && missing === 0 && prefixMissing === 0 && prefixWrong === 0 && (!strict || oldFormat === 0);
   console.log(
     `${ok ? "✅" : "❌"} ${state}: ${total} docs, ${missing} missing searchQueries, ${oldFormat} old-format` +
-    (prefixed ? `, ${prefixMissing} missing / ${prefixWrong} mismatched search_prefixes` : "") +
+    `, ${prefixMissing} missing / ${prefixWrong} mismatched ${NAME_PREFIX_FIELD}` +
     `, ${nameless} skipped (no name)` + (total === 0 ? "  NO DOCS" : "")
   );
   for (const e of examples) console.log(`     ${e}`);

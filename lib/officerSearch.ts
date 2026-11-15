@@ -12,6 +12,7 @@ import {
   getDocs,
   orderBy,
   limit,
+  getCountFromServer,
   startAfter,
   or,
   DocumentData,
@@ -27,22 +28,21 @@ import { PoliceOfficer } from "@/types";
 // ---------------------------------------------------------------------------
 // Token fields
 //
-// Every state's docs carry `searchQueries`: whole lowercase words of full_name
-// (punctuation kept, so "o'brien", "r." and, where full_name is "Last, First",
-// "zeilenga,"). California docs also carry `search_prefixes`: every prefix of
-// length >= 2 of each first/last name word, so CA can match partial words on
-// the server.
+// Name search reads `name_prefixes` (scripts/addNamePrefixesByState.ts): every
+// prefix of length >= 2 of every name token (see searchTokens), in
+// punctuation-free form. A typed term matches a record on the client
+// (termMatches) exactly when name_prefixes holds prefixKey(term), so the
+// server never misses an officer the filter would accept and never returns
+// one it would drop.
+//
+// `searchQueries` (whole words, older pipeline) is still read by searches
+// with digits (badge numbers) and by name searches with an agency filter or
+// a date / agency sort, which have indexes on it and none on name_prefixes.
 // ---------------------------------------------------------------------------
 
-// Requires every CA doc to carry `search_prefixes`, so after a CA re-upload set
-// this false and redeploy until scripts/addSearchPrefixesByState.ts has re-run.
-export const CA_FAST_SEARCH_ENABLED = true;
-const CA_MIN_PREFIX_LENGTH = 2;
-
-/** Kept for existing benchmark imports: the CA terms a query anchors on. */
-export function caSearchTerms(rawQuery: string): string[] {
-  return normalizeQuery(rawQuery).filter((t) => t.length >= CA_MIN_PREFIX_LENGTH);
-}
+export const NAME_PREFIX_FIELD = "name_prefixes";
+/** Shorter terms (initials) are too unselective to index; they're checked on the client. */
+export const MIN_PREFIX_LENGTH = 2;
 
 // ---------------------------------------------------------------------------
 // Query normalisation and matching
@@ -130,6 +130,33 @@ export function searchTokens(record: {
   const out = new Set(nameTokens(record as PoliceOfficer));
   for (const w of (record.full_name ?? "").toLowerCase().split(/[\s,]+/)) addWordForms(out, w);
   out.delete("");
+  return [...out];
+}
+
+/** The name_prefixes key a typed term is looked up by: its punctuation-free form. */
+export function prefixKey(term: string): string {
+  return squash(term);
+}
+
+/**
+ * The `name_prefixes` array scripts/addNamePrefixesByState.ts stores: every
+ * prefix (length >= MIN_PREFIX_LENGTH) of the punctuation-free form of every
+ * searchTokens token. Every token's punctuation-free form is itself a token,
+ * and dropping punctuation from a prefix leaves a prefix of the squashed
+ * token, so a term passes termMatches exactly when this array holds
+ * prefixKey(term) (for keys of at least MIN_PREFIX_LENGTH).
+ */
+export function namePrefixes(record: {
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  full_name?: string;
+}): string[] {
+  const out = new Set<string>();
+  for (const tok of searchTokens(record)) {
+    const flat = squash(tok);
+    for (let len = MIN_PREFIX_LENGTH; len <= flat.length; len++) out.add(flat.slice(0, len));
+  }
   return [...out];
 }
 
@@ -253,6 +280,18 @@ export interface SearchPlan {
 
 /** Docs a probe reads to judge a candidate arm. */
 const PROBE_LIMIT = 20;
+/**
+ * How long the planner waits for the per-term counts that pick the rarest
+ * term. They run alongside the probes; a count that hasn't answered by then
+ * counts as "too common to pick".
+ */
+const TERM_COUNT_TIMEOUT_MS = 2_000;
+/**
+ * The rarest-term arm is added only when that term is this rare: it bounds
+ * the arm's reads, and the counts stop at it so they stay fast. When every
+ * term is more common, the matches it could add sit behind many others.
+ */
+const RARE_ARM_MAX = 1_000;
 /** Upper bound on candidate arms probed per search (one parallel round trip). */
 const MAX_PROBES = 24;
 /** Terms (longest first) considered as anchor or surname. */
@@ -296,8 +335,6 @@ interface Candidate {
  */
 async function planNameSearch(
   base: Query<DocumentData>,
-  tokenField: string,
-  prefixTokens: boolean,
   raw: string
 ): Promise<{
   arms: Query<DocumentData>[];
@@ -322,10 +359,11 @@ async function planNameSearch(
     .slice(0, MAX_PLAN_TERMS);
   if (!planTerms.length) return null;
 
-  // Whole-word token fields only hold complete words; prefix fields hold
-  // every prefix of >= 2 chars. Either way a pair arm also proves the anchor
-  // term matched, so it's tight.
-  const anchorable = (t: string) => (prefixTokens ? t.length >= CA_MIN_PREFIX_LENGTH : true);
+  // name_prefixes holds every prefix of every name word (middle names and
+  // hyphen parts included), so a token arm on a term proves that term
+  // matched: pair arms are tight. Terms are looked up by their prefixKey.
+  const tokenField = NAME_PREFIX_FIELD;
+  const anchorable = (t: string) => prefixKey(t).length >= MIN_PREFIX_LENGTH;
 
   const candidates: Candidate[] = [];
   const add = (c: Candidate) => {
@@ -334,12 +372,15 @@ async function planNameSearch(
 
   if (planTerms.length === 1) {
     const t = planTerms[0];
-    add({
-      key: `token:${t}`,
-      kind: "token",
-      constraints: [where(tokenField, "array-contains", t)],
-      test: (d) => tokenListHas(d, tokenField, t),
-    });
+    if (anchorable(t)) {
+      const k = prefixKey(t);
+      add({
+        key: `token:${k}`,
+        kind: "token",
+        constraints: [where(tokenField, "array-contains", k)],
+        test: (d) => tokenListHas(d, tokenField, k),
+      });
+    }
   }
   // Surname preference: the last typed term or a joined particle form
   // ("dagama"), then the first, then the rest.
@@ -351,14 +392,15 @@ async function planNameSearch(
   for (const surname of ordered) {
     for (const start of surnameRangeStarts(surname)) {
       for (const anchor of planTerms.filter((t) => t !== surname && anchorable(t)).slice(0, 2)) {
+        const k = prefixKey(anchor);
         add({
-          key: `pair:${anchor}:${start}`,
+          key: `pair:${k}:${start}`,
           kind: "pair",
           surname,
-          anchor,
+          anchor: k,
           start,
-          constraints: [where(tokenField, "array-contains", anchor), ...lastNameRange(start)],
-          test: (d) => tokenListHas(d, tokenField, anchor) && inLastNameRange(d, start),
+          constraints: [where(tokenField, "array-contains", k), ...lastNameRange(start)],
+          test: (d) => tokenListHas(d, tokenField, k) && inLastNameRange(d, start),
         });
       }
       add({
@@ -370,22 +412,33 @@ async function planNameSearch(
       });
     }
   }
-  // A prefix index holds first and last names only, so a typed middle name
-  // ("smith john" for David John Smith) can't anchor on it. Whole-word
-  // searchQueries hold the full name, middle included, so each pair also gets
-  // a whole-word twin. Twins go last: the probe cap trims them first.
-  if (prefixTokens) {
-    for (const c of candidates.filter((x) => x.kind === "pair")) {
-      add({
-        key: `wpair:${c.anchor}:${c.start}`,
-        kind: "pair",
-        surname: c.surname,
-        constraints: [where("searchQueries", "array-contains", c.anchor!), ...lastNameRange(c.start!)],
-        test: (d) => tokenListHas(d, "searchQueries", c.anchor!) && inLastNameRange(d, c.start!),
-      });
-    }
-  }
   const probed = candidates.slice(0, MAX_PROBES);
+
+  // Every match holds every typed term, so the officers holding the rarest
+  // term contain them all: one arm on it is complete, at the lowest cost any
+  // complete arm can have. Counted per term (index-only, cheap) alongside the
+  // probes, up to RARE_ARM_MAX. Only terms in every alternative qualify ("mc
+  // adams" may match as "mcadams", which holds no "adams" prefix).
+  const countable = planTerms.filter((t) => anchorable(t) && alternatives.every((alt) => alt.includes(t)));
+  const countsP = Promise.all(
+    countable.map((t) =>
+      Promise.race([
+        // orderBy last_name: the (state, name_prefixes, last_name) index
+        // serves it; without the sort Firestore would need another index.
+        getCountFromServer(
+          query(
+            base,
+            where(tokenField, "array-contains", prefixKey(t)),
+            orderBy("last_name", "asc"),
+            limit(RARE_ARM_MAX + 1)
+          )
+        ).then(
+          (r) => r.data().count
+        ),
+        new Promise<number>((resolve) => setTimeout(() => resolve(Infinity), TERM_COUNT_TIMEOUT_MS)),
+      ]).catch(() => Infinity)
+    )
+  );
 
   const probes = await Promise.all(
     probed.map((c) =>
@@ -398,6 +451,14 @@ async function planNameSearch(
     (probes[i]?.docs ?? []).some((d) => matchesQuery(d.data() as PoliceOfficer, alternatives))
   );
   const full = probed.map((_, i) => (probes[i]?.size ?? 0) === PROBE_LIMIT);
+  const counts = await countsP;
+  let rareTerm: string | null = null;
+  if (planTerms.length > 1) {
+    let best = RARE_ARM_MAX + 1;
+    countable.forEach((t, i) => {
+      if (counts[i] < best) [best, rareTerm] = [counts[i], t];
+    });
+  }
 
   const pairHitSurnames = new Set(
     probed.filter((c, i) => hit[i] && c.kind === "pair").map((c) => c.surname)
@@ -420,11 +481,30 @@ async function planNameSearch(
   // No probe holds a match in its first PROBE_LIMIT docs: a full probe may
   // still hide matches further down, so keep those arms.
   if (!chosen.length) chosen = probed.filter((_, i) => full[i]);
-  // No pair arm proved the name: the surname may be stored in a form no range
-  // start reaches ("Dabney-murphy" for "tyrae murphy"), so also scan every
-  // officer holding any typed word. The client filter keeps genuine matches.
-  if (planTerms.length > 1 && !chosen.some((c) => c.kind === "pair")) {
-    const anyTerms = [...new Set(alternatives.flat())].filter((t) => t.length >= 2).slice(0, 10);
+  // The rarest term's arm: complete, so matches no pair or range reaches
+  // ("Fuentes-lopez" for "jose lopez", where the Jose Lopezes hit a pair arm)
+  // still come up. It holds every officer the rare term's surname ranges
+  // hold, so it replaces them and ranks as they would.
+  if (rareTerm) {
+    const t: string = rareTerm;
+    const k = prefixKey(t);
+    chosen = chosen.filter((c) => !(c.kind === "surname" && c.surname === t));
+    chosen.push({
+      key: `rare:${k}`,
+      kind: "surname",
+      surname: t,
+      constraints: [where(tokenField, "array-contains", k)],
+      test: (d) => tokenListHas(d, tokenField, k),
+    });
+  }
+  // No complete arm (every term too common, or the counts timed out) and no
+  // pair arm proved the name:
+  // scan every officer holding any typed word. The client filter keeps
+  // genuine matches.
+  if (!rareTerm && planTerms.length > 1 && !chosen.some((c) => c.kind === "pair")) {
+    const anyTerms = [...new Set(alternatives.flat().map(prefixKey))]
+      .filter((k) => k.length >= MIN_PREFIX_LENGTH)
+      .slice(0, 10);
     chosen.push({
       key: "any",
       kind: "any",
@@ -462,8 +542,6 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
   const state = input.state.toLowerCase();
   const base = query(collectionGroup(db, "db_launch"), where("state", "==", state));
   const searchingByUid = !!input.query && /\d/.test(input.query.trim());
-  const isCa = state === "california" && CA_FAST_SEARCH_ENABLED;
-  const tokenField = isCa ? "search_prefixes" : "searchQueries";
   const clientStartIso = input.query && input.startDate ? new Date(input.startDate).toISOString() : null;
   const clientEndIso = input.query && input.endDate ? new Date(input.endDate).toISOString() : null;
 
@@ -473,7 +551,7 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
   const nameSortable =
     !input.agency && input.sortBy !== "date" && input.sortBy !== "agency";
   if (input.query && !searchingByUid && nameSortable) {
-    const named = await planNameSearch(base, tokenField, isCa, input.query);
+    const named = await planNameSearch(base, input.query);
     if (named) {
       return {
         arms: named.arms,
@@ -491,7 +569,8 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
 
   // Everything else: one query. A name search lands here only with an agency
   // filter, a date/agency sort, digits in it, or when no candidate arm found
-  // anything at all (then a broad any-term query is the last resort).
+  // anything at all (then a broad any-term query is the last resort). Only
+  // the last case has a name_prefixes index; the others use searchQueries.
   let q = base;
   let shape = "browse";
   if (input.query) {
@@ -499,10 +578,10 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
     if (searchingByUid) {
       shape = "uid";
       q = query(q, or(where("searchQueries", "array-contains-any", terms), where("person_nbr", "==", input.query.trim())));
-    } else if (isCa && !input.agency) {
-      shape = "ca:anchor";
-      const anchor = terms.reduce((a, b) => (b.length > a.length ? b : a), terms[0] ?? "");
-      q = query(q, where("search_prefixes", "array-contains", anchor));
+    } else if (nameSortable) {
+      shape = "prefix-any";
+      const keys = [...new Set(terms.map(prefixKey))].filter((k) => k.length >= MIN_PREFIX_LENGTH);
+      q = query(q, where(NAME_PREFIX_FIELD, "array-contains-any", keys.length ? keys : [""]));
     } else {
       shape = "contains-any";
       q = query(q, where("searchQueries", "array-contains-any", terms.length ? terms : [""]));

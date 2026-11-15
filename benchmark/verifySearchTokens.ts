@@ -7,19 +7,17 @@
  *     server returns officers the page then silently drops; and every word of
  *     first / middle / last name (and its punctuation-free form and hyphen
  *     parts) must be stored, or array-contains on it finds nobody.
- *  2. search_prefixes (scripts/addSearchPrefixesByState.ts, California today):
- *     every indexed prefix must pass the filter, and every prefix (>= 2 chars)
- *     of a first / last name word must be indexed. The reverse need not hold:
- *     the filter also accepts forms the prefix index lacks (punctuation-free
- *     words, hyphen parts, middle names), which the planner's last_name range
- *     and any-term arms find instead.
+ *  2. name_prefixes (scripts/addNamePrefixesByState.ts, every state), the
+ *     field name search queries: for every substring of every name word,
+ *     typed as a search, the field holds its prefixKey exactly when the
+ *     client filter accepts it. So the server never misses an officer the
+ *     filter would show, nor returns one it would drop.
  *
  * Run:  npx tsx benchmark/verifySearchTokens.ts
  * Exit: 0 all pass, 1 any failure.
  */
 import { PoliceOfficer } from "@/types";
-import { matchesAllTerms, normalizeQuery, searchTokens } from "@/lib/officerSearch";
-import { searchPrefixesFor, MIN_PREFIX_LENGTH } from "@/scripts/addSearchPrefixesByState";
+import { matchesAllTerms, normalizeQuery, searchTokens, namePrefixes, prefixKey, MIN_PREFIX_LENGTH } from "@/lib/officerSearch";
 
 interface Name {
   first: string;
@@ -62,10 +60,10 @@ function requiredForms(word: string): string[] {
   return [w, flat(w), ...w.split("-"), ...w.split("-").map(flat)].filter(Boolean);
 }
 
-/** Every substring (len >= 2) of every word: prefixes must match, the rest mustn't be indexed. */
-function substrings(first: string, last: string): Set<string> {
+/** Every substring (len >= 2) of every word, plus a few never-present strings. */
+function substrings(name: string): Set<string> {
   const out = new Set<string>();
-  for (const tok of `${first} ${last}`.toLowerCase().split(/\s+/).filter(Boolean)) {
+  for (const tok of name.toLowerCase().split(/[\s,]+/).filter(Boolean)) {
     for (let i = 0; i < tok.length; i++) for (let j = i + 2; j <= tok.length; j++) out.add(tok.slice(i, j));
   }
   ["zz", "smi ", "ohn", "mith", "xq"].forEach((t) => out.add(t));
@@ -101,22 +99,24 @@ for (const n of NAMES) {
   console.log(`  ${label(n).padEnd(34)} ${n.from.padEnd(11)} ${JSON.stringify(tokens)}`);
 }
 
-console.log("\nsearch_prefixes (prefix-indexed states: california)");
+console.log("\nname_prefixes (all states; the field name search queries)");
 for (const n of NAMES) {
-  const officer = { first_name: n.first, middle_name: n.middle, last_name: n.last } as PoliceOfficer;
-  const prefixes = searchPrefixesFor(n.first, n.last);
+  const record = { first_name: n.first, middle_name: n.middle, last_name: n.last, full_name: n.full };
+  const officer = record as PoliceOfficer;
+  const prefixes = namePrefixes(record);
   const set = new Set(prefixes);
 
   check(prefixes.length === set.size, `"${label(n)}" duplicate prefixes`);
-  for (const p of prefixes) check(p.length >= MIN_PREFIX_LENGTH && !/\s/.test(p), `"${label(n)}" bad prefix ${JSON.stringify(p)}`);
-  for (const t of substrings(n.first, n.last)) {
-    const typed = normalizeQuery(t).filter((x) => x.length >= MIN_PREFIX_LENGTH);
-    if (typed.length !== 1) continue; // never searched as a single term
-    const indexed = set.has(typed[0]);
+  for (const p of prefixes) check(p.length >= MIN_PREFIX_LENGTH && !/[\s,]/.test(p), `"${label(n)}" bad prefix ${JSON.stringify(p)}`);
+  // Exact contract: the server holds a typed term's key exactly when the
+  // client filter accepts the term, so search neither misses nor drops.
+  for (const t of substrings([n.first, n.middle ?? "", n.last, n.full].join(" "))) {
+    const typed = normalizeQuery(t);
+    if (typed.length !== 1 || prefixKey(typed[0]).length < MIN_PREFIX_LENGTH) continue; // initials: client-only
+    const indexed = set.has(prefixKey(typed[0]));
     const filtered = matchesAllTerms(officer, typed);
-    const plainPrefix = `${n.first} ${n.last}`.toLowerCase().split(/\s+/).some((w) => w.startsWith(typed[0]));
     check(!(indexed && !filtered), `"${label(n)}" indexes "${typed[0]}" but the filter rejects it`);
-    check(!(plainPrefix && !indexed), `"${label(n)}" prefix "${typed[0]}" not indexed`);
+    check(!(filtered && !indexed), `"${label(n)}" filter accepts "${typed[0]}" but it isn't indexed`);
   }
   console.log(`  ${label(n).padEnd(34)} ${n.from.padEnd(11)} ${prefixes.length} prefixes`);
 }

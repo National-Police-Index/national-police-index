@@ -21,8 +21,6 @@ export const DEFAULT_PAGE_SIZE = 16;
 export interface AppCode {
   db: Firestore;
   search: typeof Search;
-  caFastSearchEnabled: boolean;
-  caSearchTerms: typeof Search.caSearchTerms;
   matchesAllTerms: typeof Search.matchesAllTerms;
 }
 
@@ -35,8 +33,6 @@ export async function loadAppCode(): Promise<AppCode> {
     cached = {
       db,
       search,
-      caFastSearchEnabled: search.CA_FAST_SEARCH_ENABLED,
-      caSearchTerms: search.caSearchTerms,
       matchesAllTerms: search.matchesAllTerms,
     };
   }

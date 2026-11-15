@@ -17,8 +17,6 @@ import { planSearch, fetchPage, countMatches, SearchCursor } from "@/lib/officer
 // Re-exported so existing importers keep working; the implementations live in
 // lib/officerSearch.ts, shared with the search benchmarks.
 export {
-  CA_FAST_SEARCH_ENABLED,
-  caSearchTerms,
   titleCaseTerm,
   normalizeQuery,
   matchesAllTerms,

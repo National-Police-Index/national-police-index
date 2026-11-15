@@ -94,16 +94,14 @@ When you update the database with new data for a specific state, you need to run
 ### Checklist
 
 - [ ] **Before you start:** the state has `hasData: true` in `constants/states.ts` (step 3 rejects states without it, and the site only lists states that have it).
-- [ ] **California re-upload only:** set `CA_FAST_SEARCH_ENABLED = false` in `lib/officerSearch.ts` and deploy, since California search returns nothing until step 4 has run.
 - [ ] **1. Normalize names:** fills in `full_name` where it's missing.
-- [ ] **2. Build search tokens:** writes `searchQueries`, the words name search matches on.
+- [ ] **2. Build search words:** writes `searchQueries`, the whole words that badge-number searches and agency-filtered name searches match on.
 - [ ] **3. Normalize dates:** adds `start_date_iso` / `end_date_iso` for the date filters.
-- [ ] **4. California only, build search prefixes:** writes `search_prefixes`, which California search reads for partial-word matching.
+- [ ] **4. Build name prefixes:** writes `name_prefixes`, which name search reads. Until this runs, the state's officers can't be found by name.
 - [ ] **5. Refresh statistics:** the state's totals, then its agencies' totals.
-- [ ] **6. Verify search tokens:** every record has well-formed tokens (0 missing, 0 old-format).
+- [ ] **6. Verify search tokens:** every record has `name_prefixes` and well-formed `searchQueries` (0 missing, 0 mismatched, 0 old-format).
 - [ ] **7. Verify search:** real officers from the state are found the ways people type their names (must end `ALL PASS`).
 - [ ] **8. Spot-check:** `statistics_per_state/<state>` shows today's `last_updated` and a sensible `Total Officers`, and a few officers come up in the UI.
-- [ ] **California re-upload only:** set `CA_FAST_SEARCH_ENABLED = true` again and deploy.
 
 ### Commands
 
@@ -121,7 +119,8 @@ npx tsx scripts/addSearchQueriesByState.ts $STATE
 # 3. Normalize dates (about 4 min)
 npx tsx scripts/normalizeDatesByState.ts $STATE
 
-# (California only, run here: npx tsx scripts/addSearchPrefixesByState.ts california, about 1 hour)
+# 4. Build name prefixes (about 4 min; only writes name_prefixes)
+npx tsx scripts/addNamePrefixesByState.ts $STATE
 
 # 5. Refresh statistics (about 2 min, then about 6 min)
 npm run generate-stats -- $STATE

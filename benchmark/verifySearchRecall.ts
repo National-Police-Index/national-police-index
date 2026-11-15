@@ -90,6 +90,7 @@ const REGRESSIONS: {
   { state: "arizona", query: "owen mc adams", surnames: ["Mcadams"], why: "Mc split vs stored joined", truthQuery: "owen mcadams" },
   { state: "arizona", query: "mardoqueu l da silva jr", surnames: ["DA Silva Jr"], why: "initial, particle, suffix" },
   { state: "indiana", query: "tyrae murphy", surnames: ["Dabney-murphy"], why: "hyphen part" },
+  { state: "north-carolina", query: "jose lopez", surnames: ["Lopez", "Fuentes-lopez"], why: "hyphen part behind a common pair (old tokens)" },
   { state: "florida", query: "wiblin, jerry", surnames: ["Wiblin"], why: "\"last, first\" (was 24s)" },
   { state: "ohio", query: "zeilenga", surnames: ["Zeilenga"], why: "\"Last, First\" full_name tokens" },
 ];
