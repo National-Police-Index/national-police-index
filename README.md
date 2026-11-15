@@ -143,7 +143,7 @@ npx tsx benchmark/verifySearchRecall.ts $STATE --seed=random
 
 ### Search test suites
 
-The search tests are state-agnostic: every state, California included, runs the same suites. Besides steps 6–7:
+The search tests are state-agnostic: every state, California included, runs the same suites. Every pull request runs them in CI (`.github/workflows/search-tests.yml`, about 10 min): the token contract below, then search recall across every state on a fresh random sample. The job summary shows the seed for replaying a failure. CI only covers code changes; data uploads have no PR, so steps 6–7 above are still how an upload is verified. Besides steps 6–7:
 
 - `npx tsx benchmark/verifySearchTokens.ts`: offline (no Firestore). Checks that the tokens the pipeline stores agree with the search filter, on real record shapes from production. Run it after changing the tokenizer in `lib/officerSearch.ts`.
 - `npx tsx benchmark/verifySearchRecall.ts` with no state runs across every state with data, plus the named regression queries. Results are saved to `benchmark/results/` (git-ignored); compare two runs with `--compare=<earlier.json>`. A failing `--seed=random` run prints its seed; replay it with `--seed=<n>`.
