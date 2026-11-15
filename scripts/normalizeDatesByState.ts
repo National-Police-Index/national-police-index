@@ -14,6 +14,8 @@ type QueryDocumentSnapshot<T = DocumentData> =
 type Timestamp = admin.firestore.Timestamp;
 
 let db: admin.firestore.Firestore;
+/** Set when a state fails or is rejected; the process then exits 1. */
+let failed = false;
 
 async function initializeFirebase(): Promise<admin.firestore.Firestore> {
   if (!admin.apps.length) {
@@ -33,7 +35,8 @@ const CONFIG = {
   queryLimit: 1000,
   dryRun: false,
   logFrequency: 200,
-  logFile: "../normalize_dates_progress.json",
+  // Inside the repo (git-ignored by *_progress.json).
+  logFile: "./normalize_dates_progress.json",
   specificState: process.argv[2] || null,
 };
 
@@ -192,10 +195,14 @@ async function processState(
   progressData: ProgressData
 ): Promise<StateProgress> {
   console.log('Processing', state);
+  // A state named on the command line always runs fresh: the writes are
+  // idempotent, and a cursor is never saved, so the only thing a "completed"
+  // entry could do is make a re-upload silently skip. Only the all-states
+  // run (no argument) skips states it already finished, to resume.
   const existing = progressData.states.find((s) => s.state === state);
-  if (existing && existing.completed) return existing;
+  if (!CONFIG.specificState && existing && existing.completed) return existing;
 
-  const stateProgress: StateProgress = existing || {
+  const stateProgress: StateProgress = {
     state,
     completed: false,
     documentsProcessed: 0,
@@ -311,6 +318,7 @@ async function processState(
     return stateProgress;
   } catch (error) {
     console.error(`Error processing state ${state}:`, error);
+    failed = true;
     // Ensure we return a valid StateProgress object even on error
     stateProgress.lastProcessedAt = new Date().toISOString();
     return stateProgress;
@@ -326,6 +334,7 @@ async function normalizeDatesByState(): Promise<void> {
       statesToProcess = [CONFIG.specificState.toLowerCase()];
     } else {
       console.error(`Invalid state specified: ${CONFIG.specificState}`);
+      failed = true;
       return;
     }
   } else {
@@ -370,8 +379,9 @@ async function normalizeDatesByState(): Promise<void> {
 (async () => {
   db = await initializeFirebase();
   await normalizeDatesByState();
-  console.log("Script completed successfully");
-  process.exit(0);
+  // Non-zero when any state failed, so scripts/updateState.ts stops here.
+  console.log(failed ? "Script finished with errors" : "Script completed successfully");
+  process.exit(failed ? 1 : 0);
 })().catch((err) => {
   console.error("Script failed:", err);
   process.exit(1);

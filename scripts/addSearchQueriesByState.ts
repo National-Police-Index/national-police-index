@@ -14,6 +14,8 @@ type QueryDocumentSnapshot<T = DocumentData> =
   admin.firestore.QueryDocumentSnapshot<T>;
 
 let db: admin.firestore.Firestore;
+/** Set when a state fails or is rejected; the process then exits 1. */
+let failed = false;
 
 async function initializeFirebase(): Promise<admin.firestore.Firestore> {
   if (!admin.apps.length) {
@@ -52,7 +54,8 @@ const CONFIG = {
   queryLimit: 1000,
   dryRun: false,
   logFrequency: 100,
-  logFile: '../search_queries_progress.json',
+  // Inside the repo (git-ignored by *_progress.json).
+  logFile: './search_queries_progress.json',
   specificState: process.argv[2] || null,
 };
 
@@ -104,13 +107,17 @@ function saveProgressData(progressData: ProgressData): void {
 
 async function processState(state: string, progressData: ProgressData): Promise<StateProgress> {
 
+  // A state named on the command line always runs fresh: the writes are
+  // idempotent, and a cursor is never saved, so the only thing a "completed"
+  // entry could do is make a re-upload silently skip. Only the all-states
+  // run (no argument) skips states it already finished, to resume.
   const existingProgress = progressData.states.find(s => s.state === state);
-  if (existingProgress && existingProgress.completed) {
+  if (!CONFIG.specificState && existingProgress && existingProgress.completed) {
     return existingProgress;
   }
 
 
-  const stateProgress: StateProgress = existingProgress || {
+  const stateProgress: StateProgress = {
     state,
     completed: false,
     documentsProcessed: 0,
@@ -242,6 +249,7 @@ async function processState(state: string, progressData: ProgressData): Promise<
 
   } catch (error) {
     console.error(`Error processing state ${state}:`, error);
+    failed = true;
     return stateProgress;
   }
 }
@@ -261,6 +269,7 @@ async function addSearchQueriesByState(): Promise<void> {
         statesToProcess = [CONFIG.specificState.toLowerCase()];
       } else {
         console.error(`Invalid state specified: ${CONFIG.specificState}`);
+        failed = true;
         return;
       }
     } else {
@@ -301,6 +310,7 @@ async function addSearchQueriesByState(): Promise<void> {
 
   } catch (error) {
     console.error('Error in main process:', error);
+    failed = true;
   }
 }
 
@@ -308,8 +318,9 @@ async function addSearchQueriesByState(): Promise<void> {
 (async () => {
   db = await initializeFirebase();
   await addSearchQueriesByState();
-  console.log('Script completed successfully');
-  process.exit(0);
+  // Non-zero when any state failed, so scripts/updateState.ts stops here.
+  console.log(failed ? 'Script finished with errors' : 'Script completed successfully');
+  process.exit(failed ? 1 : 0);
 })().catch(error => {
   console.error('Script failed:', error);
   process.exit(1);

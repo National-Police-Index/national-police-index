@@ -29,6 +29,8 @@ async function initializeFirebase(): Promise<admin.firestore.Firestore> {
 
 
 const targetState = process.argv[2]?.toLowerCase();
+// --fresh: ignore an interrupted run's saved position and start over.
+const forceFresh = process.argv.includes('--fresh');
 
 if (!targetState) {
   console.error('Error: No state specified');
@@ -109,10 +111,21 @@ async function normalizeStateData() {
   console.log(`Starting ${CONFIG.targetState} data normalization...`);
 
 
-  const progress = loadProgress();
-  if (progress.completed) {
-    console.log('Process already completed. Delete progress file to run again.');
-    return;
+  // A finished run (or --fresh) starts over: re-running after a re-upload must
+  // never silently do nothing. Only an interrupted run resumes.
+  let progress = loadProgress();
+  if (progress.completed || forceFresh) {
+    progress = {
+      lastProcessedId: null,
+      processedCount: 0,
+      skippedCount: 0,
+      totalDocuments: 0,
+      startTime: Date.now(),
+      completed: false,
+      state: CONFIG.targetState,
+    };
+  } else if (progress.lastProcessedId) {
+    console.log(`Resuming an interrupted run after ${progress.lastProcessedId} (pass --fresh to start over).`);
   }
 
   let processed = progress.processedCount;

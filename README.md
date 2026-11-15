@@ -89,122 +89,64 @@ Runs ESLint to check for code quality issues
 
 ## Updating State Data
 
-When you update the database with new data for a specific state, you need to run several scripts in sequence to ensure data integrity, search functionality, and statistics are properly updated.
+When you update the database with new data for a specific state, you need to run several scripts in sequence to ensure data integrity, search functionality, and statistics are properly updated. The checklist below covers every step for uploading a new state or re-uploading an existing one; the commands for each step follow it.
 
-### Step 1: Data Processing (Required)
+### Checklist
 
-These commands normalize and prepare the raw data for the application. Run them in this order:
+- [ ] **Before you start:** the state has `hasData: true` in `constants/states.ts` (step 3 rejects states without it, and the site only lists states that have it).
+- [ ] **California re-upload only:** set `CA_FAST_SEARCH_ENABLED = false` in `lib/officerSearch.ts` and deploy, since California search returns nothing until step 4 has run.
+- [ ] **1. Normalize names:** fills in `full_name` where it's missing.
+- [ ] **2. Build search tokens:** writes `searchQueries`, the words name search matches on.
+- [ ] **3. Normalize dates:** adds `start_date_iso` / `end_date_iso` for the date filters.
+- [ ] **4. California only, build search prefixes:** writes `search_prefixes`, which California search reads for partial-word matching.
+- [ ] **5. Refresh statistics:** the state's totals, then its agencies' totals.
+- [ ] **6. Verify search tokens:** every record has well-formed tokens (0 missing, 0 old-format).
+- [ ] **7. Verify search:** real officers from the state are found the ways people type their names (must end `ALL PASS`).
+- [ ] **8. Spot-check:** `statistics_per_state/<state>` shows today's `last_updated` and a sensible `Total Officers`, and a few officers come up in the UI.
+- [ ] **California re-upload only:** set `CA_FAST_SEARCH_ENABLED = true` again and deploy.
 
-```bash
-# 1. Normalize state data (clean and standardize field formats), include the full, lower-cased, state name, e.g., california
-npx tsx scripts/normalizeStateData.ts <state>
+### Commands
 
-# 2. Normalize date fields (standardize date formats)
-npx tsx scripts/normalizeDatesByState.ts <state>
-
-# 3. Add search queries (enable full-text search functionality)
-npx tsx scripts/addSearchQueriesByState.ts <state>
-
-# 4. Add search prefixes (REQUIRED for california — the CA fast search path in
-#    hooks/useOfficersByUid.ts queries `search_prefixes` and returns nothing
-#    without it; harmless but currently unused for other states)
-npx tsx scripts/addSearchPrefixesByState.ts <state>
-```
-
-Scripts 1-3 record a `<name>_progress.json` file and refuse to re-process a state they already marked `completed` — delete that file when re-running after a re-upload, or the run silently does nothing. `addSearchPrefixesByState.ts` has no such file: its writes are idempotent, so re-running it is always safe.
-
-**Example for California:**
-```bash
-npx tsx scripts/normalizeStateData.ts california
-npx tsx scripts/normalizeDatesByState.ts california
-npx tsx scripts/addSearchQueriesByState.ts california
-npx tsx scripts/addSearchPrefixesByState.ts california
-```
-
-### Step 2: Update Derived Collections (Required)
-
-After processing the raw data, update the statistics collections that power the application's analytics and summary views.
+Set the state once, as the full, lower-cased name stored in each record's `state` field (e.g. `minnesota`, `new-mexico`). Every script processes only the state you pass it and writes to production Firestore through the Firebase Admin SDK, using the service account in `firebase-service-account.json`. Times are from Minnesota (49,168 records); California (about 505k records) takes roughly ten times longer.
 
 ```bash
-# 1. Update state-level statistics (statistics_per_state collection)
-npm run generate-stats -- <state>
-# Or run directly:
-npx tsx scripts/generateStateStats.ts <state>
+STATE=minnesota
 
-# 2. Update agency-level statistics (statistics_per_agency collection)
-# IMPORTANT: Pass the state parameter to avoid processing ALL states
-npm run generate-stats-agencies -- <state>
-# Or run directly:
-npx tsx scripts/generateAgencyStats.ts <state>
+# 1. Normalize names (about 1 min; a no-op when the upload already has full_name)
+npx tsx scripts/normalizeStateData.ts $STATE
+
+# 2. Build search tokens (about 5 min)
+npx tsx scripts/addSearchQueriesByState.ts $STATE
+
+# 3. Normalize dates (about 4 min)
+npx tsx scripts/normalizeDatesByState.ts $STATE
+
+# (California only, run here: npx tsx scripts/addSearchPrefixesByState.ts california, about 1 hour)
+
+# 5. Refresh statistics (about 2 min, then about 6 min)
+npm run generate-stats -- $STATE
+npm run generate-stats-agencies -- $STATE   # ALWAYS pass the state: without it this runs every state (24+ hours)
+
+# 6. Verify search tokens
+npx tsx benchmark/verifyTokenCoverage.ts $STATE --strict
+
+# 7. Verify search, on the fixed sample and on a fresh random one
+npx tsx benchmark/verifySearchRecall.ts $STATE
+npx tsx benchmark/verifySearchRecall.ts $STATE --seed=random
 ```
 
-**Example for California:**
-```bash
-# State statistics (either command works)
-npm run generate-stats -- california
-npx tsx scripts/generateStateStats.ts california
+**Re-running is safe.** Every step can be re-run at any time and simply redoes its writes. There's nothing to delete first. Steps 1–3 keep a progress file in the repo root (git-ignored), but only so an interrupted run of step 1 can pick up where it stopped; it prints `Resuming an interrupted run…`, and `--fresh` forces a restart.
 
-# Agency statistics (either command works) - ALWAYS specify the state
-npm run generate-stats-agencies -- california
-npx tsx scripts/generateAgencyStats.ts california
-```
+**Known limitations:**
+- `scripts/normalizeDatesByState.ts` refuses `kansas` and `arizona`.
+- Agency statistics are keyed by agency name alone, so same-named agencies in different states share one `statistics_per_agency` record.
 
-**Important Notes:**
-- **`generate-stats-agencies`**: Running without a state parameter will process **ALL states**, which can take 24+ hours. 
+### Search test suites
 
-### Step 3: Verify Updates
+The search tests are state-agnostic: every state, California included, runs the same suites. Besides steps 6–7:
 
-After running all scripts, verify the changes:
-
-1. **Check state statistics:**
-   - Navigate to the Firestore console
-   - Check the `statistics_per_state` collection
-   - Verify the state document has updated statistics
-
-2. **Check agency statistics:**
-   - Navigate to the `statistics_per_agency` collection
-   - Verify agencies have properly formatted `stats` arrays with objects containing `label` and `value` fields
-   - Example of correct format:
-
-   ```json
-   {
-     "stats": [
-       { "label": "Total Officers", "value": "150" }
-     ]
-   }
-   ```
-
-   - Some agencies may have incomplete statistics if the `generate-stats-agencies` script was terminated early
-
-3. **Test search functionality:**
-   The search tests are general: every state, California included, runs the same suites.
-   - `npx tsx benchmark/verifyTokenCoverage.ts <state> --strict` — every record carries well-formed search tokens (`searchQueries`, plus `search_prefixes` in California); run right after the pipeline
-   - `npx tsx benchmark/verifySearchRecall.ts <state>` — sampled real officers must be reachable when searched the ways people type (full name, reversed, "last, first", partial, middle name, Mc / particle / hyphen spellings), page 1 must fill, paging must reach every match, and the result count must cover them; also runs the named regression queries. Add `--seed=random` for a fresh sample
-   - `npx tsx benchmark/verifySearchTokens.ts` — offline: the tokens the pipeline stores agree with the search filter
-   - Search for officers in the updated state in the UI
-   - Verify search latency is acceptable (should be similar to other states)
-
-### Complete Update Workflow Example
-
-Here's the complete workflow for updating California data:
-
-```bash
-# Step 1: Process raw data
-npx tsx scripts/normalizeStateData.ts california
-npx tsx scripts/normalizeDatesByState.ts california
-npx tsx scripts/addSearchQueriesByState.ts california
-npx tsx scripts/addSearchPrefixesByState.ts california
-
-# Step 2: Update statistics (using npm commands)
-npm run generate-stats -- california
-npm run generate-stats-agencies -- california
-
-# Alternative: Step 2 using npx commands
-npx tsx scripts/generateStateStats.ts california
-npx tsx scripts/generateAgencyStats.ts california
-
-# Step 3: Verify in Firestore console and test search
-```
+- `npx tsx benchmark/verifySearchTokens.ts`: offline (no Firestore). Checks that the tokens the pipeline stores agree with the search filter, on real record shapes from production. Run it after changing the tokenizer in `lib/officerSearch.ts`.
+- `npx tsx benchmark/verifySearchRecall.ts` with no state runs across every state with data, plus the named regression queries. Results are saved to `benchmark/results/` (git-ignored); compare two runs with `--compare=<earlier.json>`. A failing `--seed=random` run prints its seed; replay it with `--seed=<n>`.
 
 ## Firebase Deployment
 
