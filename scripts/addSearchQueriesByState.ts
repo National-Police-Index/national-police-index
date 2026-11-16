@@ -1,40 +1,36 @@
 
-import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collectionGroup,
-  getDocs,
-  writeBatch,
-  doc,
-  DocumentData,
-  QueryDocumentSnapshot,
-  limit,
-  startAfter,
-  query,
-  where
-} from 'firebase/firestore';
+// Uses the Firebase ADMIN SDK, not the client SDK. The client SDK only has the
+// public web config, so its writes to db_launch are governed by the deployed
+// Firestore rules and fail with PERMISSION_DENIED. The admin SDK authenticates
+// with the service account and bypasses rules, which is what a maintenance
+// script needs. Same pattern as generateSitemap.ts / generate-stats.ts.
+import * as admin from 'firebase-admin';
 import fs from 'fs';
+import { loadServiceAccount } from '../utils/loadServiceAccount';
+import { searchTokens } from '../lib/officerSearch';
 
+type DocumentData = admin.firestore.DocumentData;
+type QueryDocumentSnapshot<T = DocumentData> =
+  admin.firestore.QueryDocumentSnapshot<T>;
 
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+let db: admin.firestore.Firestore;
+/** Set when a state fails or is rejected; the process then exits 1. */
+let failed = false;
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+async function initializeFirebase(): Promise<admin.firestore.Firestore> {
+  if (!admin.apps.length) {
+    const serviceAccount = await loadServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  }
+  return admin.firestore();
+}
 
 interface OfficerDocument extends DocumentData {
   full_name?: string;
   first_name?: string;
+  middle_name?: string;
   last_name?: string;
   searchQueries?: string[];
   state?: string;
@@ -57,9 +53,9 @@ const CONFIG = {
   batchSize: 500,
   queryLimit: 1000,
   dryRun: false,
-  includeFirstLast: false,
   logFrequency: 100,
-  logFile: '../search_queries_progress.json',
+  // Inside the repo (git-ignored by *_progress.json).
+  logFile: './search_queries_progress.json',
   specificState: process.argv[2] || null,
 };
 
@@ -111,13 +107,17 @@ function saveProgressData(progressData: ProgressData): void {
 
 async function processState(state: string, progressData: ProgressData): Promise<StateProgress> {
 
+  // A state named on the command line always runs fresh: the writes are
+  // idempotent, and a cursor is never saved, so the only thing a "completed"
+  // entry could do is make a re-upload silently skip. Only the all-states
+  // run (no argument) skips states it already finished, to resume.
   const existingProgress = progressData.states.find(s => s.state === state);
-  if (existingProgress && existingProgress.completed) {
+  if (!CONFIG.specificState && existingProgress && existingProgress.completed) {
     return existingProgress;
   }
 
 
-  const stateProgress: StateProgress = existingProgress || {
+  const stateProgress: StateProgress = {
     state,
     completed: false,
     documentsProcessed: 0,
@@ -137,16 +137,17 @@ async function processState(state: string, progressData: ProgressData): Promise<
 
     while (hasMoreDocs) {
 
-      let dbQuery = collectionGroup(db, 'db_launch');
-      dbQuery = query(dbQuery, where('state', '==', state));
+      let dbQuery: admin.firestore.Query = db
+        .collectionGroup('db_launch')
+        .where('state', '==', state);
 
       if (lastDoc) {
-        dbQuery = query(dbQuery, startAfter(lastDoc), limit(CONFIG.queryLimit));
+        dbQuery = dbQuery.startAfter(lastDoc).limit(CONFIG.queryLimit);
       } else {
-        dbQuery = query(dbQuery, limit(CONFIG.queryLimit));
+        dbQuery = dbQuery.limit(CONFIG.queryLimit);
       }
 
-      const querySnapshot = await getDocs(dbQuery);
+      const querySnapshot = await dbQuery.get();
       const batchSize = querySnapshot.docs.length;
 
       if (batchSize === 0) {
@@ -154,7 +155,7 @@ async function processState(state: string, progressData: ProgressData): Promise<
         continue;
       }
 
-      let batch = writeBatch(db);
+      let batch = db.batch();
       let batchCount = 0;
 
       for (const docSnapshot of querySnapshot.docs as QueryDocumentSnapshot<OfficerDocument>[]) {
@@ -162,41 +163,21 @@ async function processState(state: string, progressData: ProgressData): Promise<
         processed++;
 
 
-        let fullName = docData.full_name || '';
-        if (!fullName && docData.first_name && docData.last_name) {
-          fullName = `${docData.first_name} ${docData.last_name}`.trim();
-        }
-
-
-        if (!fullName) {
+        if (!docData.full_name && !docData.first_name && !docData.last_name) {
           skippedCount++;
           continue;
         }
 
-
-        const searchQueries: string[] = [];
-
-
-        fullName
-          .trim()
-          .split(/\s+/)
-          .filter(term => term.length > 0)
-          .forEach(term => searchQueries.push(term.toLowerCase()));
-
-
-        if (CONFIG.includeFirstLast && docData.first_name) {
-          searchQueries.push(docData.first_name.toLowerCase());
-        }
-
-        if (CONFIG.includeFirstLast && docData.last_name) {
-          searchQueries.push(docData.last_name.toLowerCase());
-        }
-
+        // Tokens come from the search module's own tokenizer, so what is
+        // stored here is exactly what the client matcher expects: first,
+        // middle and last name plus full_name, split on spaces and commas,
+        // with punctuation-free forms and hyphen parts.
+        const searchQueries = searchTokens(docData);
 
         const uniqueSearchQueries = [...new Set(searchQueries)];
 
 
-        const docRef = doc(db, docSnapshot.ref.path);
+        const docRef = docSnapshot.ref;
 
 
         if (!CONFIG.dryRun) {
@@ -229,7 +210,7 @@ async function processState(state: string, progressData: ProgressData): Promise<
 
         if (batchCount >= CONFIG.batchSize && !CONFIG.dryRun) {
           await batch.commit();
-          batch = writeBatch(db);
+          batch = db.batch();
           batchCount = 0;
         }
       }
@@ -268,6 +249,7 @@ async function processState(state: string, progressData: ProgressData): Promise<
 
   } catch (error) {
     console.error(`Error processing state ${state}:`, error);
+    failed = true;
     return stateProgress;
   }
 }
@@ -287,6 +269,7 @@ async function addSearchQueriesByState(): Promise<void> {
         statesToProcess = [CONFIG.specificState.toLowerCase()];
       } else {
         console.error(`Invalid state specified: ${CONFIG.specificState}`);
+        failed = true;
         return;
       }
     } else {
@@ -327,10 +310,18 @@ async function addSearchQueriesByState(): Promise<void> {
 
   } catch (error) {
     console.error('Error in main process:', error);
+    failed = true;
   }
 }
 
 
-addSearchQueriesByState()
-  .then(() => console.log('Script completed successfully'))
-  .catch(error => console.error('Script failed:', error));
+(async () => {
+  db = await initializeFirebase();
+  await addSearchQueriesByState();
+  // Non-zero when any state failed, so a pipeline running steps in sequence stops here.
+  console.log(failed ? 'Script finished with errors' : 'Script completed successfully');
+  process.exit(failed ? 1 : 0);
+})().catch(error => {
+  console.error('Script failed:', error);
+  process.exit(1);
+});

@@ -44,3 +44,7 @@ firebase-service-account.json
 /.firebase
 *.log
 misc/
+# runtime artifacts of scripts/*ByState.ts and generateAgencyStats.ts
+*_progress.json
+# search benchmark run outputs
+benchmark/results/

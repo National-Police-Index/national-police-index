@@ -1,0 +1,95 @@
+# Officer search tests, run on every pull request.
+#
+# 1. verifySearchTokens: offline check that the search tokens the data
+#    pipeline stores agree with the search filter.
+# 2. verifySearchRecall: draws a fresh random sample of real officers from
+#    every state with data (production Firestore, read-only), searches for
+#    each one the ways people type names, and fails if any officer isn't found
+#    or page-1 latency is over budget. The seed is printed in the job summary;
+#    replay a failure locally with
+#      npx tsx benchmark/verifySearchRecall.ts --seed=<n>
+#
+
+name: Search tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: search-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # --legacy-peer-deps: @eslint/js 10 wants eslint 10, the repo pins eslint 9.
+      - run: npm ci --legacy-peer-deps
+
+      - name: Search token contract (offline)
+        run: npx tsx benchmark/verifySearchTokens.ts
+
+      - name: Search recall and latency (random sample, all states)
+        id: recall
+        run: |
+          if [ -z "$NEXT_PUBLIC_FIREBASE_PROJECT_ID" ]; then
+            echo "::warning::Firebase secrets unavailable (fork PR?); search recall not tested."
+            echo "Search recall **skipped**: Firebase secrets unavailable." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          set -o pipefail
+          npx tsx benchmark/verifySearchRecall.ts --seed=random \
+            --json=benchmark/results/recall.json 2>&1 | tee recall.log
+
+      - name: Job summary
+        if: always() && steps.recall.outcome != 'skipped'
+        run: |
+          [ -f recall.log ] || exit 0
+          {
+            echo "### Search recall"
+            echo '```'
+            grep -E '^seed |^sample: |^latency: |^count latency|^runtime |ALL PASS|FAIL|NO CHECKS RAN' recall.log
+            echo '```'
+            if grep -q '❌' recall.log; then
+              echo "<details><summary>Failures</summary>"
+              echo
+              echo '```'
+              grep -E '❌|🐢' recall.log | head -100
+              echo '```'
+              echo "</details>"
+            fi
+            seed=$(grep -oE '^seed [0-9]+' recall.log | cut -d' ' -f2)
+            if [ -n "$seed" ]; then
+              echo "Replay locally: \`npx tsx benchmark/verifySearchRecall.ts --seed=$seed\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-recall-results
+          path: |
+            recall.log
+            benchmark/results/recall.json
+          if-no-files-found: ignore
+          retention-days: 30

@@ -2,123 +2,26 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
-  collectionGroup,
-  query,
-  where,
   getDocs,
-  orderBy,
-  limit,
-  startAfter,
   QueryDocumentSnapshot,
   doc,
   getDoc,
-  collection,
   DocumentData,
-  or,
-  Query,
-  QueryConstraint,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
 import { PoliceOfficer } from "@/types";
 
-// California fast-path search helpers.
-//
-// A recent migration means that CA officer data carry a `search_prefixes` array 
-// (every prefix of length >= 2 of each name token,
-// e.g. "John Smith" -> ["jo","joh","john","sm",...]). 
-// That lets the CA branch run a single tight `array-contains` query instead of the
-// broader `array-contains-any` over-fetch used for every other state. These
-// helpers are only ever invoked from the CA branch — other states are untouched.
+import { planSearch, fetchPage, countMatches, SearchCursor, SearchPlan } from "@/lib/officerSearch";
 
-const CA_MIN_PREFIX_LENGTH = 2;
-const CA_FAST_SEARCH_ENABLED = true;
-
-export function caSearchTerms(rawQuery: string): string[] {
-  return rawQuery
-    .toLowerCase()
-    .trim()
-    .split(/\s+/)
-    .filter((t) => t.length >= CA_MIN_PREFIX_LENGTH);
-}
-
-// The longest term is the most selective, so anchoring the indexed query on it
-// yields the smallest candidate set from Firestore.
-export function caAnchorTerm(terms: string[]): string {
-  return terms.reduce((a, b) => (b.length > a.length ? b : a), terms[0] ?? "");
-}
-
-// Multi-term search used to enforce only ONE term on the server and check the
-// rest client-side inside a limit-truncated, last_name-ordered window, so a match
-// whose surname sorted past that window was unreachable ("joseph goosby" found
-// nothing). Pinning a second term to a last_name prefix range makes the server
-// satisfy both, reusing the existing (state, <token field>, last_name) indexes.
-
-// last_name is stored Title Case while typed terms are lowercased, so a range
-// bound has to be re-cased. U+F8FF sorts above any character used in a name.
-const NAME_RANGE_HIGH = String.fromCharCode(0xf8ff);
-
-export function titleCaseTerm(term: string): string {
-  return term.charAt(0).toUpperCase() + term.slice(1);
-}
-
-export function surnameRangeConstraints(
-  tokenField: string,
-  anchor: string,
-  surname: string
-): QueryConstraint[] {
-  const lo = titleCaseTerm(surname);
-  return [
-    where(tokenField, "array-contains", anchor),
-    where("last_name", ">=", lo),
-    where("last_name", "<", lo + NAME_RANGE_HIGH),
-  ];
-}
-
-// Users type either order ("joseph goosby", "smith john"), so probe both
-// assignments and keep whichever hits — a non-empty probe means both terms matched
-// by construction. The winner depends only on the terms and the data, not the
-// cursor, so pagination is unaffected. Returns null when there is nothing better
-// than the caller's existing query, so this can only add results, never remove.
-export async function pickNameConstraints(
-  base: Query<DocumentData>,
-  tokenField: string,
-  terms: string[]
-): Promise<QueryConstraint[] | null> {
-  // Any term length is safe: both constraints still guarantee a real match.
-  const usable = terms.filter((t) => t.length > 0);
-  if (usable.length < 2) return null;
-
-  const [first, second] = usable;
-  const variants = [
-    surnameRangeConstraints(tokenField, first, second),
-    surnameRangeConstraints(tokenField, second, first),
-  ];
-
-  try {
-    const probes = await Promise.all(
-      variants.map((constraints) =>
-        getDocs(query(base, ...constraints, orderBy("last_name", "asc"), limit(1)))
-      )
-    );
-    const hit = probes.findIndex((snap) => !snap.empty);
-    return hit >= 0 ? variants[hit] : null;
-  } catch {
-    return null;
-  }
-}
-
-// Every typed term must be a prefix of some token of the officer's name. This
-// enforces AND semantics + any-order matching on the client, over whatever
-// candidate set the server query returned. Used by both the CA fast path and
-// the non-CA search path.
-export function matchesAllTerms(officer: PoliceOfficer, terms: string[]): boolean {
-  const tokens = `${officer.first_name} ${officer.last_name}`
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
-  return terms.every((term) => tokens.some((tok) => tok.startsWith(term)));
-}
+// Re-exported so existing importers keep working; the implementations live in
+// lib/officerSearch.ts, shared with the search benchmarks.
+export {
+  titleCaseTerm,
+  normalizeQuery,
+  matchesAllTerms,
+  matchesQuery,
+} from "@/lib/officerSearch";
 
 interface OfficerGroup {
   person_nbr: string;
@@ -181,8 +84,8 @@ export function useOfficersByUid({
   const [totalCount, setTotalCount] = useState(0);
   const [, setFirstDoc] =
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  // Where the next page starts (a SearchCursor from lib/officerSearch).
+  const [lastDoc, setLastDoc] = useState<SearchCursor | null>(null);
 
   const [currentPage, setCurrentPage] = useState<number>(
     parseInt(searchParams.currentPage || "1", 10)
@@ -199,9 +102,15 @@ export function useOfficersByUid({
   });
 
   const cursorHistoryRef = useRef<{
-    cursors: QueryDocumentSnapshot[];
+    cursors: SearchCursor[];
     currentIndex: number;
   }>({ cursors: [], currentIndex: -1 });
+
+  // One plan per search (filters + page size), reused by every page and the
+  // count. A SearchCursor only makes sense against the plan that produced it,
+  // and planning isn't reproducible (probe and count timing can change which
+  // arms a plan holds), so re-planning on Next could skip or repeat results.
+  const planCacheRef = useRef<{ key: string; plan: Promise<SearchPlan> } | null>(null);
 
   const [countCache, setCountCache] = useState<Record<string, number>>({});
   // Tracks whether a given filter's count hit the 10k-doc fetch cap. When true,
@@ -232,6 +141,18 @@ export function useOfficersByUid({
     searchParameters.sortOrder,
     searchParameters.pageSize,
   ]);
+
+  const getPlan = useCallback((): Promise<SearchPlan> => {
+    const cached = planCacheRef.current;
+    if (cached && cached.key === filtersCacheKey) return cached.plan;
+    const plan = planSearch(db, { state, ...searchParameters });
+    planCacheRef.current = { key: filtersCacheKey, plan };
+    // A failed plan isn't kept, so the next attempt plans afresh.
+    plan.catch(() => {
+      if (planCacheRef.current?.plan === plan) planCacheRef.current = null;
+    });
+    return plan;
+  }, [state, filtersCacheKey, searchParameters]);
 
   const getTotalCount = useCallback(async () => {
     try {
@@ -271,124 +192,15 @@ export function useOfficersByUid({
       }
 
       try {
-        const countSearchingByUid =
-          !!searchParameters.query && /\d/.test(searchParameters.query.trim());
-        const countCaTerms =
-          state.toLowerCase() === "california" &&
-          searchParameters.query &&
-          !countSearchingByUid
-            ? caSearchTerms(searchParameters.query)
-            : [];
-        const countUseCaFastPath =
-          CA_FAST_SEARCH_ENABLED &&
-          countCaTerms.length > 0 &&
-          !searchParameters.agency;
-        const countNonCaSearch =
-          !countUseCaFastPath && !!searchParameters.query;
+        // Same plan and client filter as the result pages, so the total
+        // agrees with what paging shows.
+        const plan = await getPlan();
+        const { count, capped } = await countMatches(plan, getDocs);
 
-        // Same constraint as the main query: skip server-side date range when a
-        // name search is active, then filter dates client-side.
-        const countStartIso = searchParameters.startDate
-          ? new Date(searchParameters.startDate).toISOString()
-          : null;
-        const countEndIso = searchParameters.endDate
-          ? new Date(searchParameters.endDate).toISOString()
-          : null;
-
-        let countQuery;
-        if (countUseCaFastPath) {
-          // CA fast path: anchor on the most selective prefix term.
-          countQuery = query(
-            collection(db, "db_launch"),
-            where("state", "==", state.toLowerCase()),
-            where(
-              "search_prefixes",
-              "array-contains",
-              caAnchorTerm(countCaTerms)
-            ),
-            limit(10000)
-          );
-        } else if (countNonCaSearch) {
-          // Mirror the results query exactly (reuses the same existing index):
-          // searchQueries tokens + person_nbr, ordered by last_name.
-          const queryTerms = searchParameters.query
-            .toLowerCase()
-            .split(" ")
-            .slice(0, 20);
-          let q = query(
-            collectionGroup(db, "db_launch"),
-            where("state", "==", state.toLowerCase())
-          );
-          q = query(
-            q,
-            or(
-              where("searchQueries", "array-contains-any", queryTerms),
-              where("person_nbr", "==", searchParameters.query)
-            )
-          );
-          if (searchParameters.agency) {
-            q = query(q, where("agency_name", "==", searchParameters.agency));
-          }
-          q = query(q, orderBy("last_name", "asc"));
-          q = query(q, limit(10000));
-          countQuery = q;
-        } else {
-          // No name search: count by state (+ optional agency / date range).
-          let q = query(
-            collection(db, "db_launch"),
-            where("state", "==", state.toLowerCase()),
-            limit(10000)
-          );
-          if (searchParameters.agency) {
-            q = query(q, where("agency_name", "==", searchParameters.agency));
-          }
-          if (countStartIso) {
-            q = query(q, where("start_date_iso", ">=", countStartIso));
-          }
-          if (countEndIso) {
-            q = query(q, where("end_date_iso", "<=", countEndIso));
-          }
-          countQuery = q;
-        }
-
-        const countSnapshot = await getDocs(countQuery);
-
-        const countTerms = searchParameters.query
-          ? searchParameters.query.trim().toLowerCase().split(" ")
-          : [];
-        const uniqueOfficers = new Set();
-        countSnapshot.docs.forEach((doc) => {
-          const officer = doc.data() as PoliceOfficer;
-          // CA fast path: the anchor query only guarantees the most selective
-          // term matched, so require all typed terms client-side here too.
-          if (countUseCaFastPath && !matchesAllTerms(officer, countCaTerms)) {
-            return;
-          }
-          // Non-CA multi-term: require every term (prefix, any order) — same
-          // filter the results use — so the count matches what's displayed.
-          if (
-            countNonCaSearch &&
-            countTerms.length > 1 &&
-            !matchesAllTerms(officer, countTerms)
-          ) {
-            return;
-          }
-          if (searchParameters.query) {
-            if (countStartIso && (!officer.start_date_iso || officer.start_date_iso < countStartIso)) return;
-            if (countEndIso && officer.end_date_iso && officer.end_date_iso > countEndIso) return;
-          }
-          uniqueOfficers.add(officer.person_nbr);
-        });
-
-        const uniqueCount = uniqueOfficers.size;
-        // If the fetch came back full (10k docs), there are almost certainly
-        // more matches we didn't see, so the unique total is a lower bound.
-        const capped = countSnapshot.size >= 10000;
-
-        setCountCache((prev) => ({ ...prev, [filtersCacheKey]: uniqueCount }));
+        setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
         setCountCapCache((prev) => ({ ...prev, [filtersCacheKey]: capped }));
 
-        return uniqueCount;
+        return count;
       } catch {
         const defaultCount = 11713;
         return defaultCount;
@@ -399,7 +211,7 @@ export function useOfficersByUid({
       setCountCache((prev) => ({ ...prev, [filtersCacheKey]: defaultCount }));
       return defaultCount;
     }
-  }, [state, filtersCacheKey, countCache, searchParameters]);
+  }, [state, filtersCacheKey, countCache, searchParameters, getPlan]);
 
   useEffect(() => {
     let isMounted = true;
@@ -440,127 +252,30 @@ export function useOfficersByUid({
           setTotalCount(cachedCount);
         }
 
-        const officersRef = collectionGroup(db, "db_launch");
         // Show the selected page size. This previously forced
         // 100 for any query while the UI reported (and the user selected) a
         // different size — so a "16 per page" search actually rendered 100 cards
         // under a "1–16" label with a 6x-inflated page count.
         const pageSize = searchParameters.pageSize;
 
-        let q = query(officersRef, where("state", "==", state.toLowerCase()));
-
-        const searchingByUid = searchParameters.query && /\d/.test(searchParameters.query.trim());
-
-        // California-specific: single `array-contains` on the most
-        // selective prefix term, ordered by last_name. Only activates for CA
-        // name searches with at least one >= 2-char term;
-        // everything else flows through the existing path below untouched.
-        const caTerms =
-          state.toLowerCase() === "california" &&
-          searchParameters.query &&
-          !searchingByUid
-            ? caSearchTerms(searchParameters.query)
-            : [];
-        const useCaFastPath =
-          CA_FAST_SEARCH_ENABLED && caTerms.length > 0 && !searchParameters.agency;
-
-        // Firestore requires the range field to lead the orderBy, and an agency
-        // filter would need a different index — otherwise keep the old shape.
-        const canRangeOnLastName =
-          !searchingByUid &&
-          !searchParameters.agency &&
-          searchParameters.sortBy !== "date" &&
-          searchParameters.sortBy !== "agency";
-
-        if (useCaFastPath) {
-          const caRanged = canRangeOnLastName
-            ? await pickNameConstraints(q, "search_prefixes", caTerms)
-            : null;
-          q = query(
-            q,
-            ...(caRanged ?? [
-              where("search_prefixes", "array-contains", caAnchorTerm(caTerms)),
-            ])
-          );
-          q = query(q, orderBy("last_name", "asc"));
-        } else {
-          if (searchParameters.query) {
-            const queryTerms = searchParameters.query.toLowerCase().split(" ").slice(0, 20);
-            // person_nbr never contains whitespace, so that branch is already
-            // dead for a multi-term name query.
-            const nonCaRanged = canRangeOnLastName
-              ? await pickNameConstraints(q, "searchQueries", queryTerms)
-              : null;
-            if (nonCaRanged) {
-              q = query(q, ...nonCaRanged);
-            } else {
-              q = query(q,
-                or(where("searchQueries", "array-contains-any", queryTerms),
-                   where("person_nbr", "==", searchParameters.query)
-                )
-              );
-            }
-          }
-
-          if(!searchingByUid) {
-              if (searchParameters.agency) {
-                q = query(q, where("agency_name", "==", searchParameters.agency));
-              }
-
-              // Firestore can't combine array-contains-any (from name search) with
-              // a range filter on a different field. When a name search is active,
-              // skip the date range filters here and apply them client-side below.
-              if (!searchParameters.query) {
-                if (searchParameters.startDate) {
-                  const startDate = new Date(searchParameters.startDate);
-                  q = query(q, where("start_date_iso", ">=", startDate.toISOString()));
-                }
-
-                if (searchParameters.endDate) {
-                  const endDate = new Date(searchParameters.endDate);
-                  q = query(q, where("end_date_iso", "<=", endDate.toISOString()));
-                }
-              }
-
-              const sortField =
-                searchParameters.sortBy === "date"
-                  ? "start_date"
-                  : searchParameters.sortBy === "agency"
-                  ? "agency_name"
-                  : "last_name";
-
-                q = query(
-                  q,
-                  orderBy(
-                    sortField,
-                    searchParameters.sortOrder === "desc" ? "desc" : "asc"
-                  )
-                );
-          }
-        }
-        const limitMultiplier = searchParameters.query
-          ? useCaFastPath
-            ? 10
-            : 100
-          : 10;
-        q = query(q, limit(pageSize * limitMultiplier));
+        // Planning, fetching and page assembly live in lib/officerSearch.ts,
+        // shared with the search benchmarks.
+        const plan = await getPlan();
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;
 
+        // cursors[i] is the doc page i + 2 starts after, so going back to a
+        // page replays exactly the cursor it was first fetched with.
+        let startCursor: SearchCursor | null = null;
         if (direction === "next" && lastDoc) {
-          q = query(q, startAfter(lastDoc));
+          startCursor = lastDoc;
         } else if (direction === "prev" && currentPageNum > 1) {
           const history = cursorHistoryRef.current;
           const prevIndex = history.currentIndex - 1;
-
           if (prevIndex >= 0 && prevIndex < history.cursors.length) {
-            const prevCursor = history.cursors[prevIndex];
-            q = query(q, startAfter(prevCursor));
-
+            startCursor = history.cursors[prevIndex];
             cursorHistoryRef.current.currentIndex = prevIndex;
-          } else if (prevIndex === -1) {
-            cursorHistoryRef.current.currentIndex = -1;
           } else {
             cursorHistoryRef.current.currentIndex = -1;
           }
@@ -568,152 +283,21 @@ export function useOfficersByUid({
           cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
         }
 
-        let snapshot = await getDocs(q);
+        const page = await fetchPage(plan, startCursor, pageSize, getDocs);
         if (!isMounted) return;
 
-        const groupedOfficers = new Map<string, PoliceOfficer[]>();
-        let uniqueCount = 0;
-        let lastDocIndex = -1;
-        // CA-specific: index of the last doc actually examined (match or not),
-        // so the cursor always advances through the anchor set even across
-        // sparse / zero-match pages — guaranteeing paging reaches every hit.
-        let lastExaminedIndex = -1;
-        let attempts = 0;
-        const maxAttempts = 10;
+        if (page.firstDoc) {
+          setFirstDoc(page.firstDoc);
+          if (page.nextCursor) setLastDoc(page.nextCursor);
 
-        const terms = searchParameters.query
-          ? searchParameters.query.trim().toLowerCase().split(" ")
-          : false;
-
-        const clientStartIso = searchParameters.query && searchParameters.startDate
-          ? new Date(searchParameters.startDate).toISOString()
-          : null;
-        const clientEndIso = searchParameters.query && searchParameters.endDate
-          ? new Date(searchParameters.endDate).toISOString()
-          : null;
-
-        while (
-          uniqueCount < pageSize &&
-          attempts < maxAttempts &&
-          snapshot.docs.length > 0
-        ) {
-          for (
-            let i = 0;
-            i < snapshot.docs.length && uniqueCount < pageSize;
-            i++
-          ) {
-            const doc = snapshot.docs[i];
-            const officer = doc.data() as PoliceOfficer;
-            lastExaminedIndex = i;
-
-            if (useCaFastPath) {
-              // CA-specific: the anchor query only guarantees the most
-              // selective term matched. Require all typed terms (prefix, any
-              // order) here.
-              if (!matchesAllTerms(officer, caTerms)) {
-                continue;
-              }
-            } else if (terms && terms.length > 1) {
-              // Non-CA multi-term: require every typed term to be a prefix of
-              // some name token (any order). The old check demanded the terms
-              // exactly equal the officer's full first AND last name, so it
-              // dropped anyone with a multi-word name (e.g. "tina smith" missed
-              // "Tina Glover Smith") — returning almost nothing for any
-              // multi-term non-CA search.
-              if (!matchesAllTerms(officer, terms)) {
-                continue;
-              }
-            }
-
-            if (clientStartIso && (!officer.start_date_iso || officer.start_date_iso < clientStartIso)) {
-              continue;
-            }
-            if (clientEndIso && officer.end_date_iso && officer.end_date_iso > clientEndIso) {
-              continue;
-            }
-
-            if (!groupedOfficers.has(officer.person_nbr)) {
-              groupedOfficers.set(officer.person_nbr, [officer]);
-              uniqueCount++;
-              lastDocIndex = i;
-            } else {
-              groupedOfficers.get(officer.person_nbr)?.push(officer);
-            }
-          }
-
-          // CA fast path is capped at a single fetch: the anchor query already
-          // returns a tight candidate set, and the continuation loop is what
-          // made sparse multi-term searches (e.g. "smith john") do 5 sequential
-          // round trips. One fetch keeps latency ~1 round trip; cursor
-          // pagination still fetches the next page on demand.
-          if (
-            !useCaFastPath &&
-            uniqueCount < pageSize &&
-            snapshot.docs.length === pageSize * 10
-          ) {
-            const lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
-            q = query(q, startAfter(lastVisibleDoc));
-            snapshot = await getDocs(q);
-            attempts++;
-          } else {
-            break;
-          }
-        }
-
-        if (snapshot.docs.length > 0) {
-          setFirstDoc(snapshot.docs[0]);
-
-          if (useCaFastPath) {
-            // Advance the cursor to the last examined doc
-            const caCursorIndex =
-              lastExaminedIndex >= 0
-                ? lastExaminedIndex
-                : snapshot.docs.length - 1;
-            setLastDoc(snapshot.docs[caCursorIndex]);
-
-            if (currentPageNum === 1) {
-              cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
-            } else if (direction === "next") {
-              const newCursors = [...cursorHistoryRef.current.cursors];
-              const newIndex = cursorHistoryRef.current.currentIndex + 1;
-              if (newIndex < newCursors.length) newCursors.splice(newIndex);
-              newCursors.push(snapshot.docs[0]);
-              cursorHistoryRef.current = { cursors: newCursors, currentIndex: newIndex };
-            } else if (!direction && currentPageNum > 1) {
-              cursorHistoryRef.current = { cursors: [snapshot.docs[0]], currentIndex: 0 };
-            }
-          } else if (lastDocIndex >= 0) {
-            const newLastDoc = snapshot.docs[lastDocIndex];
-
-            setLastDoc(newLastDoc);
-            if (currentPageNum === 1) {
-              cursorHistoryRef.current = {
-                cursors: [],
-                currentIndex: -1,
-              };
-            } else if (direction === "next") {
-              const newCursors = [...cursorHistoryRef.current.cursors];
-              const newIndex = cursorHistoryRef.current.currentIndex + 1;
-
-              if (newIndex < newCursors.length) {
-                newCursors.splice(newIndex);
-              }
-
-              newCursors.push(snapshot.docs[0]);
-
-              cursorHistoryRef.current = {
-                cursors: newCursors,
-                currentIndex: newIndex,
-              };
-            } else if (!direction && currentPageNum > 1) {
-              const newCursors = [];
-              newCursors.push(snapshot.docs[0]);
-
-              cursorHistoryRef.current = {
-                cursors: newCursors,
-                currentIndex: 0,
-              };
-            }
+          if (direction === "next" && startCursor) {
+            const newCursors = [...cursorHistoryRef.current.cursors];
+            const newIndex = cursorHistoryRef.current.currentIndex + 1;
+            if (newIndex < newCursors.length) newCursors.splice(newIndex);
+            newCursors.push(startCursor);
+            cursorHistoryRef.current = { cursors: newCursors, currentIndex: newIndex };
+          } else if (currentPageNum === 1 && direction !== "prev") {
+            cursorHistoryRef.current = { cursors: [], currentIndex: -1 };
           }
         }
 
@@ -731,28 +315,16 @@ export function useOfficersByUid({
 
         setCurrentPage(newPage);
         setHasPreviousPage(newPage > 1);
-        // CA-specific there's a next page if EITHER this page hit the unique
-        // cap (we stopped scanning early, so more matches remain in this fetch's
-        // tail) OR the fetch came back full (more anchor docs remain to scan).
-        // Both conditions together guarantee paging reaches every hit — sparse
-        // multi-term AND dense single-term — until the anchor set is exhausted.
-        setHasNextPage(
-          useCaFastPath
-            ? uniqueCount >= pageSize ||
-                snapshot.docs.length === pageSize * limitMultiplier
-            : uniqueCount >= searchParameters.pageSize
-        );
+        setHasNextPage(page.hasNextPage);
 
-        const groups = Array.from(groupedOfficers.entries()).map(
-          ([person_nbr, records]) => ({
-            person_nbr,
-            records: records.sort(
-              (a, b) =>
-                new Date(b.start_date).getTime() -
-                new Date(a.start_date).getTime()
-            ),
-          })
-        );
+        const groups = page.groups.map(({ person_nbr, records }) => ({
+          person_nbr,
+          records: records.sort(
+            (a, b) =>
+              new Date(b.start_date).getTime() -
+              new Date(a.start_date).getTime()
+          ),
+        }));
 
         if (isMounted) {
           setOfficerGroups(groups);
@@ -761,8 +333,11 @@ export function useOfficersByUid({
         // After results render, fetch the total count in the background
         // on the free channel to keep initial results fast. 
         if (!cachedCount) {
+          // A time-capped count is a lower bound, so it can never be fewer
+          // than the officers already shown up to this page.
+          const shownSoFar = (newPage - 1) * pageSize + groups.length;
           getTotalCount().then((count) => {
-            if (isMounted) setTotalCount(count);
+            if (isMounted) setTotalCount(Math.max(count, shownSoFar));
           });
         }
       } catch (err) {

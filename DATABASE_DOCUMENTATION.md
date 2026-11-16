@@ -70,7 +70,9 @@ interface PoliceOfficer {
   employment_status?: string;
   certification_type?: string;
   type?: string;
-  searchQueries?: string[];     // Added by scripts for search
+  searchQueries?: string[];     // Added by scripts for search (whole name tokens)
+  name_prefixes?: string[];     // Every >=2-char prefix of each name word (punctuation-free); name search reads it
+  search_prefixes?: string[];   // Legacy (California); no longer read
   start_date_iso?: string;      // Normalized ISO date
   end_date_iso?: string;        // Normalized ISO date
 }
@@ -80,6 +82,7 @@ interface PoliceOfficer {
 - [`addSearchQueries.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueries.ts) - Adds search fields
 - [`addSearchQueriesAdvanced.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesAdvanced.ts) - Advanced search
 - [`addSearchQueriesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesByState.ts) - Search by state
+- [`addNamePrefixesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addNamePrefixesByState.ts) - Adds `name_prefixes` (name search)
 - [`normalizeDatesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeDatesByState.ts) - Normalizes dates
 - [`normalizeStateData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeStateData.ts) - Normalizes data by state
 - [`normalizeWashingtonData.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeWashingtonData.ts) - Washington-specific normalization
@@ -289,7 +292,8 @@ interface TempAgency {
    - By agency: `where('agency_name', '==', agencyName)`
    - By person: `where('document_id', '==', personNbr)`
    - Active officers: `where('end_date', '==', '')`
-   - Text search: `where('searchQueries', 'array-contains-any', terms)`
+   - Name search: several `where('name_prefixes', 'array-contains', term)` queries combined with `last_name` ranges (see `lib/officerSearch.ts`)
+   - Badge numbers, agency-filtered name search: `where('searchQueries', 'array-contains-any', terms)`
 
 2. **statistics_per_agency**:
    - By agency and state: `where('name', '==', agencyName) && where('state', '==', state)`
@@ -310,6 +314,7 @@ db_launch:
 - (state, start_date)
 - (state, end_date)
 - (searchQueries, state)
+- (state, name_prefixes CONTAINS, last_name) — name search, defined in firestore-indexes-full-name-lower.json
 
 statistics_per_agency:
 - (state, name)
@@ -324,6 +329,7 @@ statistics_per_agency:
 - [`updateAgencyActiveStats.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/updateAgencyActiveStats.ts) - Updates active officer counts
 - [`generateAgenciesCollection.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/generateAgenciesCollection.ts) - Regenerates agency catalog
 - [`addSearchQueriesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addSearchQueriesByState.ts) - Adds search fields by state
+- [`addNamePrefixesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/addNamePrefixesByState.ts) - Adds `name_prefixes` by state (required for every state; name search can't find a record without it)
 
 ### Normalization Scripts
 - [`normalizeDatesByState.ts`](https://github.com/National-Police-Index/national-police-index/blob/main/scripts/normalizeDatesByState.ts) - Normalizes dates by state

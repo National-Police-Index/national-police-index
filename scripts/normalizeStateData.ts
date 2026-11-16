@@ -1,41 +1,36 @@
 
 
+// Uses the Firebase ADMIN SDK, not the client SDK.
+//
+// This script writes to db_launch. The client SDK authenticates with the
+// public web config only, so its writes are governed by the deployed Firestore
+// security rules and fail with PERMISSION_DENIED. The admin SDK authenticates
+// with the service account and bypasses rules, which is what a maintenance
+// script needs — and it avoids having to open db_launch to public writes while
+// the script runs. Same pattern as generateSitemap.ts / generate-stats.ts.
 
-import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collectionGroup,
-  getDocs,
-  writeBatch,
-  QueryDocumentSnapshot,
-  limit,
-  startAfter,
-  query,
-  where
-} from 'firebase/firestore';
-
-import dotenv from 'dotenv';
+import * as admin from 'firebase-admin';
 import * as fs from 'fs';
+import { loadServiceAccount } from '../utils/loadServiceAccount';
 
+type QueryDocumentSnapshot = admin.firestore.QueryDocumentSnapshot;
 
-dotenv.config({ path: '.env.local' });
+let db: admin.firestore.Firestore;
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-console.log(firebaseConfig);
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+async function initializeFirebase(): Promise<admin.firestore.Firestore> {
+  if (!admin.apps.length) {
+    const serviceAccount = await loadServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  }
+  return admin.firestore();
+}
 
 
 const targetState = process.argv[2]?.toLowerCase();
+// --fresh: ignore an interrupted run's saved position and start over.
+const forceFresh = process.argv.includes('--fresh');
 
 if (!targetState) {
   console.error('Error: No state specified');
@@ -116,10 +111,21 @@ async function normalizeStateData() {
   console.log(`Starting ${CONFIG.targetState} data normalization...`);
 
 
-  const progress = loadProgress();
-  if (progress.completed) {
-    console.log('Process already completed. Delete progress file to run again.');
-    return;
+  // A finished run (or --fresh) starts over: re-running after a re-upload must
+  // never silently do nothing. Only an interrupted run resumes.
+  let progress = loadProgress();
+  if (progress.completed || forceFresh) {
+    progress = {
+      lastProcessedId: null,
+      processedCount: 0,
+      skippedCount: 0,
+      totalDocuments: 0,
+      startTime: Date.now(),
+      completed: false,
+      state: CONFIG.targetState,
+    };
+  } else if (progress.lastProcessedId) {
+    console.log(`Resuming an interrupted run after ${progress.lastProcessedId} (pass --fresh to start over).`);
   }
 
   let processed = progress.processedCount;
@@ -137,31 +143,31 @@ async function normalizeStateData() {
 
     while (hasMoreDocs) {
 
-      let q = query(
-        collectionGroup(db, 'db_launch'),
-        where('state', '==', CONFIG.targetState.toLowerCase()),
-        limit(CONFIG.batchSize)
-      );
+      // collectionGroup, not db.collection('db_launch'): the composite index
+      // backing (state + cursor) is COLLECTION_GROUP-scoped, and a
+      // collection-scoped query would need a separate index that does not exist.
+      let q: admin.firestore.Query = db
+        .collectionGroup('db_launch')
+        .where('state', '==', CONFIG.targetState.toLowerCase())
+        .limit(CONFIG.batchSize);
 
 
       if (lastDocSnapshot) {
-        q = query(q, startAfter(lastDocSnapshot));
+        q = q.startAfter(lastDocSnapshot);
       } else if (lastDocId) {
 
         try {
 
-          const lastDocQuery = query(
-            collectionGroup(db, 'db_launch'),
-            where('state', '==', CONFIG.targetState.toLowerCase()),
-            where('__name__', '==', lastDocId),
-            limit(1)
-          );
+          // db_launch is a root collection, so the resume cursor can be fetched
+          // by ID directly. The client-SDK version filtered on '__name__',
+          // which in a collection-group query would require a full document
+          // path rather than a bare ID.
+          const lastDocRef = db.collection('db_launch').doc(lastDocId);
+          const lastDocSnap = await lastDocRef.get();
 
-          const lastDocQuerySnapshot = await getDocs(lastDocQuery);
-
-          if (!lastDocQuerySnapshot.empty) {
-            q = query(q, startAfter(lastDocQuerySnapshot.docs[0]));
-            lastDocSnapshot = lastDocQuerySnapshot.docs[0];
+          if (lastDocSnap.exists) {
+            q = q.startAfter(lastDocSnap);
+            lastDocSnapshot = lastDocSnap as QueryDocumentSnapshot;
           } else {
             console.log(`Could not find last processed document with ID: ${lastDocId}. Starting from the beginning.`);
             lastDocId = null;
@@ -173,7 +179,7 @@ async function normalizeStateData() {
       }
 
 
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await q.get();
       const batchSize = querySnapshot.size;
 
       if (batchSize === 0) {
@@ -185,12 +191,17 @@ async function normalizeStateData() {
       console.log(`Processing batch of ${batchSize} documents...`);
 
 
-      let batch = writeBatch(db);
+      const batch = db.batch();
       let batchCount = 0;
 
       for (const docSnapshot of querySnapshot.docs) {
         const docData = docSnapshot.data();
         processed++;
+
+        // Advance the cursor for every doc, including skipped ones; otherwise a
+        // page where every doc is skipped would be refetched forever.
+        lastDocId = docSnapshot.id;
+        lastDocSnapshot = docSnapshot;
 
 
         if (docData.full_name) {
@@ -222,40 +233,29 @@ async function normalizeStateData() {
         }
 
 
+        // A page holds at most CONFIG.batchSize (500) docs, so one WriteBatch
+        // per page stays within Firestore's 500-write limit.
         batch.update(docSnapshot.ref, { full_name: fullName });
         batchCount++;
-
-
-        if (batchCount >= 500) {
-          console.log(`Committing batch of ${batchCount} updates...`);
-          await batch.commit();
-          batch = writeBatch(db);
-          batchCount = 0;
-        }
-
-
-        lastDocId = docSnapshot.id;
-        lastDocSnapshot = docSnapshot;
-
-
-        if (processed % 100 === 0) {
-          progress.lastProcessedId = lastDocId;
-          progress.processedCount = processed;
-          progress.skippedCount = skippedCount;
-          progress.totalDocuments = totalDocuments;
-          saveProgress(progress);
-
-          const elapsedSeconds = (Date.now() - startTime) / 1000;
-          const docsPerSecond = processed / elapsedSeconds;
-          console.log(`Progress: ${processed} documents processed (${docsPerSecond.toFixed(2)} docs/sec)`);
-        }
       }
 
 
       if (batchCount > 0) {
-        console.log(`Committing final batch of ${batchCount} updates...`);
+        console.log(`Committing batch of ${batchCount} updates...`);
         await batch.commit();
       }
+
+      // Save progress only after this page's writes are committed, so a resume
+      // never skips past uncommitted updates.
+      progress.lastProcessedId = lastDocId;
+      progress.processedCount = processed;
+      progress.skippedCount = skippedCount;
+      progress.totalDocuments = totalDocuments;
+      saveProgress(progress);
+
+      const elapsedSeconds = (Date.now() - startTime) / 1000;
+      const docsPerSecond = processed / elapsedSeconds;
+      console.log(`Progress: ${processed} documents processed (${docsPerSecond.toFixed(2)} docs/sec)`);
     }
 
 
@@ -292,4 +292,11 @@ async function normalizeStateData() {
 }
 
 
-normalizeStateData().catch(console.error);
+(async () => {
+  db = await initializeFirebase();
+  await normalizeStateData();
+  process.exit(0);
+})().catch((error) => {
+  console.error('Script failed:', error);
+  process.exit(1);
+});

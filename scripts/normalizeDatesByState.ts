@@ -1,35 +1,31 @@
-import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  collectionGroup,
-  getDocs,
-  writeBatch,
-  doc,
-  DocumentData,
-  QueryDocumentSnapshot,
-  limit,
-  startAfter,
-  query,
-  where,
-  Timestamp,
-} from "firebase/firestore";
+// Uses the Firebase ADMIN SDK, not the client SDK. The client SDK only has the
+// public web config, so its writes to db_launch are governed by the deployed
+// Firestore rules and fail with PERMISSION_DENIED. The admin SDK authenticates
+// with the service account and bypasses rules, which is what a maintenance
+// script needs. Same pattern as generateSitemap.ts / generate-stats.ts.
+import * as admin from "firebase-admin";
 import fs from "fs";
-import dotenv from "dotenv";
 import { US_STATES } from "@/constants/states";
+import { loadServiceAccount } from "../utils/loadServiceAccount";
 
-dotenv.config({ path: ".env.local" });
+type DocumentData = admin.firestore.DocumentData;
+type QueryDocumentSnapshot<T = DocumentData> =
+  admin.firestore.QueryDocumentSnapshot<T>;
+type Timestamp = admin.firestore.Timestamp;
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+let db: admin.firestore.Firestore;
+/** Set when a state fails or is rejected; the process then exits 1. */
+let failed = false;
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+async function initializeFirebase(): Promise<admin.firestore.Firestore> {
+  if (!admin.apps.length) {
+    const serviceAccount = await loadServiceAccount();
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  }
+  return admin.firestore();
+}
 
 // Mirrors the style used in scripts/addSearchQueriesByState.ts
 const _US_STATES = US_STATES.filter(item => !['kansas', 'arizona'].includes(item.reference)).filter((item) => item.hasData).map((item) => item.reference);
@@ -39,7 +35,8 @@ const CONFIG = {
   queryLimit: 1000,
   dryRun: false,
   logFrequency: 200,
-  logFile: "../normalize_dates_progress.json",
+  // Inside the repo (git-ignored by *_progress.json).
+  logFile: "./normalize_dates_progress.json",
   specificState: process.argv[2] || null,
 };
 
@@ -198,10 +195,14 @@ async function processState(
   progressData: ProgressData
 ): Promise<StateProgress> {
   console.log('Processing', state);
+  // A state named on the command line always runs fresh: the writes are
+  // idempotent, and a cursor is never saved, so the only thing a "completed"
+  // entry could do is make a re-upload silently skip. Only the all-states
+  // run (no argument) skips states it already finished, to resume.
   const existing = progressData.states.find((s) => s.state === state);
-  if (existing && existing.completed) return existing;
+  if (!CONFIG.specificState && existing && existing.completed) return existing;
 
-  const stateProgress: StateProgress = existing || {
+  const stateProgress: StateProgress = {
     state,
     completed: false,
     documentsProcessed: 0,
@@ -218,20 +219,21 @@ async function processState(
     let hasMore = true;
 
     while (hasMore) {
-      let dbQuery = collectionGroup(db, "db_launch");
-      dbQuery = query(dbQuery, where("state", "==", state));
+      let dbQuery: admin.firestore.Query = db
+        .collectionGroup("db_launch")
+        .where("state", "==", state);
       dbQuery = lastDoc
-        ? query(dbQuery, startAfter(lastDoc), limit(CONFIG.queryLimit))
-        : query(dbQuery, limit(CONFIG.queryLimit));
+        ? dbQuery.startAfter(lastDoc).limit(CONFIG.queryLimit)
+        : dbQuery.limit(CONFIG.queryLimit);
 
-      const snap = await getDocs(dbQuery);
+      const snap = await dbQuery.get();
       const batchSize = snap.docs.length;
       if (batchSize === 0) {
         hasMore = false;
         break;
       }
 
-      let batch = writeBatch(db);
+      let batch = db.batch();
       let batchCount = 0;
 
       for (const d of snap.docs as QueryDocumentSnapshot<OfficerDoc>[]) {
@@ -253,7 +255,7 @@ async function processState(
         if (!needsUpdate) {
           skippedCount++;
         } else {
-          const docRef = doc(db, d.ref.path);
+          const docRef = d.ref;
           if (!CONFIG.dryRun) {
             batch.update(docRef, {
               // start_date: normalizedStart,
@@ -279,7 +281,7 @@ async function processState(
 
         if (batchCount >= CONFIG.batchSize && !CONFIG.dryRun) {
           await batch.commit();
-          batch = writeBatch(db);
+          batch = db.batch();
           batchCount = 0;
         }
       }
@@ -316,6 +318,7 @@ async function processState(
     return stateProgress;
   } catch (error) {
     console.error(`Error processing state ${state}:`, error);
+    failed = true;
     // Ensure we return a valid StateProgress object even on error
     stateProgress.lastProcessedAt = new Date().toISOString();
     return stateProgress;
@@ -331,6 +334,7 @@ async function normalizeDatesByState(): Promise<void> {
       statesToProcess = [CONFIG.specificState.toLowerCase()];
     } else {
       console.error(`Invalid state specified: ${CONFIG.specificState}`);
+      failed = true;
       return;
     }
   } else {
@@ -372,6 +376,13 @@ async function normalizeDatesByState(): Promise<void> {
   console.log(`====================================`);
 }
 
-normalizeDatesByState()
-  .then(() => console.log("Script completed successfully"))
-  .catch((err) => console.error("Script failed:", err));
+(async () => {
+  db = await initializeFirebase();
+  await normalizeDatesByState();
+  // Non-zero when any state failed, so a pipeline running steps in sequence stops here.
+  console.log(failed ? "Script finished with errors" : "Script completed successfully");
+  process.exit(failed ? 1 : 0);
+})().catch((err) => {
+  console.error("Script failed:", err);
+  process.exit(1);
+});

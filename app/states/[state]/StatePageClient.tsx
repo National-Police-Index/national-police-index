@@ -223,12 +223,20 @@ export default function StatePageClient() {
               <div className="text-center py-12 text-red-600">
                 Error loading officers: {error.message}
               </div>
-            ) : officerGroups.length === 0 ? (
+            ) : officerGroups.length === 0 && !hasNextPage ? (
               <div className="text-center py-12 ">
                 No officers found matching your search criteria.
               </div>
             ) : (
               <>
+                {officerGroups.length === 0 && (
+                  // A sparse search can stop short of its first match to stay
+                  // fast; the next page resumes where this one stopped.
+                  <div className="text-center py-12 ">
+                    No matches on this page yet. More results may follow on
+                    the next page.
+                  </div>
+                )}
                 <div className={`flex flex-wrap gap-6 ${styles.cards}`}>
                   {officerGroups.map((group) => (
                     <OfficerCard
@@ -238,9 +246,9 @@ export default function StatePageClient() {
                   ))}
                 </div>
                 <div className={styles.paginationWrapper}>
-                  {/* Show pagination whenever there are results — NOT gated on
-                      the count. */}
-                  {officerGroups.length > 0 && (
+                  {/* Show pagination whenever there are results or more may
+                      follow — NOT gated on the count. */}
+                  {(officerGroups.length > 0 || hasNextPage) && (
                     <div>
                       <CursorPagination
                         currentPage={apiCurrentPage}
