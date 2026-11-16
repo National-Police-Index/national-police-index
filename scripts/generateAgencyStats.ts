@@ -191,8 +191,11 @@ async function generateAgencyStats(state: string) {
 
       while (hasMoreDocs && pageCount < MAX_PAGES_PER_AGENCY) {
         pageCount++;
+        // Filter by state too: agency names repeat across states ("Springfield
+        // Police Department"), and the name alone would count both states.
         let q: admin.firestore.Query = officersRef
           .where('agency_name', '==', agencyName)
+          .where('state', '==', agencyInfo.state)
           .limit(QUERY_LIMIT);
 
         if (lastDoc) {

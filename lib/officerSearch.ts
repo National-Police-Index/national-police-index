@@ -80,20 +80,33 @@ export function normalizeQuery(raw: string): string[] {
 const PARTICLES = ["mc", "mac", "da", "de", "del", "della", "di", "du", "la", "le", "van", "von", "st", "o", "d"];
 
 /**
- * The term sets a query may mean: as typed, and with split particles joined
- * to the next term ("mitchell mc arthur" -> also "mitchell mcarthur").
+ * The term sets a query may mean: as typed, with each split particle joined
+ * to the next term ("mitchell mc arthur" -> also "mitchell mcarthur"; "de la
+ * cruz" -> "dela cruz"), and with a whole run of particles joined to the term
+ * after it ("de la cruz" -> "delacruz").
  */
 export function termAlternatives(terms: string[]): string[][] {
-  const joined: string[] = [];
+  const pairwise: string[] = [];
   for (let i = 0; i < terms.length; i++) {
     if (PARTICLES.includes(terms[i]) && i + 1 < terms.length) {
-      joined.push(terms[i] + terms[i + 1]);
+      pairwise.push(terms[i] + terms[i + 1]);
       i++;
     } else {
-      joined.push(terms[i]);
+      pairwise.push(terms[i]);
     }
   }
-  return joined.length === terms.length ? [terms] : [terms, joined];
+  const runs: string[] = [];
+  for (let i = 0; i < terms.length; i++) {
+    let j = i;
+    while (j + 1 < terms.length && PARTICLES.includes(terms[j])) j++;
+    runs.push(terms.slice(i, j + 1).join(""));
+    i = j;
+  }
+  const out = [terms];
+  for (const alt of [pairwise, runs]) {
+    if (!out.some((o) => o.join(" ") === alt.join(" "))) out.push(alt);
+  }
+  return out;
 }
 
 /**
@@ -251,7 +264,7 @@ export interface SearchPlan {
   /**
    * One or more queries ("arms"), each with every filter and its orderBy but
    * no limit or cursor. Plans with more than one arm always sort by
-   * (last_name asc, document path).
+   * (last_name, document path), ascending unless `descending`.
    */
   arms: Query<DocumentData>[];
   /**
@@ -276,6 +289,8 @@ export interface SearchPlan {
   clientEndIso: string | null;
   /** Which query shape was chosen, for benchmarks and debugging. */
   shape: string;
+  /** Multi-arm plans: arms run (last_name, path) descending, so the merge does too. */
+  descending: boolean;
 }
 
 /** Docs a probe reads to judge a candidate arm. */
@@ -292,6 +307,8 @@ const TERM_COUNT_TIMEOUT_MS = 2_000;
  * term is more common, the matches it could add sit behind many others.
  */
 const RARE_ARM_MAX = 1_000;
+/** Distinct terms (over every alternative) counted for the rarest-term arms. */
+const MAX_COUNTED_TERMS = 8;
 /** Upper bound on candidate arms probed per search (one parallel round trip). */
 const MAX_PROBES = 24;
 /** Terms (longest first) considered as anchor or surname. */
@@ -335,7 +352,8 @@ interface Candidate {
  */
 async function planNameSearch(
   base: Query<DocumentData>,
-  raw: string
+  raw: string,
+  descending = false
 ): Promise<{
   arms: Query<DocumentData>[];
   tiers: number[][];
@@ -389,37 +407,46 @@ async function planNameSearch(
       t === terms[terms.length - 1] || !terms.includes(t) ? 0 : t === terms[0] ? 1 : 2;
     return rank(a) - rank(b);
   });
-  for (const surname of ordered) {
-    for (const start of surnameRangeStarts(surname)) {
-      for (const anchor of planTerms.filter((t) => t !== surname && anchorable(t)).slice(0, 2)) {
-        const k = prefixKey(anchor);
-        add({
-          key: `pair:${k}:${start}`,
-          kind: "pair",
-          surname,
-          anchor: k,
-          start,
-          constraints: [where(tokenField, "array-contains", k), ...lastNameRange(start)],
-          test: (d) => tokenListHas(d, tokenField, k) && inLastNameRange(d, start),
-        });
-      }
+  // A single-term token arm already holds every match (name_prefixes holds
+  // each surname's every stored spelling, squashed), so surname ranges would
+  // only re-read the same officers. Arms the probe cap trims are covered by
+  // the rarest-term arms below whenever a term is rare enough.
+  const hasTokenArm = candidates.some((c) => c.kind === "token");
+  const plannedStarts: [string, string][] = hasTokenArm
+    ? []
+    : ordered.flatMap((t) => surnameRangeStarts(t).map((st) => [t, st] as [string, string]));
+  for (const [surname, start] of plannedStarts) {
+    for (const anchor of planTerms.filter((t) => t !== surname && anchorable(t)).slice(0, 2)) {
+      const k = prefixKey(anchor);
       add({
-        key: `surname:${start}`,
-        kind: "surname",
+        key: `pair:${k}:${start}`,
+        kind: "pair",
         surname,
-        constraints: lastNameRange(start),
-        test: (d) => inLastNameRange(d, start),
+        anchor: k,
+        start,
+        constraints: [where(tokenField, "array-contains", k), ...lastNameRange(start)],
+        test: (d) => tokenListHas(d, tokenField, k) && inLastNameRange(d, start),
       });
     }
+    add({
+      key: `surname:${start}`,
+      kind: "surname",
+      surname,
+      constraints: lastNameRange(start),
+      test: (d) => inLastNameRange(d, start),
+    });
   }
   const probed = candidates.slice(0, MAX_PROBES);
 
-  // Every match holds every typed term, so the officers holding the rarest
-  // term contain them all: one arm on it is complete, at the lowest cost any
-  // complete arm can have. Counted per term (index-only, cheap) alongside the
-  // probes, up to RARE_ARM_MAX. Only terms in every alternative qualify ("mc
-  // adams" may match as "mcadams", which holds no "adams" prefix).
-  const countable = planTerms.filter((t) => anchorable(t) && alternatives.every((alt) => alt.includes(t)));
+  // A match holds every term of some alternative, so the officers holding
+  // each alternative's rarest term contain them all: one arm per alternative
+  // is complete, at the lowest cost any complete set of arms can have ("eric
+  // da gama": "gama" for the split reading, "dagama" for the joined one).
+  // Counted per term (index-only, cheap) alongside the probes, up to
+  // RARE_ARM_MAX; a term counted above that is never picked.
+  const countable = hasTokenArm
+    ? []
+    : [...new Set(alternatives.flat())].filter(anchorable).slice(0, MAX_COUNTED_TERMS);
   const countsP = Promise.all(
     countable.map((t) =>
       Promise.race([
@@ -443,21 +470,32 @@ async function planNameSearch(
   const probes = await Promise.all(
     probed.map((c) =>
       getDocs(query(base, ...c.constraints, orderBy("last_name", "asc"), limit(PROBE_LIMIT))).catch(
-        () => null
+        (e) => {
+          console.warn(`officer search: probe ${c.key} failed`, e);
+          return "error" as const;
+        }
       )
     )
   );
-  const hit = probed.map((_, i) =>
-    (probes[i]?.docs ?? []).some((d) => matchesQuery(d.data() as PoliceOfficer, alternatives))
+  // A failed probe proves nothing either way, so its arm is kept: if the
+  // failure persists (a missing index), the page fetch surfaces the error
+  // instead of the search silently losing that reading.
+  const failed = probes.map((p) => p === "error");
+  const snaps = probes.map((p) => (p === "error" ? null : p));
+  const hit = probed.map(
+    (_, i) => failed[i] || (snaps[i]?.docs ?? []).some((d) => matchesQuery(d.data() as PoliceOfficer, alternatives))
   );
-  const full = probed.map((_, i) => (probes[i]?.size ?? 0) === PROBE_LIMIT);
+  const full = probed.map((_, i) => failed[i] || (snaps[i]?.size ?? 0) === PROBE_LIMIT);
   const counts = await countsP;
-  let rareTerm: string | null = null;
-  if (planTerms.length > 1) {
-    let best = RARE_ARM_MAX + 1;
-    countable.forEach((t, i) => {
-      if (counts[i] < best) [best, rareTerm] = [counts[i], t];
-    });
+  const countOf = new Map(countable.map((t, i) => [t, counts[i]]));
+  const rareTerms = new Set<string>();
+  for (const alt of alternatives) {
+    let best: string | null = null;
+    for (const t of alt) {
+      const n = countOf.get(t) ?? Infinity;
+      if (n <= RARE_ARM_MAX && (best === null || n < countOf.get(best)!)) best = t;
+    }
+    if (best !== null) rareTerms.add(best);
   }
 
   const pairHitSurnames = new Set(
@@ -481,12 +519,11 @@ async function planNameSearch(
   // No probe holds a match in its first PROBE_LIMIT docs: a full probe may
   // still hide matches further down, so keep those arms.
   if (!chosen.length) chosen = probed.filter((_, i) => full[i]);
-  // The rarest term's arm: complete, so matches no pair or range reaches
-  // ("Fuentes-lopez" for "jose lopez", where the Jose Lopezes hit a pair arm)
-  // still come up. It holds every officer the rare term's surname ranges
-  // hold, so it replaces them and ranks as they would.
-  if (rareTerm) {
-    const t: string = rareTerm;
+  // The rarest-term arms: complete together, so matches no pair or range
+  // reaches ("Fuentes-lopez" for "jose lopez", where the Jose Lopezes hit a
+  // pair arm) still come up. Each holds every officer its term's surname
+  // ranges hold, so it replaces them and ranks as they would.
+  for (const t of rareTerms) {
     const k = prefixKey(t);
     chosen = chosen.filter((c) => !(c.kind === "surname" && c.surname === t));
     chosen.push({
@@ -501,7 +538,7 @@ async function planNameSearch(
   // pair arm proved the name:
   // scan every officer holding any typed word. The client filter keeps
   // genuine matches.
-  if (!rareTerm && planTerms.length > 1 && !chosen.some((c) => c.kind === "pair")) {
+  if (!rareTerms.size && planTerms.length > 1 && !chosen.some((c) => c.kind === "pair")) {
     const anyTerms = [...new Set(alternatives.flat().map(prefixKey))]
       .filter((k) => k.length >= MIN_PREFIX_LENGTH)
       .slice(0, 10);
@@ -527,7 +564,7 @@ async function planNameSearch(
     .map((r) => chosen.map((c, i) => (rank(c) === r ? i : -1)).filter((i) => i >= 0))
     .filter((t) => t.length > 0);
 
-  const arms = chosen.map((c) => query(base, ...c.constraints, orderBy("last_name", "asc")));
+  const arms = chosen.map((c) => query(base, ...c.constraints, orderBy("last_name", descending ? "desc" : "asc")));
   const kinds = [...new Set(chosen.map((c) => c.kind))].join("+");
   return {
     arms,
@@ -551,7 +588,7 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
   const nameSortable =
     !input.agency && input.sortBy !== "date" && input.sortBy !== "agency";
   if (input.query && !searchingByUid && nameSortable) {
-    const named = await planNameSearch(base, input.query);
+    const named = await planNameSearch(base, input.query, input.sortOrder === "desc");
     if (named) {
       return {
         arms: named.arms,
@@ -563,6 +600,7 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
         clientStartIso,
         clientEndIso,
         shape: named.shape,
+        descending: input.sortOrder === "desc",
       };
     }
   }
@@ -613,6 +651,7 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
     clientStartIso,
     clientEndIso,
     shape,
+    descending: false, // one arm: no merge
   };
 }
 
@@ -623,12 +662,12 @@ export async function planSearch(db: Firestore, input: SearchInput): Promise<Sea
 export type DocsFetcher = (q: Query<DocumentData>) => Promise<QuerySnapshot<DocumentData>>;
 type Doc = QueryDocumentSnapshot<DocumentData>;
 
-/** Firestore's order for multi-arm plans: last_name asc, then document path. */
-function compareDocs(a: Doc, b: Doc): number {
+/** Firestore's order for multi-arm plans: (last_name, document path), ascending or descending. */
+function compareDocs(a: Doc, b: Doc, descending = false): number {
   const la = String(a.get("last_name") ?? "");
   const lb = String(b.get("last_name") ?? "");
-  if (la !== lb) return la < lb ? -1 : 1;
-  return a.ref.path < b.ref.path ? -1 : a.ref.path > b.ref.path ? 1 : 0;
+  const c = la !== lb ? (la < lb ? -1 : 1) : a.ref.path < b.ref.path ? -1 : a.ref.path > b.ref.path ? 1 : 0;
+  return descending ? -c : c;
 }
 
 /**
@@ -636,8 +675,8 @@ function compareDocs(a: Doc, b: Doc): number {
  * arm keeps its own cursor and buffer and is refilled only once its buffer is
  * used up, every empty arm in parallel, so nothing is fetched twice and
  * reading stops the moment the caller stops pulling. A doc several arms hold
- * comes out once. Multi-arm plans sort by (last_name, path), which
- * compareDocs mirrors; a single arm may use any sort.
+ * comes out once. Multi-arm plans sort by (last_name, path), ascending or
+ * descending, which compareDocs mirrors; a single arm may use any sort.
  */
 class MergedStream {
   private bufs: Doc[][];
@@ -656,7 +695,8 @@ class MergedStream {
     private chunk: number,
     private fetcher: DocsFetcher,
     /** Epoch ms after which no further fetch round starts (the first always runs). */
-    public deadline = Infinity
+    public deadline = Infinity,
+    private descending = false
   ) {
     const n = arms.length;
     this.bufs = Array.from({ length: n }, () => []);
@@ -707,7 +747,7 @@ class MergedStream {
       let best = -1;
       for (let i = 0; i < this.bufs.length; i++) {
         if (this.pos[i] >= this.bufs[i].length) continue;
-        if (best < 0 || compareDocs(this.bufs[i][this.pos[i]], this.bufs[best][this.pos[best]]) < 0) best = i;
+        if (best < 0 || compareDocs(this.bufs[i][this.pos[i]], this.bufs[best][this.pos[best]], this.descending) < 0) best = i;
       }
       if (best < 0) return null;
       const d = this.bufs[best][this.pos[best]++];
@@ -789,9 +829,22 @@ export async function fetchPage(
   let stopped = false; // page full, examine cap or out of time: more may follow
 
   while (cursor.tier < plan.tiers.length) {
+    // A new tier's first fetch would otherwise always run (MergedStream only
+    // checks the deadline from its second round), so check it here.
+    if (examined > 0 && Date.now() > deadline) {
+      stopped = true;
+      break;
+    }
     const tierArms = plan.tiers[cursor.tier];
     const earlierArms = plan.tiers.slice(0, cursor.tier).flat();
-    const stream = new MergedStream(tierArms.map((i) => plan.arms[i]), cursor.after, plan.windowSize, fetcher, deadline);
+    const stream = new MergedStream(
+      tierArms.map((i) => plan.arms[i]),
+      cursor.after,
+      plan.windowSize,
+      fetcher,
+      deadline,
+      plan.descending
+    );
     let tierDone = false;
     for (;;) {
       if (grouped.size >= pageSize || examined >= examineCap) {
@@ -863,7 +916,14 @@ export async function countMatches(
   plan: SearchPlan,
   fetcher: DocsFetcher = getDocs
 ): Promise<{ count: number; capped: boolean; reads: number }> {
-  const stream = new MergedStream(plan.arms, null, COUNT_CHUNK, fetcher, Date.now() + COUNT_TIME_BUDGET_MS);
+  const stream = new MergedStream(
+    plan.arms,
+    null,
+    COUNT_CHUNK,
+    fetcher,
+    Date.now() + COUNT_TIME_BUDGET_MS,
+    plan.descending
+  );
   const people = new Set<string>();
   for (;;) {
     if (stream.reads >= COUNT_READ_CAP) return { count: people.size, capped: !stream.exhausted, reads: stream.reads };

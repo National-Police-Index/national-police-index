@@ -12,7 +12,7 @@ import {
 import { db } from "@/lib/firebase";
 import { PoliceOfficer } from "@/types";
 
-import { planSearch, fetchPage, countMatches, SearchCursor } from "@/lib/officerSearch";
+import { planSearch, fetchPage, countMatches, SearchCursor, SearchPlan } from "@/lib/officerSearch";
 
 // Re-exported so existing importers keep working; the implementations live in
 // lib/officerSearch.ts, shared with the search benchmarks.
@@ -106,6 +106,12 @@ export function useOfficersByUid({
     currentIndex: number;
   }>({ cursors: [], currentIndex: -1 });
 
+  // One plan per search (filters + page size), reused by every page and the
+  // count. A SearchCursor only makes sense against the plan that produced it,
+  // and planning isn't reproducible (probe and count timing can change which
+  // arms a plan holds), so re-planning on Next could skip or repeat results.
+  const planCacheRef = useRef<{ key: string; plan: Promise<SearchPlan> } | null>(null);
+
   const [countCache, setCountCache] = useState<Record<string, number>>({});
   // Tracks whether a given filter's count hit the 10k-doc fetch cap. When true,
   // the displayed total is a lower bound (e.g. "5,967+"), not an exact count.
@@ -135,6 +141,18 @@ export function useOfficersByUid({
     searchParameters.sortOrder,
     searchParameters.pageSize,
   ]);
+
+  const getPlan = useCallback((): Promise<SearchPlan> => {
+    const cached = planCacheRef.current;
+    if (cached && cached.key === filtersCacheKey) return cached.plan;
+    const plan = planSearch(db, { state, ...searchParameters });
+    planCacheRef.current = { key: filtersCacheKey, plan };
+    // A failed plan isn't kept, so the next attempt plans afresh.
+    plan.catch(() => {
+      if (planCacheRef.current?.plan === plan) planCacheRef.current = null;
+    });
+    return plan;
+  }, [state, filtersCacheKey, searchParameters]);
 
   const getTotalCount = useCallback(async () => {
     try {
@@ -176,7 +194,7 @@ export function useOfficersByUid({
       try {
         // Same plan and client filter as the result pages, so the total
         // agrees with what paging shows.
-        const plan = await planSearch(db, { state, ...searchParameters });
+        const plan = await getPlan();
         const { count, capped } = await countMatches(plan, getDocs);
 
         setCountCache((prev) => ({ ...prev, [filtersCacheKey]: count }));
@@ -193,7 +211,7 @@ export function useOfficersByUid({
       setCountCache((prev) => ({ ...prev, [filtersCacheKey]: defaultCount }));
       return defaultCount;
     }
-  }, [state, filtersCacheKey, countCache, searchParameters]);
+  }, [state, filtersCacheKey, countCache, searchParameters, getPlan]);
 
   useEffect(() => {
     let isMounted = true;
@@ -242,7 +260,7 @@ export function useOfficersByUid({
 
         // Planning, fetching and page assembly live in lib/officerSearch.ts,
         // shared with the search benchmarks.
-        const plan = await planSearch(db, { state, ...searchParameters });
+        const plan = await getPlan();
 
         const direction = searchParameters.direction;
         const currentPageNum = currentPage;

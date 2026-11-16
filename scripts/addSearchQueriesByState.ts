@@ -318,7 +318,7 @@ async function addSearchQueriesByState(): Promise<void> {
 (async () => {
   db = await initializeFirebase();
   await addSearchQueriesByState();
-  // Non-zero when any state failed, so scripts/updateState.ts stops here.
+  // Non-zero when any state failed, so a pipeline running steps in sequence stops here.
   console.log(failed ? 'Script finished with errors' : 'Script completed successfully');
   process.exit(failed ? 1 : 0);
 })().catch(error => {
